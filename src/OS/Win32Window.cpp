@@ -52,6 +52,18 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		}
 
+		case WM_MOUSEWHEEL:
+		{
+			int ticks = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+
+			MouseWheelEvent wheelEvent;
+			wheelEvent.ticks = ticks;
+
+			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			window->onMouseWheel(wheelEvent);
+			break;
+		}
+
 		case WM_CLOSE:
 			PostQuitMessage(0);
 			break;
@@ -217,6 +229,7 @@ Win32Window::Win32Window(bool bDebugContext)
 	DestroyWindow(dummyWin);
 
 	ShowWindow(m_hWnd, SW_SHOW);
+	ShowCursor(false);
 }
 
 void Win32Window::maximize()
@@ -235,6 +248,8 @@ Win32Window::~Win32Window()
 	m_hdc = nullptr;
 
 	DestroyWindow(m_hWnd);
+
+	ShowCursor(true);
 }
 
 void Win32Window::getClientSize(uint32_t& width, uint32_t& height)

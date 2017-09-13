@@ -93,7 +93,7 @@ void Plane::draw()
 
 void Plane::accelerate(float throttle)
 {
-	m_speed += throttle;
+	m_speed *= throttle;
 	if(m_speed <= 0.0f)
 		m_speed = 0.01f;
 	if(m_speed > 0.11f)

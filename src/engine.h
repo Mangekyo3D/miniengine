@@ -35,6 +35,7 @@ private:
 		bool firePressed = false;
 		bool accelaratePressed = false;
 		bool deccelaratePressed = false;
+		int  accelarateTick = 0;
 		bool leftPressed = false;
 		bool rightPressed = false;
 		bool upPressed = false;

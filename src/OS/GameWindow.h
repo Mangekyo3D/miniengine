@@ -52,8 +52,9 @@ class GameWindow
 		bool queryExtension(const char *, const char *);
 		//void saveGLScreenShot();
 
-		CSignal <ResizeEvent&> onResize;
-		CSignal <KeyEvent&>    onKey;
+		CSignal <ResizeEvent&>        onResize;
+		CSignal <KeyEvent&>           onKey;
+		CSignal <MouseWheelEvent&>    onMouseWheel;
 
 	protected:
 	private:

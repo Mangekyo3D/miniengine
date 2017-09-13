@@ -68,6 +68,11 @@ void Engine::startup(SCommandLineOptions& options)
 		}
 	});
 
+	m_gameWindow->onMouseWheel.connect(this, [this] (MouseWheelEvent& event)
+	{
+		m_inputState.accelarateTick = event.ticks;
+	});
+
 	m_gameWindow->maximize();
 
 	m_audioDevice = std::make_unique <CNullAudioDevice>();
@@ -187,6 +192,12 @@ bool Engine::handleUserInput()
 	if(m_inputState.deccelaratePressed)
 	{
 	}
+	if (m_inputState.accelarateTick != 0)
+	{
+		float throttle = pow(1.1f, m_inputState.accelarateTick);
+		player->accelerate(throttle);
+		m_inputState.accelarateTick = 0;
+	}
 
 	return true;
 }
@@ -197,6 +208,7 @@ void Engine::SUserInputState::reset()
 	firePressed = false;
 	accelaratePressed = false;
 	deccelaratePressed = false;
+	accelarateTick = 0;
 	leftPressed = false;
 	rightPressed = false;
 	upPressed = false;
