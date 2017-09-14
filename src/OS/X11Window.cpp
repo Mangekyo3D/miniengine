@@ -155,6 +155,16 @@ void X11Window::handleOSEvents()
 					case Button2:
 						event.key = KeyEvent::EKey::eRightMouse;
 						break;
+
+					case Button4:
+					case Button5:
+					{
+						MouseWheelEvent wheelEvent;
+						wheelEvent.ticks = (buttonPressEvent.button == Button4) ? 1 : -1;
+
+						onMouseWheel(wheelEvent);
+						return;
+					}
 				}
 
 				onKey(event);

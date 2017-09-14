@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iostream>
 #include "worldentity.h"
+#include <cmath>
 
 /// To be removed once proper controller abstraction is in place
 #include "plane.h"
