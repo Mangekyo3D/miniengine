@@ -137,6 +137,13 @@ Matrix34::Matrix34(const Quaternion& q, const Vec3& position)
 	position.getData(m_data + 9);
 }
 
+Matrix34::Matrix34(const Quaternion& q, float scale, const Vec3& position)
+	: Matrix34(Matrix33(q, scale))
+{
+	position.getData(m_data + 9);
+}
+
+
 Vec3 Matrix34::getColumn(int column) const
 {
 	return Vec3(m_data + column * 3);
@@ -160,9 +167,16 @@ void Matrix34::invertFast()
 
 Matrix33::Matrix33()
 {
+	m_data[0] = m_data[4] = m_data[8] = 1.0f;
+	m_data[1] = m_data[2] = m_data[3] =
+	m_data[5] = m_data[6] = m_data[7] = 0.0f;
+}
+
+Matrix33::Matrix33(Matrix33& m)
+{
 	for (int i = 0; i < 9; ++i)
 	{
-		m_data[i] = (i % 4 == 0) ? 1.0f : 0.0f;
+		m_data[i] = m.m_data[i];
 	}
 }
 
@@ -206,6 +220,42 @@ Matrix33::Matrix33(const Quaternion& q)
 	m_data[8] = 1.0f - 2.0f * xx - 2.0f * yy;
 }
 
+Matrix33::Matrix33(float scale)
+{
+	m_data[0] = m_data[4] = m_data[8] = scale;
+	m_data[1] = m_data[2] = m_data[3] =
+	m_data[5] = m_data[6] = m_data[7] = 0.0f;
+}
+
+Matrix33::Matrix33(const Quaternion& q, float scale)
+{
+	float xw = q.x() * q.w();
+	float yw = q.y() * q.w();
+	float zw = q.z() * q.w();
+	float xy = q.x() * q.y();
+	float zy = q.z() * q.y();
+	float xz = q.z() * q.x();
+	float xx = q.x() * q.x();
+	float yy = q.y() * q.y();
+	float zz = q.z() * q.z();
+
+	m_data[0] = scale * (1.0f - 2.0f * yy - 2.0f * zz);
+	m_data[1] = scale * (2.0f * xy + 2.0f * zw);
+	m_data[2] = scale * (2.0f * xz - 2.0f * yw);
+
+	m_data[3] = scale * (2.0f * xy - 2.0f * zw);
+	m_data[4] = scale * (1.0f - 2.0f * xx - 2.0f * zz);
+	m_data[5] = scale * (2.0f * zy + 2.0f * xw);
+
+	m_data[6] = scale * (2.0f * xz + 2.0f * yw);
+	m_data[7] = scale * (2.0f * zy - 2.0f * xw);
+	m_data[8] = scale * (1.0f - 2.0f * xx - 2.0f * yy);
+}
+
+Vec3 Matrix33::getColumn(int column) const
+{
+	return Vec3(m_data + column * 3);
+}
 
 Matrix33::Matrix33(const Matrix44& m)
 {
@@ -323,9 +373,14 @@ void Matrix33::transpose()
 
 Vec3 Matrix33::operator * (const Vec3& v)
 {
-	return Vec3(m_data[0] * v.x() + m_data[3] * v.y() + m_data[6] * v.z(),
-				m_data[1] * v.x() + m_data[4] * v.y() + m_data[7] * v.z(),
-				m_data[2] * v.x() + m_data[5] * v.y() + m_data[8] * v.z());
+	return getColumn(0) * v.x() + getColumn(1) * v.y() + getColumn(2) * v.z();
+}
+
+Matrix33 Matrix33::operator *(const Matrix33& m)
+{
+	return Matrix33(*this * m.getColumn(0),
+				*this * m.getColumn(1),
+				*this * m.getColumn(2));
 }
 
 

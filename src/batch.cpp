@@ -119,3 +119,8 @@ void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 		device.glDisable(GL_PRIMITIVE_RESTART);
 	}
 }
+
+void CBatch::addMeshInstance(MeshInstanceData& instance)
+{
+	m_instance_data.push_back(instance);
+}

@@ -48,7 +48,13 @@ Vec3::Vec3(float x, float y, float z)
 	, m_y(y)
 	, m_z(z)
 {
+}
 
+Vec3::Vec3(const Vec3& v)
+	: m_x(v.m_x)
+	, m_y(v.m_y)
+	, m_z(v.m_z)
+{
 }
 
 Vec3::Vec3(const float* data)
@@ -145,6 +151,21 @@ void Vec3::operator += (const Vec3& v)
 	m_y += v.y();
 	m_z += v.z();
 }
+
+Vec3 Vec3::operator *(float fac)
+{
+	Vec3 result(*this);
+	result *= fac;
+	return result;
+}
+
+Vec3 Vec3::operator + (const Vec3& v)
+{
+	Vec3 result(*this);
+	result += v;
+	return result;
+}
+
 
 struct Vec3IntegerPack
 {

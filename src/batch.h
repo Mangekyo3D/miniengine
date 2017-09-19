@@ -45,7 +45,7 @@ struct Mesh {
 
 class MeshInstanceData {
 	private:
-		float modelMatrix[16];
+		float modelMatrix[12];
 };
 
 class CBatch {
@@ -53,6 +53,7 @@ class CBatch {
 		CBatch(Mesh *, Material *);
 		~CBatch();
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID);
+		void addMeshInstance(MeshInstanceData& instance);
 
 		std::vector <MeshInstanceData> m_instance_data;
 

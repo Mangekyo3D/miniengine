@@ -15,6 +15,7 @@ set (SRC
 	device.cpp
 	program.cpp
 	gpubuffer.cpp
+	resourcemanager.cpp
 )
 
 set (INC
@@ -33,6 +34,7 @@ set (INC
 	SMDmodel.h
 	worldentity.h
 	worldtile.h
+	resourcemanager.h
 	)
 
 set (SHADER_SRC
@@ -61,4 +63,3 @@ elseif (WIN32)
 endif()
 
 target_link_libraries(shooter ${LIBS} OS Util)
-

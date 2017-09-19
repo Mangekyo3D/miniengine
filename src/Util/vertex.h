@@ -23,6 +23,7 @@ class Vec3
 {
 public:
 	Vec3();
+	Vec3(const Vec3&);
 	Vec3(float x, float y, float z);
 	Vec3(const float* data);
 
@@ -40,6 +41,9 @@ public:
 	Vec3 operator -();
 	void operator -= (const Vec3& v);
 	void operator += (const Vec3& v);
+
+	Vec3 operator *(float fac);
+	Vec3 operator + (const Vec3& v);
 
 	operator uint32_t ();
 

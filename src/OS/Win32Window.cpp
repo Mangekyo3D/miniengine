@@ -101,7 +101,7 @@ Win32Window::CWindowClass::CWindowClass()
 	m_class.hCursor = LoadCursor(NULL, IDC_ARROW);
 	m_class.hbrBackground = nullptr;
 	m_class.lpszMenuName = nullptr;
-	m_class.lpszClassName = "VulkanExample";
+	m_class.lpszClassName = "SpacePiratesCls";
 
 	RegisterClass(&m_class);
 }
@@ -121,7 +121,7 @@ template <class T> T initWGLfunction(T& f, const char *function)
 
 Win32Window::Win32Window(bool bDebugContext)
 {
-	m_hWnd = CreateWindow(m_wndClass.getName(), "Vulkan Example",
+	m_hWnd = CreateWindow(m_wndClass.getName(), "Space Pirates",
 						  WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), this);
 
 	HWND dummyWin = CreateWindow(m_wndClass.getName(), "Dummy Window",

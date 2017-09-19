@@ -13,7 +13,7 @@ WorldEntity::~WorldEntity()
 {
 }
 
-Vec3 WorldEntity::getPosition() 
+Vec3 WorldEntity::getPosition()
 {
 	return m_position; 
 }
@@ -31,11 +31,17 @@ void WorldEntity::setRotation(Quaternion q)
 	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
 }
 
+void WorldEntity::setScale(float scale)
+{
+	m_scale = scale;
+	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
+}
+
 Matrix34& WorldEntity::getObjectToWorldMatrix()
 {
 	if (m_flags & eInvalidWorldTransform)
 	{
-		m_objectToWorldMatrix = Matrix34(m_rotation, m_position);
+		m_objectToWorldMatrix = Matrix34(m_rotation, m_scale, m_position);
 		m_flags &= ~eInvalidWorldTransform;
 	}
 

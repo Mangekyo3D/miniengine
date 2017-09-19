@@ -57,6 +57,7 @@ public:
 	Matrix34(const Matrix33& m);
 	Matrix34(const Matrix34& m);
 	Matrix34(const Quaternion& q, const Vec3& position);
+	Matrix34(const Quaternion& q, float scale, const Vec3& position);
 
 	const float* getConstData() const {return m_data;}
 	float* getData() {return m_data;}
@@ -74,12 +75,17 @@ class Matrix33
 {
 public:
 	Matrix33();
+	Matrix33(Matrix33& m);
 	Matrix33(const Vec3& v1, const Vec3& v2, const Vec3& v3);
 	Matrix33(const Matrix44& m);
 	Matrix33(const Matrix34& m);
 	Matrix33(const Quaternion& q);
+	Matrix33(float scale);
+	Matrix33(const Quaternion& q, float scale);
 
 	const float* getData() const { return m_data; }
+	Vec3 getColumn(int column) const;
+
 	// those two functions assume that matrix is orthogonal
 	void invertFast();
 	void orthonormalizeFast();
@@ -90,6 +96,7 @@ public:
 	void transpose();
 
 	Vec3 operator * (const Vec3& v);
+	Matrix33 operator * (const Matrix33& m);
 
 	static Matrix33 generateRotation(float angle, Vec3 axis);
 	static Matrix33 generateScale(float x, float y, float z);

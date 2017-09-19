@@ -2,6 +2,8 @@
 #include "bitmap.h"
 #include "ALcontext.h"
 
+class CBatch;
+
 class Plane : public WorldEntity
 {
 	public:
@@ -22,6 +24,8 @@ class Plane : public WorldEntity
 
 		static void initializeSound();
 		static void cleanUpSound();
+
+		static CBatch* s_batch;
 
 	private:
 		bool  m_gun;

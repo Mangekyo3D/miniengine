@@ -117,10 +117,10 @@ float WorldTile::getHeightAt(float x, float y)
 	float dx = x - gx;
 	float dy = y - gy;
 
-	if(gx == m_resolution)
-		gx--;
-	if(gy == m_resolution)
-		gy--;
+	if (gx == m_resolution)
+		--gx;
+	if (gy == m_resolution)
+		--gy;
 
 	if(dy + dx < 1)
 	{

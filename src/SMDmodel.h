@@ -1,19 +1,22 @@
 #pragma once
+#include "Util/vertex.h"
+#include <vector>
+#include <memory>
+#include "batch.h"
 
 class SMDModel
 {
 	public:
-		SMDModel(): m_vertexData(0), m_indexData(0), m_vertexBufferID(0), m_indexBufferID(0) {}
+		SMDModel() {}
 		~SMDModel();
-		void openFromFile(const char *,float scale = 1.0f);
-		unsigned int prepareVertexBuffer();
-		void render();
+		bool openFromFile(const char *);
+		bool prepareVertexBuffer();
 
 	private:
-		float* m_vertexData;
-		float* m_normalData;
-		float* m_texCoords;
-		unsigned int* m_indexData;
+		std::vector <Vec3>     m_vertexData;
+		std::vector <Vec3>     m_normalData;
+		std::vector <Vec2>     m_texCoords;
+		std::vector <uint16_t> m_indexData;
 
 		bool m_bUseTexture;
 
@@ -21,9 +24,7 @@ class SMDModel
 		unsigned int m_samplerId;
 
 		int floatsPerVertex;
-		unsigned int m_vertexBufferID;
-		unsigned int m_indexBufferID;
 
-		unsigned long m_numOfVertices;
-		unsigned long m_numOfIndices;
+		std::unique_ptr <Mesh> m_mesh;
+		std::unique_ptr <Material> m_material;
 };

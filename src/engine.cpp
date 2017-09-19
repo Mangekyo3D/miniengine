@@ -88,30 +88,17 @@ void Engine::enterGameLoop()
 
 	while (true)
 	{
+		// 60 fps timing
+		while ((clock() - time) / static_cast<double> (CLOCKS_PER_SEC) < 0.016)
+			;
+		time = clock();
+
 		m_gameWindow->handleOSEvents();
 
 		if (!handleUserInput())
 		{
 			break;
 		}
-
-		// 60 fps timing
-		while ((clock() - time) / static_cast<double> (CLOCKS_PER_SEC) < 0.016)
-			;
-		time = clock();
-
-		/* doAI */
-
-		// set up camera for the frame
-		Matrix34 playerEntityTransform = m_playerEntity->getObjectToWorldMatrix();
-
-		m_camera.setPosition(m_playerEntity->getPosition() - 3.0f * playerEntityTransform.getColumn(1));
-		m_camera.lookAtWorldPosition(m_playerEntity->getPosition(), playerEntityTransform.getColumn(2));
-
-		m_renderer.updateFrameUniforms(m_camera);
-		m_renderer.drawFrame();
-
-		m_gameWindow->swapBuffers();
 
 		/* handle physics */
 		for(int i = static_cast<int> (m_worldEntities.size()) - 1; i >= 0; --i)
@@ -139,6 +126,17 @@ void Engine::enterGameLoop()
 				m_effects.pop_back();
 			}
 		}
+
+		// set up camera for the frame
+		Matrix34 playerEntityTransform = m_playerEntity->getObjectToWorldMatrix();
+
+		m_camera.setPosition(m_playerEntity->getPosition() - 3.0f * playerEntityTransform.getColumn(1));
+		m_camera.lookAtWorldPosition(m_playerEntity->getPosition(), playerEntityTransform.getColumn(2));
+
+		m_renderer.updateFrameUniforms(m_camera);
+		m_renderer.drawFrame();
+
+		m_gameWindow->swapBuffers();
 
 		if (!m_audioDevice->checkStatus())
 		{

@@ -9,8 +9,7 @@ class Bitmap
 			, length(0)
 			, width(0)
 			, height(0)
-		{
-		};
+		{}
 		~Bitmap() { delete [] data; }
 		bool CreateFromFile(const char *);
 		const char *getData() {return data;}

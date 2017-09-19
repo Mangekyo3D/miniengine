@@ -6,13 +6,21 @@
 #include "worldtile.h"
 #include <cmath>
 #include "engine.h"
+#include "resourcemanager.h"
 
 //ALuint Plane::buffer;
 //ALuint Plane::engineBuf;
 
+CBatch* Plane::s_batch = nullptr;
+
 Plane::Plane()
 	: Plane(Vec3(0.0f, 0.0f, 0.0f))
 {
+	if (!s_batch)
+	{
+		SMDModel* model = ResourceManager::get().loadModel("plane2.smd");
+		setScale(0.01f);
+	}
 }
 
 
@@ -72,7 +80,6 @@ void Plane::setColor(float *initColor)
 
 void Plane::draw()
 {
-	extern SMDModel planeModel;
 
 	/*
 	matrix44 mbase(xright, heading, up);

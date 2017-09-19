@@ -10,9 +10,6 @@
 #include "engine.h"
 #include <cstring>
 
-// Control specific
-SMDModel planeModel;
-
 //const Vec4 noonColor(0.3, 0.6, 0.7, 1.0);
 //const vec4 duskColor(0.5, 0.2, 0.1, 1.0);
 //const vec4 nightColor(0.15, 0.15, 0.3, 1.0);
@@ -81,8 +78,6 @@ int main(int argc, char** argv)
 
 void CreateLists()
 {
-	planeModel.openFromFile("models/plane2.smd", 0.01f);
-
 	/*
 #define GRASS_SCALE 0.5
 	//The ground
