@@ -48,6 +48,7 @@ public:
 	operator uint32_t ();
 
 	float normalize();
+	Vec3 getNormalized();
 	float length();
 
 private:

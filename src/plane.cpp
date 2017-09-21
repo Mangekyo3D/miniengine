@@ -13,17 +13,6 @@
 
 CBatch* Plane::s_batch = nullptr;
 
-Plane::Plane()
-	: Plane(Vec3(0.0f, 0.0f, 0.0f))
-{
-	if (!s_batch)
-	{
-		SMDModel* model = ResourceManager::get().loadModel("plane2.smd");
-		setScale(0.01f);
-	}
-}
-
-
 Plane::Plane(Vec3 initPos)
 {
 	m_position = initPos;
@@ -36,6 +25,18 @@ Plane::Plane(Vec3 initPos)
 	m_speed = 0.01f;
 	m_shootDelay = 0;
 	m_gun = true;
+
+	if (!s_batch)
+	{
+		SMDModel* model = ResourceManager::get().loadModel("plane2.smd");
+		if (model)
+		{
+			s_batch = model->getBatch();
+		}
+	}
+
+	setScale(0.01f);
+
 	/*
 	alGenSources(1, &m_soundSource);
 	alGenSources(1, &m_engineSource);
@@ -78,26 +79,6 @@ void Plane::setColor(float *initColor)
 	}
 }
 
-void Plane::draw()
-{
-
-	/*
-	matrix44 mbase(xright, heading, up);
-	glPushMatrix();
-		glTranslatef(position.x, position.y, position.z);
-		glMultMatrixf(mbase.data);
-		glPushAttrib(GL_LIGHTING_BIT);
-		glColor3fv(color);
-		GLfloat pspecular[] = {1.0, 1.0, 1.0, 0.0};
-
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pspecular);
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0);
-		planeModel.render();
-		glPopAttrib();
-	glPopMatrix();
-	*/
-}
-
 void Plane::accelerate(float throttle)
 {
 	m_speed *= throttle;
@@ -123,8 +104,8 @@ void Plane::fire()
 
 	auto worldMat = getObjectToWorldMatrix();
 
-	Vec3 xDir = worldMat.getColumn(0);
-	Vec3 heading = worldMat.getColumn(1);
+	Vec3 xDir = worldMat.getColumn(0).getNormalized();
+	Vec3 heading = worldMat.getColumn(1).getNormalized();
 
 	Vec3 weaponOffset = (m_gun == true) ? (0.05f *xDir) : (-0.05f * xDir);
 
@@ -154,7 +135,7 @@ void Plane::update()
 	float ground = tile.getHeightAt(m_position.x(), m_position.y());
 
 	auto worldMat = getObjectToWorldMatrix();
-	Vec3 heading = worldMat.getColumn(1);
+	Vec3 heading = worldMat.getColumn(1).getNormalized();
 
 	Vec3 position = m_position + m_speed * heading;
 	if(position.z() < ground)
@@ -182,6 +163,14 @@ void Plane::update()
 	alSourcefv(m_engineSource, AL_POSITION, (float *)&m_position);
 	alSourcefv(m_engineSource, AL_VELOCITY, (float*)&thead);
 */
+
+	if (s_batch)
+	{
+		MeshInstanceData data;
+		Matrix44 modelMatrix = getObjectToWorldMatrix();
+		modelMatrix.getData(data.modelMatrix);
+		s_batch->addMeshInstance(data);
+	}
 }
 
 void Plane::roll(float froll)
@@ -205,9 +194,9 @@ void Plane::calculateAIpathfinding(Plane &target)
 
 	Vec3 d = target.getPosition() - m_position;
 	float l = d.normalize();
-	float di = dot(d, worldMat.getColumn(0));
-	float dj = dot(d, worldMat.getColumn(1));
-	float dk = dot(d, worldMat.getColumn(2));
+	float di = dot(d, worldMat.getColumn(0).getNormalized());
+	float dj = dot(d, worldMat.getColumn(1).getNormalized());
+	float dk = dot(d, worldMat.getColumn(2).getNormalized());
 
 	if(dj >= 0.95f && l < 5.0f)
 	{

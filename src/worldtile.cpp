@@ -1,7 +1,9 @@
 #include "worldtile.h"
 #include "Util/perlin.h"
 #include "Util/vertex.h"
+#include "Util/matrix.h"
 #include "renderer.h"
+#include "resourcemanager.h"
 
 WorldTile::WorldTile(uint16_t resolution)
 	: m_resolution(resolution)
@@ -15,11 +17,23 @@ WorldTile::~WorldTile()
 }
 
 
-void WorldTile::setup_draw_operations(Renderer *renderer)
+void WorldTile::setup_draw_operations()
 {
-	m_material = std::make_unique <Material> ("generic");
+	Renderer& renderer = Renderer::get();
 
-	renderer->add_mesh_instance(&m_mesh, m_material.get());
+	if (!m_batch)
+	{
+		Material* material = ResourceManager::get().loadMaterial("generic");
+		m_batch = renderer.add_mesh_instance(&m_mesh, material);
+	}
+
+	MeshInstanceData data;
+	// identity matrix by default
+	Matrix44 modelMatrix;
+	modelMatrix.getData(data.modelMatrix);
+
+	m_batch->addMeshInstance(data);
+
 }
 
 void WorldTile::generateProcedural()
@@ -117,10 +131,27 @@ float WorldTile::getHeightAt(float x, float y)
 	float dx = x - gx;
 	float dy = y - gy;
 
-	if (gx == m_resolution)
-		--gx;
-	if (gy == m_resolution)
-		--gy;
+	if (gx >= m_resolution)
+	{
+		gx = m_resolution - 2;
+		dx = 1.0f;
+	}
+	else if (gx < 0)
+	{
+		gx = 0;
+		dx = 0;
+	}
+
+	if (gy >= m_resolution)
+	{
+		gy = m_resolution - 2;
+		dy = 1.0f;
+	}
+	else if (gy < 0)
+	{
+		gy = 0;
+		dy = 0;
+	}
 
 	if(dy + dx < 1)
 	{

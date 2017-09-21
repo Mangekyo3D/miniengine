@@ -6,9 +6,8 @@
 #include <iostream>
 #include "worldentity.h"
 #include <cmath>
-
-/// To be removed once proper controller abstraction is in place
 #include "plane.h"
+#include "resourcemanager.h"
 
 Engine Engine::s_engine;
 
@@ -24,33 +23,27 @@ Engine::~Engine()
 void Engine::startup(SCommandLineOptions& options)
 {
 	auto& factory = OSFactory::get();
+	Renderer& renderer = Renderer::get();
 
 	m_gameWindow = factory.createGameWindow(options.bDebugContext);
-	m_renderer.initialize(*m_gameWindow, options.bDebugContext);
+	renderer.initialize(*m_gameWindow, options.bDebugContext);
 
-	m_gameWindow->onResize.connect(this, [this] (ResizeEvent& event)
+	m_gameWindow->onResize.connect(this, [this, &renderer] (ResizeEvent& event)
 	{
 		m_camera.setViewport(event.width, event.height, 0.1f, 100.0f, 30.0f);
-		m_renderer.setViewport(event.width, event.height);
+		renderer.setViewport(event.width, event.height);
 	});
 
 	m_gameWindow->onKey.connect(this, [this] (KeyEvent& event)
 	{
 		bool pressed = event.type == KeyEvent::EType::ePress;
 
-		switch (event.key) {
+		switch (event.key)
+		{
 			case KeyEvent::EKey::eSpace:
 			case KeyEvent::EKey::eLeftMouse:
 				m_inputState.firePressed = pressed;
 				break;
-/*
-			case KeyEvent::EKey::eLeftMouse:
-				m_inputState.accelaratePressed = pressed;
-				break;
-			case KeyEvent::EKey::eLeftMouse:
-				m_inputState.deccelaratePressed = pressed;
-				break;
-*/
 			case KeyEvent::EKey::eAKey:
 				m_inputState.leftPressed = pressed;
 				break;
@@ -83,8 +76,7 @@ void Engine::enterGameLoop()
 {
 	unsigned int time = 0;
 
-	/* startup, create world */
-	m_currentWorldTile.setup_draw_operations(&m_renderer);
+	Renderer& renderer = Renderer::get();
 
 	while (true)
 	{
@@ -128,13 +120,16 @@ void Engine::enterGameLoop()
 		}
 
 		// set up camera for the frame
+		/* startup, create world */
+		m_currentWorldTile.setup_draw_operations();
+
 		Matrix34 playerEntityTransform = m_playerEntity->getObjectToWorldMatrix();
 
-		m_camera.setPosition(m_playerEntity->getPosition() - 3.0f * playerEntityTransform.getColumn(1));
-		m_camera.lookAtWorldPosition(m_playerEntity->getPosition(), playerEntityTransform.getColumn(2));
+		m_camera.setPosition(m_playerEntity->getPosition() - playerEntityTransform.getColumn(1).getNormalized());
+		m_camera.lookAtWorldPosition(m_playerEntity->getPosition(), playerEntityTransform.getColumn(2).getNormalized());
 
-		m_renderer.updateFrameUniforms(m_camera);
-		m_renderer.drawFrame();
+		renderer.updateFrameUniforms(m_camera);
+		renderer.drawFrame();
 
 		m_gameWindow->swapBuffers();
 
@@ -144,10 +139,13 @@ void Engine::enterGameLoop()
 		}
 	}
 
+	ResourceManager& resourceManager = ResourceManager::get();
+	resourceManager.cleanup();
+
 	m_effects.clear();
 	m_worldEntities.clear();
 
-	m_renderer.shutdown();
+	renderer.shutdown();
 }
 
 void Engine::setPlayerEntity(WorldEntity* entity)

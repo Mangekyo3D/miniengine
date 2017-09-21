@@ -2,7 +2,9 @@
 #include "Util/vertex.h"
 #include <vector>
 #include <memory>
-#include "batch.h"
+
+class CBatch;
+struct Mesh;
 
 class SMDModel
 {
@@ -10,9 +12,11 @@ class SMDModel
 		SMDModel() {}
 		~SMDModel();
 		bool openFromFile(const char *);
-		bool prepareVertexBuffer();
+		CBatch* getBatch();
 
 	private:
+		bool prepareVertexBuffer();
+
 		std::vector <Vec3>     m_vertexData;
 		std::vector <Vec3>     m_normalData;
 		std::vector <Vec2>     m_texCoords;
@@ -20,11 +24,6 @@ class SMDModel
 
 		bool m_bUseTexture;
 
-		unsigned int m_imageId;
-		unsigned int m_samplerId;
-
-		int floatsPerVertex;
-
 		std::unique_ptr <Mesh> m_mesh;
-		std::unique_ptr <Material> m_material;
+		CBatch* m_batch = nullptr;
 };

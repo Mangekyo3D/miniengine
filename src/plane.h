@@ -7,7 +7,6 @@ class CBatch;
 class Plane : public WorldEntity
 {
 	public:
-		Plane();
 		Plane(Vec3);
 		~Plane();
 
@@ -17,7 +16,6 @@ class Plane : public WorldEntity
 		void pitch(float fpitch);
 		void roll(float froll);
 		void accelerate(float throttle);
-		void draw();
 		Vec3& getPosition(void);
 		void update() override;
 		void calculateAIpathfinding(Plane &);

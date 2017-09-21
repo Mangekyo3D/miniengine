@@ -14,10 +14,14 @@ struct Mesh;
 class Renderer
 {
 public:
-	Renderer();
 	~Renderer();
+	Renderer(const Renderer&) = delete;
+	Renderer& operator = (const Renderer&) = delete;
+
+	static Renderer& get() { return s_renderer; }
+
 	void initialize(GameWindow&, bool bDebugContext);
-	void add_mesh_instance(Mesh*, Material *);
+	CBatch* add_mesh_instance(Mesh*, Material *);
 	void updateFrameUniforms(Camera& camera);
 	void drawFrame();
 	void setViewport(uint32_t width, uint32_t height);
@@ -25,6 +29,9 @@ public:
 	void shutdown();
 
 private:
+	Renderer();
+	static Renderer s_renderer;
+
 	/* batches that will be sent to GPU for rendering */
 	std::vector <std::unique_ptr<CBatch> > m_batches;
 	std::unique_ptr <IDevice> m_device;

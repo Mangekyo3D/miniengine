@@ -51,7 +51,6 @@ private:
 	std::unique_ptr <GameWindow>        m_gameWindow;
 	std::unique_ptr <CAudioDevice>      m_audioDevice;
 
-	Renderer                            m_renderer;
 	WorldTile                           m_currentWorldTile;
 
 	std::vector <std::unique_ptr<Effect> >      m_effects;

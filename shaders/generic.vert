@@ -2,10 +2,11 @@
 
 in layout(location=0) vec4 ivPos;
 in layout(location=1) vec3 ivNormal;
+in layout(location=2) mat4 imWorldFromModel;
 
 layout (std140, binding = 0) uniform TransformBlock
 {
-	mat4 mViewFromModel;
+	mat4 mViewFromWorld;
 	mat4 mClipFromView;
 	mat3 mNormal;
 } transform;
@@ -17,7 +18,9 @@ out INTERFACE
 
 void main()
 {
-	vec4 vViewPos = transform.mViewFromModel * ivPos;
+	vec4 vWorldPos = imWorldFromModel * ivPos;
+	vec4 vViewPos = transform.mViewFromWorld * vWorldPos;
+
 	gl_Position = transform.mClipFromView * vViewPos;
 	vs_out.vNormal = transform.mNormal * ivNormal;
 }

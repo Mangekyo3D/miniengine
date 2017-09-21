@@ -10,7 +10,7 @@ class Material {
 		~Material();
 
 		void bind();
-		void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf);
+		void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
 
 	private:
 		Program m_program;
@@ -43,23 +43,29 @@ struct Mesh {
 };
 
 
-class MeshInstanceData {
-	private:
-		float modelMatrix[12];
+struct MeshInstanceData {
+	float modelMatrix[16];
 };
 
 class CBatch {
 	public:
 		CBatch(Mesh *, Material *);
 		~CBatch();
+
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID);
 		void addMeshInstance(MeshInstanceData& instance);
-
-		std::vector <MeshInstanceData> m_instance_data;
+		bool hasInstances() { return m_instanceData.size() > 0; }
 
 	private:
+		void setupInstanceBuffer();
+
+		std::vector <MeshInstanceData> m_instanceData;
 		Mesh* m_mesh;
 		Material* m_material;
 		uint32_t m_vertexBuffer;
 		uint32_t m_indexBuffer;
+		// attributes that are specific to a certain instance
+		uint32_t m_instanceBuffer;
+		// number of instances that fit in the instance buffer
+		uint32_t m_numInstances;
 };

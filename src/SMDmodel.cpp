@@ -2,7 +2,9 @@
 #include <memory>
 #include "SMDmodel.h"
 #include "bitmap.h"
-#include "cdevice.h"
+#include "renderer.h"
+#include "resourcemanager.h"
+#include "batch.h"
 
 using namespace std;
 
@@ -33,13 +35,11 @@ bool SMDModel::openFromFile(const char *filename)
 	inputFile.read((char *)&numOfMeshes, sizeof(unsigned long));
 	inputFile.read((char *)&bFileHasTexCoords, sizeof(bool));
 
-	// set to false temporarily while we get everything else working first
-	bFileHasTexCoords = false;
 	if(bFileHasTexCoords)
 	{
 		m_bUseTexture = true;
 		string path = "textures/";
-		Bitmap texture;
+		//Bitmap texture;
 		unsigned long pathLength;
 		inputFile.read((char *)&pathLength, sizeof(unsigned long));
 		unique_ptr <char> buffer(new char [pathLength+1]);
@@ -47,19 +47,19 @@ bool SMDModel::openFromFile(const char *filename)
 		*(buffer.get()+pathLength) = '\0';
 		path += buffer.get();
 
-		if(!texture.CreateFromFile(path.c_str()))
-		{
-			m_bUseTexture = false;
-		}
-		else
-		{
-			auto device = IDevice::get <CDevice>();
-			device.glCreateTextures(GL_TEXTURE_2D, 1, &m_imageId);
-			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		}
+//		if(!texture.CreateFromFile(path.c_str()))
+//		{
+//			m_bUseTexture = false;
+//		}
+//		else
+//		{
+//			auto device = IDevice::get <CDevice>();
+//			device.glCreateTextures(GL_TEXTURE_2D, 1, &m_imageId);
+//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//		}
 	}
 
 	uint32_t numOfVertices;
@@ -68,8 +68,6 @@ bool SMDModel::openFromFile(const char *filename)
 
 	m_vertexData.reserve(numOfVertices);
 	m_normalData.reserve(numOfVertices);
-
-	floatsPerVertex = (m_bUseTexture)? 8 : 6;
 
 	if (bFileHasTexCoords && m_bUseTexture)
 	{
@@ -84,7 +82,7 @@ bool SMDModel::openFromFile(const char *filename)
 		inputFile.read(reinterpret_cast<char *> (data), 3 * sizeof(float));
 		m_normalData.emplace_back(data);
 
-		if(bFileHasTexCoords){
+		if(bFileHasTexCoords) {
 			inputFile.read(reinterpret_cast<char *> (data), 2 * sizeof(float));
 
 			if (m_bUseTexture)
@@ -113,6 +111,18 @@ bool SMDModel::openFromFile(const char *filename)
 	return true;
 }
 
+CBatch* SMDModel::getBatch()
+{
+	if (!m_batch)
+	{
+		Renderer& renderer = Renderer::get();
+		Material* material = ResourceManager::get().loadMaterial("generic");
+		m_batch = renderer.add_mesh_instance(m_mesh.get(), material);
+	}
+
+	return m_batch;
+}
+
 SMDModel::~SMDModel()
 {
 }
@@ -120,7 +130,6 @@ SMDModel::~SMDModel()
 bool SMDModel::prepareVertexBuffer()
 {
 	m_mesh = std::make_unique <Mesh> (static_cast <uint32_t> (m_vertexData.size()), static_cast <uint32_t> (m_indexData.size()));
-	m_material = std::make_unique <Material> ("generic");
 
 	for(uint32_t i = 0, totalVerts = static_cast <uint32_t> (m_vertexData.size()); i < totalVerts; ++i)
 	{

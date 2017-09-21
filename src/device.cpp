@@ -31,6 +31,8 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 
 	this->glEnable = ::glEnable;
 	this->glDisable = ::glDisable;
+	this->glClear = ::glClear;
+	this->glClearDepth = ::glClearDepth;
 
 	INITFUNCTION(glDrawArrays)
 
@@ -49,6 +51,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glCreateSamplers)
 	INITFUNCTION(glSamplerParameteri)
 	INITFUNCTION(glDrawRangeElements)
+	INITFUNCTION(glDrawElementsInstanced)
 
 	INITFUNCTION(glEnableVertexArrayAttrib)
 	INITFUNCTION(glDisableVertexArrayAttrib)
@@ -93,6 +96,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glVertexArrayAttribBinding)
 	INITFUNCTION(glVertexArrayVertexBuffer)
 	INITFUNCTION(glVertexArrayElementBuffer)
+	INITFUNCTION(glVertexArrayBindingDivisor)
 
 	INITFUNCTION(glPrimitiveRestartIndex)
 
@@ -124,6 +128,19 @@ void CDevice::clearFramebuffer(bool bDepth)
 	{
 		glClearNamedFramebufferfi(0, GL_DEPTH_STENCIL, 0, 1.0f, 0);
 	}
+
+// Use this to get correct display on renderdoc
+//	glClearColor(vClearColor[0], vClearColor[1], vClearColor[2], vClearColor[3]);
+
+//	if (bDepth)
+//	{
+//		glClearDepth(1.0);
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	}awd
+//	else
+//	{
+//		glClear(GL_COLOR_BUFFER_BIT);
+//	}
 
 	glEnable(GL_DEPTH_TEST);
 }

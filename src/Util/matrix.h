@@ -42,6 +42,7 @@ public:
 	Matrix44();
 	Matrix44(const Matrix34& m);
 	const float* getData() const {return m_data;}
+	void getData(float* rdata) const;
 
 	static Matrix44 generatePerspective(float nearPlane, float farPlane, float aspect, float fov);
 

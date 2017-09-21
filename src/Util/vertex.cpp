@@ -106,6 +106,13 @@ float Vec3::normalize()
 	return l;
 }
 
+Vec3 Vec3::getNormalized()
+{
+	Vec3 result(*this);
+	result.normalize();
+	return result;
+}
+
 
 
 Vec3 cross(const Vec3& v1, const Vec3& v2)

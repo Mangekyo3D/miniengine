@@ -19,6 +19,8 @@ struct LightUniformBuffer
 	Vec3 lightDir;
 };
 
+Renderer Renderer::s_renderer;
+
 Renderer::Renderer ()
 {
 }
@@ -35,9 +37,10 @@ Renderer::~Renderer()
 	m_cameraUniform.reset();
 }
 
-void Renderer::add_mesh_instance(Mesh *mesh, Material *material)
+CBatch* Renderer::add_mesh_instance(Mesh *mesh, Material *material)
 {
 	m_batches.push_back(std::make_unique <CBatch> (mesh, material));
+	return m_batches.back().get();
 }
 
 void Renderer::updateFrameUniforms(Camera& camera)
@@ -91,7 +94,10 @@ void Renderer::drawFrame()
 	/* draw all batches */
 	for (auto& batch : m_batches)
 	{
-		batch->draw(m_cameraUniform->getID(), m_lightUniform->getID());
+		if (batch->hasInstances())
+		{
+			batch->draw(m_cameraUniform->getID(), m_lightUniform->getID());
+		}
 	}
 
 	/*

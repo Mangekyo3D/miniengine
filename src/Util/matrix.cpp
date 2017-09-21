@@ -97,6 +97,14 @@ Matrix44::Matrix44(const Matrix34 &m)
 	m_data[15] = 1.0f;
 }
 
+void Matrix44::getData(float* rdata) const
+{
+	for (int i = 0; i < 16; ++i)
+	{
+		rdata[i] = m_data[i];
+	}
+}
+
 Matrix34::Matrix34()
 {
 	for (int i = 0; i < 12; ++i)
