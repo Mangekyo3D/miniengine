@@ -88,6 +88,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glUnmapNamedBuffer)
 	INITFUNCTION(glNamedBufferStorage)
 	INITFUNCTION(glMapNamedBufferRange)
+	INITFUNCTION(glInvalidateBufferSubData)
 
 	INITFUNCTION(glCreateVertexArrays)
 	INITFUNCTION(glBindVertexArray)

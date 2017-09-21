@@ -129,6 +129,7 @@ void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 	auto device = IDevice::get <CDevice>();
 	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraUniformID);
 	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightUniformID);
+	device.glEnable(GL_CULL_FACE);
 
 	if (m_mesh->m_bEnablePrimRestart)
 	{
@@ -139,6 +140,7 @@ void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_mesh->m_primType),static_cast <GLint> (m_mesh->m_indices.size()),
 								   GL_UNSIGNED_SHORT, nullptr, static_cast <GLint> (m_instanceData.size()));
 
+	device.glDisable(GL_CULL_FACE);
 	if (m_mesh->m_bEnablePrimRestart)
 	{
 		device.glDisable(GL_PRIMITIVE_RESTART);
@@ -156,6 +158,7 @@ void CBatch::setupInstanceBuffer()
 {
 	auto device = IDevice::get <CDevice>();
 
+	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
 	{
 		device.glDeleteBuffers(1, &m_instanceBuffer);
@@ -165,10 +168,12 @@ void CBatch::setupInstanceBuffer()
 	if (m_instanceBuffer == 0)
 	{
 		device.glCreateBuffers(1, &m_instanceBuffer);
-		device.glNamedBufferStorage(m_instanceBuffer, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data(), 0);
+		device.glNamedBufferStorage(m_instanceBuffer, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data(), GL_DYNAMIC_STORAGE_BIT);
 	}
 	else
 	{
+		// invalidate first so that we avoid locking here
+		device.glInvalidateBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size());
 		device.glNamedBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data());
 	}
 }
