@@ -16,7 +16,7 @@ bool SMDModel::openFromFile(const char *filename)
 		return false;
 	}
 
-	long numOfMeshes;
+	uint32_t numOfMeshes;
 	bool bFileHasTexCoords = false;
 
 	m_vertexData.clear();
@@ -32,18 +32,18 @@ bool SMDModel::openFromFile(const char *filename)
 	inputFile.read(&majorVersion, sizeof(char));
 	inputFile.read(&minorVersion, sizeof(char));
 
-	inputFile.read((char *)&numOfMeshes, sizeof(unsigned long));
-	inputFile.read((char *)&bFileHasTexCoords, sizeof(bool));
+	inputFile.read(reinterpret_cast<char *> (&numOfMeshes), sizeof(uint32_t));
+	inputFile.read(reinterpret_cast<char *> (&bFileHasTexCoords), sizeof(bool));
 
 	if(bFileHasTexCoords)
 	{
 		m_bUseTexture = true;
 		string path = "textures/";
 		//Bitmap texture;
-		unsigned long pathLength;
-		inputFile.read((char *)&pathLength, sizeof(unsigned long));
-		unique_ptr <char> buffer(new char [pathLength+1]);
-		inputFile.read((char *)buffer.get(), pathLength*sizeof(char));
+		uint32_t pathLength;
+		inputFile.read(reinterpret_cast<char *> (&pathLength), sizeof(uint32_t));
+		unique_ptr <char []> buffer(new char [pathLength+1]);
+		inputFile.read(reinterpret_cast<char *> (buffer.get()), pathLength*sizeof(char));
 		*(buffer.get()+pathLength) = '\0';
 		path += buffer.get();
 
@@ -64,7 +64,7 @@ bool SMDModel::openFromFile(const char *filename)
 
 	uint32_t numOfVertices;
 
-	inputFile.read((char *)&numOfVertices, sizeof(numOfVertices));
+	inputFile.read(reinterpret_cast<char *> (&numOfVertices), sizeof(numOfVertices));
 
 	m_vertexData.reserve(numOfVertices);
 	m_normalData.reserve(numOfVertices);

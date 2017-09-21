@@ -54,5 +54,5 @@ std::string X11PathUtils::getModelPath() const
 		return "\\";
 	}
 
-	return pathStr.substr(0, pos) + "/shaders/";
+	return pathStr.substr(0, pos) + "/models/";
 }
