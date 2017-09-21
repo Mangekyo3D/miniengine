@@ -84,6 +84,7 @@ CBatch::CBatch(Mesh *m, Material *ma)
 	: m_mesh(m)
 	, m_material(ma)
 	, m_instanceBuffer(0)
+	, m_numInstances(0)
 {
 	auto device = IDevice::get <CDevice>();
 
@@ -92,8 +93,6 @@ CBatch::CBatch(Mesh *m, Material *ma)
 
 	device.glCreateBuffers(1, &m_indexBuffer);
 	device.glNamedBufferStorage(m_indexBuffer, sizeof(uint16_t) * m_mesh->m_indices.size(), m_mesh->m_indices.data(), 0);
-
-	m_numInstances = 0;
 }
 
 CBatch::~CBatch()
@@ -169,6 +168,7 @@ void CBatch::setupInstanceBuffer()
 	{
 		device.glCreateBuffers(1, &m_instanceBuffer);
 		device.glNamedBufferStorage(m_instanceBuffer, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data(), GL_DYNAMIC_STORAGE_BIT);
+		m_numInstances = static_cast <uint32_t> (m_instanceData.size());
 	}
 	else
 	{
