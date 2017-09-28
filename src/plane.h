@@ -1,6 +1,7 @@
 #include "worldentity.h"
 #include "bitmap.h"
 #include "ALcontext.h"
+#include "controller.h"
 
 class CBatch;
 
@@ -18,7 +19,6 @@ class Plane : public WorldEntity
 		void accelerate(float throttle);
 		Vec3& getPosition(void);
 		void update() override;
-		void calculateAIpathfinding(Plane &);
 
 		static void initializeSound();
 		static void cleanUpSound();
@@ -36,6 +36,26 @@ class Plane : public WorldEntity
 		//ALuint m_engineSource;
 		//static ALuint buffer;
 		//static ALuint engineBuf;
+};
+
+class PlaneAIController : public Controller
+{
+	public:
+		PlaneAIController(Plane* plane);
+		void update() override;
+
+	private:
+		Plane* m_plane;
+};
+
+class PlanePlayerController : public Controller
+{
+	public:
+		PlanePlayerController(Plane* plane);
+		void update() override;
+
+	private:
+		Plane* m_plane;
 };
 
 

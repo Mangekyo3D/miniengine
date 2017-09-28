@@ -57,15 +57,18 @@ int main(int argc, char** argv)
 
 	auto p1 = std::make_unique <Plane>(Vec3(32, 3, 1.0));
 	auto p2 = std::make_unique <Plane>(Vec3(32, 61, 11.0));
+
+	auto controller1 = std::make_unique <PlanePlayerController>(p1.get());
+	auto controller2 = std::make_unique <PlaneAIController>(p2.get());
+
 	p1->setColor(plane1color);
 	p2->setColor(plane2color);
-	p2->accelerate(0.02f);
 
-	WorldEntity* player = p1.get();
-
+	engine.setPlayerEntity(p1.get());
 	engine.addWorldEntity(std::move(p1));
 	engine.addWorldEntity(std::move(p2));
-	engine.setPlayerEntity(player);
+	engine.addController(std::move(controller1));
+	engine.addController(std::move(controller2));
 
 	/* program main loop */
 	engine.enterGameLoop();

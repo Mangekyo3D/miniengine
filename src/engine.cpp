@@ -93,6 +93,11 @@ void Engine::enterGameLoop()
 		}
 
 		/* handle physics */
+		for(auto& controller : m_controllers)
+		{
+			controller->update();
+		}
+
 		for(int i = static_cast<int> (m_worldEntities.size()) - 1; i >= 0; --i)
 		{
 			if (m_worldEntities[i]->getActive())

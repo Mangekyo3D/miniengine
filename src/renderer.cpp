@@ -77,7 +77,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 		lightDir.normalize();
 
 		pBuffer->color[0] = 1.0f;
-		pBuffer->color[1] = 0.8f;
+		pBuffer->color[1] = 1.0f;
 		pBuffer->color[2] = 1.0f;
 		pBuffer->color[3] = 1.0f;
 

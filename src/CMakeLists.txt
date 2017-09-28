@@ -35,6 +35,7 @@ set (INC
 	worldentity.h
 	worldtile.h
 	resourcemanager.h
+	controller.h
 	)
 
 set (SHADER_SRC

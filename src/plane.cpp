@@ -82,7 +82,7 @@ void Plane::setColor(float *initColor)
 void Plane::accelerate(float throttle)
 {
 	m_speed *= throttle;
-	if(m_speed <= 0.0f)
+	if(m_speed <= 0.01f)
 		m_speed = 0.01f;
 	if(m_speed > 0.11f)
 		m_speed = 0.11f;
@@ -187,51 +187,6 @@ void Plane::pitch(float fpitch)
 	m_rotation.normalize();
 }
 
-void Plane::calculateAIpathfinding(Plane &target)
-{
-	//find other plane and chase it
-	auto worldMat = getObjectToWorldMatrix();
-
-	Vec3 d = target.getPosition() - m_position;
-	float l = d.normalize();
-	float di = dot(d, worldMat.getColumn(0).getNormalized());
-	float dj = dot(d, worldMat.getColumn(1).getNormalized());
-	float dk = dot(d, worldMat.getColumn(2).getNormalized());
-
-	if(dj >= 0.95f && l < 5.0f)
-	{
-		fire();
-	}
-	if(dj < 0.0f && l < 5.0f)
-	{
-		accelerate(0.01f);
-	}
-	else if(dj < 0.95f && l < 4.0f)
-	{
-		accelerate(-0.01f);
-	}
-	else {
-		accelerate(0.01f);
-	}
-
-	if (di > 0.01f)
-	{
-		roll(0.05f);
-	}
-	else if (di < -0.01f)
-	{
-		roll(-0.05f);
-	}
-	else if (dk > 0.01f || dj < 0.0f)
-	{
-		pitch(0.05f);
-	}
-	else if (dk < -0.01f)
-	{
-		pitch(-0.05f);
-	}
-}
-
 Bullet::Bullet()
 	: m_bActive(false)
 {
@@ -253,7 +208,8 @@ void Bullet::draw()
 	float l1pos[] = {m_position.x(), m_position.y(), m_position.z(), 1.0f};
 	if (m_bActive)
 	{
-		/*		glDisable(GL_LIGHTING);
+		/*
+		glDisable(GL_LIGHTING);
 		glColor3f(1.0, 0.7, 0.3);
 		glBegin(GL_LINES);
 			glVertex3f(position.x, position.y, position.z);
@@ -326,4 +282,74 @@ void Plane::cleanUpSound()
 {
 	//	alDeleteBuffers(1, &buffer);
 	//	alDeleteBuffers(1, &engineBuf);
+}
+
+PlaneAIController::PlaneAIController(Plane* plane)
+	: m_plane(plane)
+{
+}
+
+void PlaneAIController::update()
+{
+	//find other plane and chase it
+	auto& engine = Engine::get();
+	auto worldMat = m_plane->getObjectToWorldMatrix();
+
+	auto& target = engine.getPlayerEntity();
+
+	Vec3 vToTarget = target.getPosition() - m_plane->getPosition();
+	float l = vToTarget.normalize();
+	float di = dot(vToTarget, worldMat.getColumn(0).getNormalized());
+	float dj = dot(vToTarget, worldMat.getColumn(1).getNormalized());
+	float dk = dot(vToTarget, worldMat.getColumn(2).getNormalized());
+
+	if(dj >= 0.95f && l < 5.0f)
+	{
+		m_plane->fire();
+	}
+
+	// acceleration
+	float throttle = 1;
+	if(dj < 0.0f && l < 5.0f)
+	{
+		throttle = pow(1.1f, 1);
+	}
+	else if(dj < 0.95f && l < 4.0f)
+	{
+		throttle = pow(1.1f, -1);
+	}
+	else {
+		throttle = pow(1.1f, 1);
+	}
+	m_plane->accelerate(throttle);
+
+	// roll
+	if (di > 0.01f)
+	{
+		m_plane->roll(0.05f);
+	}
+	else if (di < -0.01f)
+	{
+		m_plane->roll(-0.05f);
+	}
+
+	// pitch
+	if (dk > 0.01f || dj < 0.0f)
+	{
+		m_plane->pitch(0.05f);
+	}
+	else if (dk < -0.01f)
+	{
+		m_plane->pitch(-0.05f);
+	}
+}
+
+PlanePlayerController::PlanePlayerController(Plane* plane)
+	: m_plane(plane)
+{
+}
+
+void PlanePlayerController::update()
+{
+
 }
