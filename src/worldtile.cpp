@@ -47,12 +47,14 @@ void WorldTile::generateProcedural()
 		{
 			unsigned int index = i * m_resolution + j;
 
-			float fHeight = static_cast <float> (
-					8.0 * Perlin::noise(i/ 16.0, j/16.0, 0) +
-					4.0 * Perlin::noise(i/ 8.0, j/8.0, 1) +
-					2.0 * Perlin::noise(i/ 4.0, j/4.0, 2) +
-					1.0 * Perlin::noise(i/ 2.0, j/2.0, 3)
-					);
+			float fHeight = 0.0f;
+			uint16_t divisor = m_resolution / 2;
+
+			while (divisor > 0)
+			{
+				fHeight += static_cast <float> (0.25f * divisor * Perlin::noise(static_cast <float> (i) / divisor, static_cast <float> (j) / divisor, 0));
+				divisor >>= 1;
+			}
 
 			m_mesh.m_vertices[index].vertex = Vec3(static_cast <float> (i), static_cast <float> (j), fHeight);
 		}

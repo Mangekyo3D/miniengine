@@ -10,10 +10,10 @@ template <typename ...T> class CSignal
 		void connect(intptr_t id, std::function <void(T...)> func)
 		{
 			auto iter = std::find_if(m_observers.begin(), m_observers.end(),
-			    [id] (const Observer& obs) -> bool
-			    {
-				    return obs.id == id;
-			    }
+				[id] (const Observer& obs) -> bool
+				{
+					return obs.id == id;
+				}
 			);
 
 			if (iter != m_observers.end())

@@ -240,11 +240,13 @@ Matrix33::Matrix33(const Quaternion& q, float scale)
 	float xw = q.x() * q.w();
 	float yw = q.y() * q.w();
 	float zw = q.z() * q.w();
+
 	float xy = q.x() * q.y();
+	float yy = q.y() * q.y();
 	float zy = q.z() * q.y();
+
 	float xz = q.z() * q.x();
 	float xx = q.x() * q.x();
-	float yy = q.y() * q.y();
 	float zz = q.z() * q.z();
 
 	m_data[0] = scale * (1.0f - 2.0f * yy - 2.0f * zz);

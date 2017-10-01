@@ -17,4 +17,5 @@ void main()
 {
 	vec3 normal = normalize(vs_in.vNormal);
 	cColor = lighting.cColor * vec4 (dot(normal, lighting.lightDir));
+//	cColor = 0.5f * vec4(normal, 1.0f) + vec4(0.5f);
 }
