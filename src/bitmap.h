@@ -1,27 +1,25 @@
 #pragma once
+#include <stdint.h>
+#include <memory>
 
 class Bitmap
 {
 	public:
 		Bitmap() 
-			:data(0)
-			, format(0)
-			, length(0)
-			, width(0)
-			, height(0)
+			: m_data(0)
+			, m_length(0)
+			, m_width(0)
+			, m_height(0)
 		{}
-		~Bitmap() { delete [] data; }
-		bool CreateFromFile(const char *);
-		const char *getData() {return data;}
-		int getFormat() { return format; }
-		int getLength() { return length; }
-		int getWidth() { return width; }
-		int getHeight() { return height; }
+		bool openFromFile(const char *);
+		const uint8_t* getData() {return m_data.get();}
+		uint32_t getLength() { return m_length; }
+		uint32_t getWidth() { return m_width; }
+		uint32_t getHeight() { return m_height; }
 
 	private:
-		char *data;
-		int format;
-		long length;
-		int width;
-		int height;
+		std::unique_ptr<uint8_t []> m_data;
+		uint32_t m_length;
+		uint32_t m_width;
+		uint32_t m_height;
 };

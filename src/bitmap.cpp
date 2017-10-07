@@ -1,6 +1,5 @@
 #include "bitmap.h"
 #include <fstream>
-#include "glcorearb.h"
 #include <iostream>
 
 using namespace std;
@@ -31,10 +30,12 @@ typedef struct tagBITMAPINFOHEADER{
 	DWORD	biClrUsed;
 	DWORD	biClrImportant;
 } BITMAPINFOHEADER,*LPBITMAPINFOHEADER,*PBITMAPINFOHEADER;
+#else
+#include <windows.h>
 #endif
 
 
-bool Bitmap::CreateFromFile(const char *fileName)
+bool Bitmap::openFromFile(const char *fileName)
 {
 	ifstream file;
 	BITMAPFILEHEADER fileHeader;
@@ -46,31 +47,36 @@ bool Bitmap::CreateFromFile(const char *fileName)
 		cout << fileName << " not found!" << endl;
 		return false;
 	}
+	// this spells trouble, different compilers will align members and structs differently. seekg might help if members are quasi aligned the same
 	file.read((char *)&fileHeader, sizeof(BITMAPFILEHEADER));
-//	file.seekg(14);
+	file.seekg(14);
 	file.read((char *)&infoHeader, sizeof(BITMAPINFOHEADER));
 
-	cout << infoHeader.biSize << endl;
-	cout << infoHeader.biWidth << endl;
-	cout << infoHeader.biHeight << endl;
+	m_width = infoHeader.biWidth;
+	m_height = infoHeader.biHeight;
+	m_length = m_width * m_height * 3;
 
-
-	width = infoHeader.biWidth;
-	height = infoHeader.biHeight;
-	length = width * height * 3;
-
-	if((length == 0) || !(data = new char[length]))
+	if(m_length == 0)
 	{
-		cout << "Empty image. Length read: " <<length << endl;
-		width = 0;
-		height = 0;
+		cout << "Empty image. Length read: " << m_length << endl;
+		m_width = 0;
+		m_height = 0;
+		return false;
+	}
+
+	m_data.reset(new uint8_t[m_length]);
+
+	if (m_data.get() == nullptr)
+	{
+		cout << "Error during allocation: " << m_length << endl;
+		m_width = 0;
+		m_height = 0;
 		return false;
 	}
 
 	//fill the bitmap in the memory
-	file.read(data, length);
+	file.read(reinterpret_cast<char*> (m_data.get()), m_length);
 
 	file.close();
-	format = GL_BGR;
 	return true;
 }

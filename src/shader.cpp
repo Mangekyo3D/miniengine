@@ -60,9 +60,7 @@ bool Shader::compile()
 		return true;
 	}
 
-	auto& utils =  OSUtils::get();
-	std::string finalFilename = utils.getShaderPath() + m_filename;
-	std::ifstream file(finalFilename);
+	std::ifstream file(m_filename);
 
 	if (file)
 	{
@@ -110,7 +108,7 @@ bool Shader::compile()
 	}
 	else
 	{
-		std::cout << "shader file: " << finalFilename << " is missing" << std::endl;
+		std::cout << "shader file: " << m_filename << " is missing" << std::endl;
 	}
 
 	return false;

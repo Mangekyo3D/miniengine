@@ -21,7 +21,7 @@ bool SMDModel::openFromFile(const char *filename)
 
 	m_vertexData.clear();
 	m_normalData.clear();
-	m_texCoords.clear();
+	m_texCoordData.clear();
 
 	m_indexData.clear();
 
@@ -38,28 +38,15 @@ bool SMDModel::openFromFile(const char *filename)
 	if(bFileHasTexCoords)
 	{
 		m_bUseTexture = true;
-		string path = "textures/";
+
 		//Bitmap texture;
 		uint32_t pathLength;
 		inputFile.read(reinterpret_cast<char *> (&pathLength), sizeof(uint32_t));
-		unique_ptr <char []> buffer(new char [pathLength+1]);
+		std::unique_ptr <char []> buffer(new char [pathLength+1]);
 		inputFile.read(reinterpret_cast<char *> (buffer.get()), pathLength*sizeof(char));
-		*(buffer.get()+pathLength) = '\0';
-		path += buffer.get();
+		buffer.get()[pathLength] = '\0';
 
-//		if(!texture.CreateFromFile(path.c_str()))
-//		{
-//			m_bUseTexture = false;
-//		}
-//		else
-//		{
-//			auto device = IDevice::get <CDevice>();
-//			device.glCreateTextures(GL_TEXTURE_2D, 1, &m_imageId);
-//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//			device.glSamplerParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//		}
+		m_textures.push_back(ResourceManager::get().loadTexture(buffer.get()));
 	}
 
 	uint32_t numOfVertices;
@@ -71,7 +58,7 @@ bool SMDModel::openFromFile(const char *filename)
 
 	if (bFileHasTexCoords && m_bUseTexture)
 	{
-		m_texCoords.reserve(numOfVertices);
+		m_texCoordData.reserve(numOfVertices);
 	}
 
 	for (uint32_t i = 0; i < numOfVertices; ++i)
@@ -87,7 +74,7 @@ bool SMDModel::openFromFile(const char *filename)
 
 			if (m_bUseTexture)
 			{
-				m_texCoords.emplace_back(data);
+				m_texCoordData.emplace_back(data);
 			}
 		}
 	}
@@ -116,8 +103,18 @@ CBatch* SMDModel::getBatch()
 	if (!m_batch)
 	{
 		Renderer& renderer = Renderer::get();
-		Material* material = ResourceManager::get().loadMaterial("generic");
-		m_batch = renderer.add_mesh_instance(m_mesh.get(), material);
+		Material* material;
+		if (m_texCoordData.size() > 0)
+		{
+			material = ResourceManager::get().loadMaterial("genericTextured");
+		}
+		else
+		{
+			material = ResourceManager::get().loadMaterial("generic");
+		}
+
+		auto newBatch = std::make_unique <CBatch> (m_mesh.get(), material, m_textures);
+		m_batch = renderer.addNewBatch(std::move(newBatch));
 	}
 
 	return m_batch;
@@ -129,17 +126,39 @@ SMDModel::~SMDModel()
 
 bool SMDModel::prepareVertexBuffer()
 {
-	m_mesh = std::make_unique <Mesh> (static_cast <uint32_t> (m_vertexData.size()), static_cast <uint32_t> (m_indexData.size()));
-
-	for(uint32_t i = 0, totalVerts = static_cast <uint32_t> (m_vertexData.size()); i < totalVerts; ++i)
+	if (m_texCoordData.size() > 0)
 	{
-		VertexFormatVN& vertex = m_mesh->m_vertices[i];
+		auto mesh = std::make_unique <Mesh <VertexFormatVNT>> (static_cast <uint32_t> (m_vertexData.size()), static_cast <uint32_t> (m_indexData.size()));
 
-		vertex.vertex = m_vertexData[i];
-		vertex.normal = m_normalData[i];
+		for(uint32_t i = 0, totalVerts = static_cast <uint32_t> (m_vertexData.size()); i < totalVerts; ++i)
+		{
+			VertexFormatVNT& vertex = mesh->m_vertices[i];
+
+			vertex.vertex = m_vertexData[i];
+			vertex.normal = m_normalData[i];
+			vertex.texCoord = m_texCoordData[i];
+		}
+
+		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
+
+		m_mesh = std::move(mesh);
 	}
+	else
+	{
+		auto mesh = std::make_unique <Mesh <VertexFormatVN>> (static_cast <uint32_t> (m_vertexData.size()), static_cast <uint32_t> (m_indexData.size()));
 
-	m_mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
+		for(uint32_t i = 0, totalVerts = static_cast <uint32_t> (m_vertexData.size()); i < totalVerts; ++i)
+		{
+			VertexFormatVN& vertex = mesh->m_vertices[i];
+
+			vertex.vertex = m_vertexData[i];
+			vertex.normal = m_normalData[i];
+		}
+
+		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
+
+		m_mesh = std::move(mesh);
+	}
 
 	return true;
 }

@@ -1,45 +1,108 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <memory>
 #include "Util/vertex.h"
 #include "program.h"
 
+class CTexture;
+
+// material descriptor wraps and sets up all data needed for a shader
+class IMaterialDescriptor
+{
+	public:
+		virtual ~IMaterialDescriptor() {}
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) = 0;
+};
+
+class GenericMaterialDescriptor : public IMaterialDescriptor
+{
+	public:
+		GenericMaterialDescriptor();
+		virtual ~GenericMaterialDescriptor();
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
+
+	private:
+		uint32_t m_vertexArrayObject;
+};
+
+class TexturedMaterialDescriptor : public IMaterialDescriptor
+{
+	public:
+		TexturedMaterialDescriptor();
+		virtual ~TexturedMaterialDescriptor();
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
+
+	private:
+		uint32_t m_vertexArrayObject;
+		uint32_t m_sampler;
+};
+
 class Material {
 	public:
-		Material(std::string name);
-		~Material();
+		Material(std::string shaderFileName, std::unique_ptr <IMaterialDescriptor> descriptor);
 
+		IMaterialDescriptor& getDescriptor() { return *m_descriptor.get();}
 		void bind();
-		void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
 
 	private:
 		Program m_program;
-
-		uint32_t m_vertexArrayObject;
+		std::unique_ptr <IMaterialDescriptor> m_descriptor;
 };
 
 /* Mesh - one material per vertex buffer */
 struct VertexFormatVN
 {
-	Vec3 vertex;
+	Vec3     vertex;
 	uint32_t normal;
 };
 
-struct Mesh {
-		enum class EPrimitiveType
+struct VertexFormatVNT
+{
+	Vec3     vertex;
+	uint32_t normal;
+	Vec2     texCoord;
+};
+
+struct IMesh
+{
+	enum class EPrimitiveType
+	{
+		eTriangles,
+		eTriangleStrip
+	};
+
+	IMesh()
+		: m_primType(EPrimitiveType::eTriangles)
+		, m_bEnablePrimRestart(false)
+	{
+	}
+
+	virtual size_t getVertexSize() = 0;
+	virtual size_t getNumVertices() = 0;
+	virtual void* getVertices() = 0;
+	virtual size_t getNumIndices() = 0;
+	virtual void* getIndices() = 0;
+
+	EPrimitiveType m_primType;
+	bool m_bEnablePrimRestart;
+};
+
+template <class T> struct Mesh : public IMesh {
+		size_t getVertexSize() override {return sizeof(T);}
+		size_t getNumVertices() override {return m_vertices.size(); }
+		void* getVertices() override {return m_vertices.data(); }
+		size_t getNumIndices() override {return m_indices.size(); }
+		void* getIndices() override {return m_indices.data(); }
+
+		Mesh(uint32_t nov, uint32_t noi)
+			: m_vertices(nov)
+			, m_indices(noi)
 		{
-			eTriangles,
-			eTriangleStrip
-		};
+		}
 
-		Mesh(uint32_t, uint32_t);
-		~Mesh();
-
-		std::vector <VertexFormatVN> m_vertices;
+		std::vector <T> m_vertices;
 		std::vector <uint16_t> m_indices;
-
-		EPrimitiveType m_primType;
-		bool m_bEnablePrimRestart;
 };
 
 
@@ -49,7 +112,7 @@ struct MeshInstanceData {
 
 class CBatch {
 	public:
-		CBatch(Mesh *, Material *);
+		CBatch(IMesh *, Material *, const std::vector<CTexture*> &);
 		~CBatch();
 
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID);
@@ -60,7 +123,10 @@ class CBatch {
 		void setupInstanceBuffer();
 
 		std::vector <MeshInstanceData> m_instanceData;
-		Mesh* m_mesh;
+		std::vector <CTexture*> m_textures;
+		bool m_bEnablePrimRestart;
+		size_t m_numIndices;
+		IMesh::EPrimitiveType m_primType;
 		Material* m_material;
 		uint32_t m_vertexBuffer;
 		uint32_t m_indexBuffer;

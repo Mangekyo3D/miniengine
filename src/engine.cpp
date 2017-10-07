@@ -24,9 +24,11 @@ void Engine::startup(SCommandLineOptions& options)
 {
 	auto& factory = OSFactory::get();
 	Renderer& renderer = Renderer::get();
+	ResourceManager& resourceManager = ResourceManager::get();
 
 	m_gameWindow = factory.createGameWindow(options.bDebugContext);
 	renderer.initialize(*m_gameWindow, options.bDebugContext);
+	resourceManager.initialize();
 
 	m_gameWindow->onResize.connect(this, [this, &renderer] (ResizeEvent& event)
 	{
@@ -76,6 +78,7 @@ void Engine::enterGameLoop()
 {
 	unsigned int time = 0;
 
+	ResourceManager& resourceManager = ResourceManager::get();
 	Renderer& renderer = Renderer::get();
 
 	while (true)
@@ -144,7 +147,6 @@ void Engine::enterGameLoop()
 		}
 	}
 
-	ResourceManager& resourceManager = ResourceManager::get();
 	resourceManager.cleanup();
 
 	m_effects.clear();

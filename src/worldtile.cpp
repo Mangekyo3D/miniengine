@@ -23,8 +23,12 @@ void WorldTile::setup_draw_operations()
 
 	if (!m_batch)
 	{
-		Material* material = ResourceManager::get().loadMaterial("generic");
-		m_batch = renderer.add_mesh_instance(&m_mesh, material);
+		std::vector <CTexture*> textures;
+		textures.push_back(ResourceManager::get().loadTexture("grass.bmp"));
+		Material* material = ResourceManager::get().loadMaterial("genericTextured");
+
+		auto newBatch = std::make_unique <CBatch> (&m_mesh, material, textures);
+		m_batch = renderer.addNewBatch(std::move(newBatch));
 	}
 
 	MeshInstanceData data;
@@ -38,7 +42,7 @@ void WorldTile::setup_draw_operations()
 
 void WorldTile::generateProcedural()
 {
-	m_mesh.m_primType = Mesh::EPrimitiveType::eTriangleStrip;
+	m_mesh.m_primType = IMesh::EPrimitiveType::eTriangleStrip;
 	m_mesh.m_bEnablePrimRestart = true;
 
 	for (int i = 0; i < m_resolution; ++i)
@@ -57,6 +61,7 @@ void WorldTile::generateProcedural()
 			}
 
 			m_mesh.m_vertices[index].vertex = Vec3(static_cast <float> (i), static_cast <float> (j), fHeight);
+			m_mesh.m_vertices[index].texCoord = Vec2(static_cast <float> (i), static_cast <float> (j));
 		}
 	}
 

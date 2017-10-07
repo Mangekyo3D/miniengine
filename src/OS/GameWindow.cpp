@@ -1,5 +1,4 @@
 #include "GameWindow.h"
-#include "../glcorearb.h"
 #include <cstring>
 #include <fstream>
 
@@ -46,8 +45,7 @@ bool GameWindow::queryExtension(const char *extName, const char *extensionList)
     return GL_FALSE;
     */
 
-	//rewrite for gl 4.1
-	return GL_FALSE;
+	return false;
 }
 
 /*

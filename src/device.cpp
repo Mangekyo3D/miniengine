@@ -48,8 +48,16 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glCreateProgramPipelines)
 
 	INITFUNCTION(glCreateTextures)
+	INITFUNCTION(glDeleteTextures)
 	INITFUNCTION(glCreateSamplers)
+	INITFUNCTION(glDeleteSamplers)
 	INITFUNCTION(glSamplerParameteri)
+	INITFUNCTION(glTextureStorage2D)
+	INITFUNCTION(glTextureSubImage2D)
+	INITFUNCTION(glGenerateTextureMipmap)
+	INITFUNCTION(glBindTextureUnit)
+	INITFUNCTION(glBindSampler)
+
 	INITFUNCTION(glDrawRangeElements)
 	INITFUNCTION(glDrawElementsInstanced)
 
@@ -115,7 +123,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	s_device = this;
 }
 
-void CDevice::drawBatch(CBatch& batch)
+void CDevice::drawBatch(IBatch& batch)
 {
 }
 

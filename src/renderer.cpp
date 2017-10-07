@@ -37,9 +37,9 @@ Renderer::~Renderer()
 	m_cameraUniform.reset();
 }
 
-CBatch* Renderer::add_mesh_instance(Mesh *mesh, Material *material)
+CBatch* Renderer::addNewBatch(std::unique_ptr<CBatch> batch)
 {
-	m_batches.push_back(std::make_unique <CBatch> (mesh, material));
+	m_batches.push_back(std::move (batch));
 	return m_batches.back().get();
 }
 

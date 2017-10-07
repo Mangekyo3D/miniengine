@@ -212,10 +212,9 @@ void Bullet::draw()
 		glDisable(GL_LIGHTING);
 		glColor3f(1.0, 0.7, 0.3);
 		glBegin(GL_LINES);
-			glVertex3f(position.x, position.y, position.z);
-			glVertex3f(position.x + 0.5*heading.x
-				, position.y + 0.5*heading.y,
-				position.z + 0.5*heading.z);
+			Vec3 lastPos = m_position + (heading * 0.5f);
+			glVertex3fv(m_position.getData());
+			glVertex3fv(lastPos.getData());
 		glEnd();
 		glEnable(GL_LIGHTING);
 		glLightfv(GL_LIGHT1, GL_POSITION, l1pos);*/

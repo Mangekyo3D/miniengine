@@ -9,7 +9,8 @@ class Camera;
 class CGPUBuffer;
 class CBatch;
 class Material;
-struct Mesh;
+struct IMesh;
+class CTexture;
 
 class Renderer
 {
@@ -21,7 +22,7 @@ public:
 	static Renderer& get() { return s_renderer; }
 
 	void initialize(GameWindow&, bool bDebugContext);
-	CBatch* add_mesh_instance(Mesh*, Material *);
+	CBatch* addNewBatch(std::unique_ptr<CBatch> batch);
 	void updateFrameUniforms(Camera& camera);
 	void drawFrame();
 	void setViewport(uint32_t width, uint32_t height);

@@ -1,6 +1,7 @@
 #pragma once
 #include "device.h"
 #define GL_GLEXT_PROTOTYPES
+#define NOMINMAX
 #include "glcorearb.h"
 
 class CDevice : public IDevice
@@ -8,7 +9,7 @@ class CDevice : public IDevice
 public:
 	CDevice(GameWindow& win, bool bDebugContext);
 
-	void drawBatch(CBatch& batch) override;
+	void drawBatch(IBatch& batch) override;
 	void clearFramebuffer(bool bDepth) override;
 	void setViewport(uint32_t width, uint32_t height) override;
 
@@ -45,8 +46,15 @@ public:
 	PFNGLUNIFORM1FPROC glUniform1f;
 
 	PFNGLCREATETEXTURESPROC glCreateTextures;
+	PFNGLDELETETEXTURESPROC glDeleteTextures;
 	PFNGLCREATESAMPLERSPROC glCreateSamplers;
+	PFNGLDELETESAMPLERSPROC glDeleteSamplers;
 	PFNGLSAMPLERPARAMETERIPROC glSamplerParameteri;
+	PFNGLTEXTURESTORAGE2DPROC glTextureStorage2D;
+	PFNGLTEXTURESUBIMAGE2DPROC glTextureSubImage2D;
+	PFNGLGENERATETEXTUREMIPMAPPROC glGenerateTextureMipmap;
+	PFNGLBINDTEXTUREUNITPROC   glBindTextureUnit;
+	PFNGLBINDSAMPLERPROC       glBindSampler;
 
 	PFNGLCREATEFRAMEBUFFERSPROC glCreateFramebuffers;
 	PFNGLCREATERENDERBUFFERSPROC glCreateRenderbuffers;

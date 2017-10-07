@@ -16,6 +16,7 @@ set (SRC
 	program.cpp
 	gpubuffer.cpp
 	resourcemanager.cpp
+	texture.cpp
 )
 
 set (INC
@@ -36,11 +37,14 @@ set (INC
 	worldtile.h
 	resourcemanager.h
 	controller.h
+	texture.h
 	)
 
 set (SHADER_SRC
 	${CMAKE_SOURCE_DIR}/shaders/generic.vert
 	${CMAKE_SOURCE_DIR}/shaders/generic.frag
+	${CMAKE_SOURCE_DIR}/shaders/genericTextured.vert
+	${CMAKE_SOURCE_DIR}/shaders/genericTextured.frag
 	)
 
 add_subdirectory(OS)

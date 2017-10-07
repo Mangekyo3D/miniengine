@@ -20,6 +20,7 @@ class OSUtils
 	public:
 		virtual std::string getShaderPath() const = 0;
 		virtual std::string getModelPath() const = 0;
+		virtual std::string getTexturePath() const = 0;
 
 		static const OSUtils& get();
 

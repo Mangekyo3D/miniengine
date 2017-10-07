@@ -1,11 +1,10 @@
 #include "effect.h"
-#include "glcorearb.h"
 
 using namespace std;
 /*
 ALuint Explosion::soundBuffer;
 */
-GLuint Explosion::texture[3];
+uint32_t Explosion::texture[3];
 
 Explosion::Explosion(Vec3 l)
 	: Effect(l)
