@@ -5,9 +5,9 @@
 using namespace std;
 
 #ifndef WIN32
-typedef unsigned short WORD;
-typedef unsigned long DWORD;
-typedef long LONG;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef int32_t LONG;
 
 typedef struct tagBITMAPFILEHEADER {
 	WORD	bfType;
@@ -47,10 +47,28 @@ bool Bitmap::openFromFile(const char *fileName)
 		cout << fileName << " not found!" << endl;
 		return false;
 	}
+#define READMEMBER(member) \
+	file.read((char *)&member, sizeof(member));
+
+
 	// this spells trouble, different compilers will align members and structs differently. seekg might help if members are quasi aligned the same
-	file.read((char *)&fileHeader, sizeof(BITMAPFILEHEADER));
-	file.seekg(14);
-	file.read((char *)&infoHeader, sizeof(BITMAPINFOHEADER));
+	READMEMBER(fileHeader.bfType)
+	READMEMBER(fileHeader.bfSize)
+	READMEMBER(fileHeader.bfReserved1)
+	READMEMBER(fileHeader.bfReserved2)
+	READMEMBER(fileHeader.bfOffBits)
+
+	READMEMBER(infoHeader.biSize)
+	READMEMBER(infoHeader.biWidth)
+	READMEMBER(infoHeader.biHeight)
+	READMEMBER(infoHeader.biPlanes)
+	READMEMBER(infoHeader.biBitCount)
+	READMEMBER(infoHeader.biCompression)
+	READMEMBER(infoHeader.biSizeImage)
+	READMEMBER(infoHeader.biXPelsPerMeter)
+	READMEMBER(infoHeader.biYPelsPerMeter)
+	READMEMBER(infoHeader.biClrUsed)
+	READMEMBER(infoHeader.biClrImportant)
 
 	m_width = infoHeader.biWidth;
 	m_height = infoHeader.biHeight;
