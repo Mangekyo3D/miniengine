@@ -122,7 +122,7 @@ void X11Window::getClientSize(uint32_t& width, uint32_t& height)
 
 void X11Window::handleOSEvents()
 {
-	if (XPending(m_display))
+	while (XPending(m_display))
 	{
 		XEvent e;
 		XNextEvent (m_display, &e);
