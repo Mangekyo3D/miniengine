@@ -162,7 +162,7 @@ void Plane::update()
 	/*
 	alSourcefv(m_engineSource, AL_POSITION, (float *)&m_position);
 	alSourcefv(m_engineSource, AL_VELOCITY, (float*)&thead);
-*/
+	*/
 
 	if (s_batch)
 	{
@@ -187,14 +187,23 @@ void Plane::pitch(float fpitch)
 	m_rotation.normalize();
 }
 
+CDynamicBatch* Bullet::s_batch = nullptr;
+
 Bullet::Bullet()
-	: m_bActive(false)
 {
+	if (!s_batch)
+	{
+		Renderer& renderer = Renderer::get();
+		Material* material = ResourceManager::get().loadMaterial("genericTextured");
+		auto batch = std::make_unique <CDynamicBatch> (material);
+		s_batch = batch.get();
+
+		renderer.addNewBatch(std::move(batch));
+	}
 }
 
 Bullet::Bullet(Vec3 p, Vec3 h)
 	: WorldEntity(p)
-	, m_bActive(false)
 	, m_heading(h)
 {
 }
@@ -206,24 +215,17 @@ Bullet::~Bullet()
 void Bullet::draw()
 {
 	float l1pos[] = {m_position.x(), m_position.y(), m_position.z(), 1.0f};
-	if (m_bActive)
-	{
-		/*
-		glDisable(GL_LIGHTING);
-		glColor3f(1.0, 0.7, 0.3);
-		glBegin(GL_LINES);
-			Vec3 lastPos = m_position + (heading * 0.5f);
-			glVertex3fv(m_position.getData());
-			glVertex3fv(lastPos.getData());
-		glEnd();
-		glEnable(GL_LIGHTING);
-		glLightfv(GL_LIGHT1, GL_POSITION, l1pos);*/
-	}
-}
 
-void Bullet::setActive(bool bActive)
-{
-	m_bActive = bActive;
+	/*
+	glDisable(GL_LIGHTING);
+	glColor3f(1.0, 0.7, 0.3);
+	glBegin(GL_LINES);
+		Vec3 lastPos = m_position + (heading * 0.5f);
+		glVertex3fv(m_position.getData());
+		glVertex3fv(lastPos.getData());
+	glEnd();
+	glEnable(GL_LIGHTING);
+	glLightfv(GL_LIGHT1, GL_POSITION, l1pos);*/
 }
 
 void Bullet::setEmitter(Plane &p)
@@ -231,43 +233,40 @@ void Bullet::setEmitter(Plane &p)
 	m_emitter = &p;
 }
 
-void Bullet::move()
+void Bullet::update()
 {
-	if (m_bActive)
+	auto& engine = Engine::get();
+	auto& tile = engine.getWorld();
+	uint16_t resolution = tile.getResolution();
+
+	auto& entities = engine.getEnities();
+
+	for (auto& entity : entities)
 	{
-		auto& engine = Engine::get();
-		auto& tile = engine.getWorld();
-		uint16_t resolution = tile.getResolution();
-
-		auto& entities = engine.getEnities();
-
-		for (auto& entity : entities)
+		if (entity.get() == m_emitter)
 		{
-			if (entity.get() == m_emitter)
-			{
-				continue;
-			}
-			Vec3 t = entity->getPosition();
+			continue;
+		}
+		Vec3 t = entity->getPosition();
 
-			if(m_position.x() > resolution || m_position.x() < 0 ||
-			   m_position.y() > resolution || m_position.y() < 0 ||
-			   m_position.z() > resolution || m_position.z() < 0)
-			{
-				setActive(false);
-			}
-
-			t = t - m_position;
-			if (cross(t, m_heading).length() <= 0.05 && t.length() < 1.0f)
-			{
-				auto& engine = Engine::get();
-				setActive(false);
-				auto effect = std::make_unique <Explosion> (entity->getPosition());
-				engine.addEffect(std::move(effect));
-			}
+		if(m_position.x() > resolution || m_position.x() < 0 ||
+		   m_position.y() > resolution || m_position.y() < 0 ||
+		   m_position.z() > resolution || m_position.z() < 0)
+		{
+			m_flags |= eInactive;
 		}
 
-		m_position = m_position + 1.0f * m_heading;
+		t = t - m_position;
+		if (cross(t, m_heading).length() <= 0.05 && t.length() < 1.0f)
+		{
+			auto& engine = Engine::get();
+			m_flags |= eInactive;
+			auto effect = std::make_unique <Explosion> (entity->getPosition());
+			engine.addEffect(std::move(effect));
+		}
 	}
+
+	m_position = m_position + 1.0f * m_heading;
 }
 
 
@@ -350,5 +349,45 @@ PlanePlayerController::PlanePlayerController(Plane* plane)
 
 void PlanePlayerController::update()
 {
+	Engine& engine = Engine::get();
+	const SUserInputState& inputState = engine.getInputState();
 
+	const float fPitchSpeed = 0.005f;
+	const float fRollSpeed = 0.01f;
+
+	if(inputState.firePressed)
+	{
+		m_plane->fire();
+	}
+	if(inputState.leftPressed)
+	{
+		m_plane->roll(-fRollSpeed);
+	}
+	if(inputState.rightPressed)
+	{
+		m_plane->roll(fRollSpeed);
+	}
+	if(inputState.upPressed)
+	{
+		m_plane->pitch(-fPitchSpeed);
+	}
+	if(inputState.downPressed)
+	{
+		m_plane->pitch(fPitchSpeed);
+	}
+	if(inputState.menuPressed)
+	{
+		return;
+	}
+	if(inputState.accelaratePressed)
+	{
+	}
+	if(inputState.deccelaratePressed)
+	{
+	}
+	if (inputState.accelarateTick != 0)
+	{
+		float throttle = pow(1.1f, inputState.accelarateTick);
+		m_plane->accelerate(throttle);
+	}
 }

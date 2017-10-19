@@ -4,6 +4,7 @@
 #include "controller.h"
 
 class CBatch;
+class CDynamicBatch;
 
 class Plane : public WorldEntity
 {
@@ -66,15 +67,11 @@ class Bullet : public WorldEntity
 		Bullet(Vec3, Vec3);
 		~Bullet();
 		void draw();
-		void move();
-		void setActive(bool);
-
 		void setEmitter(Plane &);
-		bool getActive() override { return m_bActive; }
-		Vec3& getPosition() { return m_position; }
+		virtual void update() override;
 
 	private:
 		Vec3 m_heading;
-		bool m_bActive;
 		Plane* m_emitter;
+		static CDynamicBatch* s_batch;
 };

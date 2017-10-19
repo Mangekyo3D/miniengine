@@ -1,11 +1,13 @@
 #include "worldentity.h"
 
 WorldEntity::WorldEntity()
+	: m_flags(0)
 {
 }
 
 WorldEntity::WorldEntity(Vec3 position)
 	: m_position(position)
+	, m_flags(eInvalidWorldTransform | eInvalidInverseWorldTransform)
 {
 }
 

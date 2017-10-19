@@ -15,7 +15,7 @@ class WorldEntity
 		Matrix34& getObjectToWorldMatrix();
 		Matrix34& getWorldToObjectMatrix();
 		// this returns false when the entity has died
-		virtual bool getActive() { return true; }
+		virtual bool getActive() { return (m_flags & eInactive) == 0; }
 		virtual void update() {}
 
 	protected:
@@ -30,7 +30,8 @@ class WorldEntity
 		enum EEntityFlags
 		{
 			eInvalidWorldTransform        = (1),
-			eInvalidInverseWorldTransform = (1 << 1)
+			eInvalidInverseWorldTransform = (1 << 1),
+			eInactive                     = (1 << 2)
 		};
 
 		uint32_t m_flags;

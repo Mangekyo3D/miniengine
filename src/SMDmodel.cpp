@@ -113,8 +113,9 @@ CBatch* SMDModel::getBatch()
 			material = ResourceManager::get().loadMaterial("generic");
 		}
 
-		auto newBatch = std::make_unique <CBatch> (m_mesh.get(), material, m_textures);
-		m_batch = renderer.addNewBatch(std::move(newBatch));
+		auto newBatch = std::make_unique <CBatch> (m_mesh.get(), material, &m_textures);
+		m_batch = newBatch.get();
+		renderer.addNewBatch(std::move(newBatch));
 	}
 
 	return m_batch;

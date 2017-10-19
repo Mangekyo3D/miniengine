@@ -144,22 +144,26 @@ void TexturedMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t in
 	device.glBindSampler(0, m_sampler);
 }
 
-CBatch::CBatch(IMesh *m, Material *ma, const std::vector<CTexture*>& textures)
+CBatch::CBatch(IMesh *m, Material *ma, const std::vector<CTexture *> *textures)
 	: m_material(ma)
 	, m_instanceBuffer(0)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
 	, m_primType(m->m_primType)
-	, m_textures(textures)
 	, m_bEnablePrimRestart(m->m_bEnablePrimRestart)
 {
+	if (textures)
+	{
+		 m_textures = *textures;
+	}
+
 	auto device = IDevice::get <CDevice>();
 
 	device.glCreateBuffers(1, &m_vertexBuffer);
 	device.glNamedBufferStorage(m_vertexBuffer, m->getVertexSize() * m->getNumVertices(), m->getVertices(), 0);
 
 	device.glCreateBuffers(1, &m_indexBuffer);
-	device.glNamedBufferStorage(m_indexBuffer, sizeof(uint16_t) * m->getNumIndices(), m->getIndices(), 0);
+	device.glNamedBufferStorage(m_indexBuffer, m->getIndexSize() * m->getNumIndices(), m->getIndices(), 0);
 }
 
 CBatch::~CBatch()
@@ -187,6 +191,11 @@ static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
 
 void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 {
+	if (m_instanceData.size() == 0)
+	{
+		return;
+	}
+
 	setupInstanceBuffer();
 
 	m_material->bind();
@@ -250,4 +259,24 @@ void CBatch::setupInstanceBuffer()
 		device.glInvalidateBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size());
 		device.glNamedBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data());
 	}
+}
+
+CDynamicBatch::CDynamicBatch(Material *material, const std::vector<CTexture *> *textures)
+	: m_material(material)
+{
+	if (textures)
+	{
+		m_textures = *textures;
+	}
+}
+
+CDynamicBatch::~CDynamicBatch()
+{
+	auto device = IDevice::get <CDevice>();
+	device.glDeleteBuffers(1, &m_vertexBuffer);
+}
+
+void CDynamicBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
+{
+
 }

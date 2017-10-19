@@ -3,6 +3,7 @@
 #include "worldtile.h"
 #include <memory>
 #include "camera.h"
+#include "controller.h"
 
 class GameWindow;
 class OSFactory;
@@ -33,25 +34,9 @@ public:
 	WorldEntity& getPlayerEntity() { return *m_playerEntity; }
 	WorldTile& getWorld() { return m_currentWorldTile; }
 	std::vector <std::unique_ptr<WorldEntity> >& getEnities() { return m_worldEntities; }
-	bool handleUserInput();
+	const SUserInputState& getInputState() {return m_inputState; }
 
 private:
-	struct SUserInputState
-	{
-		bool firePressed = false;
-		bool accelaratePressed = false;
-		bool deccelaratePressed = false;
-		int  accelarateTick = 0;
-		bool leftPressed = false;
-		bool rightPressed = false;
-		bool upPressed = false;
-		bool downPressed = false;
-		bool menuPressed = false;
-
-		void reset();
-		void printDebug();
-	};
-
 	Engine();
 	Engine(const Engine&) = delete;
 

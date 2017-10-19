@@ -90,7 +90,7 @@ void Engine::enterGameLoop()
 
 		m_gameWindow->handleOSEvents();
 
-		if (!handleUserInput())
+		if (m_inputState.menuPressed)
 		{
 			break;
 		}
@@ -158,82 +158,4 @@ void Engine::enterGameLoop()
 void Engine::setPlayerEntity(WorldEntity* entity)
 {
 	m_playerEntity = entity;
-}
-
-bool Engine::handleUserInput()
-{
-	const float fPitchSpeed = 0.005f;
-	const float fRollSpeed = 0.01f;
-
-	Plane* player = static_cast <Plane*> (m_playerEntity);
-	if(m_inputState.firePressed)
-	{
-		player->fire();
-	}
-	if(m_inputState.leftPressed)
-	{
-		player->roll(-fRollSpeed);
-	}
-	if(m_inputState.rightPressed)
-	{
-		player->roll(fRollSpeed);
-	}
-	if(m_inputState.upPressed)
-	{
-		player->pitch(-fPitchSpeed);
-	}
-	if(m_inputState.downPressed)
-	{
-		player->pitch(fPitchSpeed);
-	}
-	if(m_inputState.menuPressed)
-	{
-		return false;
-	}
-	if(m_inputState.accelaratePressed)
-	{
-	}
-	if(m_inputState.deccelaratePressed)
-	{
-	}
-	if (m_inputState.accelarateTick != 0)
-	{
-		float throttle = pow(1.1f, m_inputState.accelarateTick);
-		player->accelerate(throttle);
-		m_inputState.accelarateTick = 0;
-	}
-
-	return true;
-}
-
-
-void Engine::SUserInputState::reset()
-{
-	firePressed = false;
-	accelaratePressed = false;
-	deccelaratePressed = false;
-	accelarateTick = 0;
-	leftPressed = false;
-	rightPressed = false;
-	upPressed = false;
-	downPressed = false;
-	menuPressed = false;
-}
-
-void Engine::SUserInputState::printDebug()
-{
-#define DEBUGUSERSTATE(key) std::cout << #key " status: " << ((key) ? "pressed" : "unpressed" ) << std::endl;
-
-	std::cout << std::endl;
-
-	DEBUGUSERSTATE(firePressed);
-	DEBUGUSERSTATE(accelaratePressed);
-	DEBUGUSERSTATE(deccelaratePressed);
-	DEBUGUSERSTATE(leftPressed);
-	DEBUGUSERSTATE(rightPressed);
-	DEBUGUSERSTATE(upPressed);
-	DEBUGUSERSTATE(downPressed);
-	DEBUGUSERSTATE(menuPressed);
-
-	std::cout << std::endl;
 }

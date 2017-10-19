@@ -37,10 +37,9 @@ Renderer::~Renderer()
 	m_cameraUniform.reset();
 }
 
-CBatch* Renderer::addNewBatch(std::unique_ptr<CBatch> batch)
+void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
 {
 	m_batches.push_back(std::move (batch));
-	return m_batches.back().get();
 }
 
 void Renderer::updateFrameUniforms(Camera& camera)
@@ -94,10 +93,7 @@ void Renderer::drawFrame()
 	/* draw all batches */
 	for (auto& batch : m_batches)
 	{
-		if (batch->hasInstances())
-		{
-			batch->draw(m_cameraUniform->getID(), m_lightUniform->getID());
-		}
+		batch->draw(m_cameraUniform->getID(), m_lightUniform->getID());
 	}
 
 	/*
