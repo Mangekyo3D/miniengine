@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-class CBatch;
+class CIndexedInstancedBatch;
 class CTexture;
 struct IMesh;
 
@@ -13,7 +13,7 @@ class SMDModel
 		SMDModel() {}
 		~SMDModel();
 		bool openFromFile(const char *);
-		CBatch* getBatch();
+		CIndexedInstancedBatch* getBatch();
 
 	private:
 		bool prepareVertexBuffer();
@@ -27,5 +27,5 @@ class SMDModel
 
 		std::vector <CTexture*> m_textures;
 		std::unique_ptr <IMesh> m_mesh;
-		CBatch* m_batch = nullptr;
+		CIndexedInstancedBatch* m_batch = nullptr;
 };

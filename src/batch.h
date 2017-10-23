@@ -127,11 +127,11 @@ class IBatch
 		virtual void draw(uint32_t cameraUniformID, uint32_t lightUniformID) = 0;
 };
 
-class CBatch : public IBatch
+class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CBatch(IMesh *, Material *, const std::vector<CTexture*> *textures = nullptr);
-		~CBatch();
+		CIndexedInstancedBatch(IMesh *, Material *, const std::vector<CTexture*> *textures = nullptr);
+		~CIndexedInstancedBatch();
 
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
 
@@ -156,13 +156,13 @@ class CBatch : public IBatch
 
 
 // dynamic batch data need to be filled each frame
-class CDynamicBatch : public IBatch
+class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicBatch(Material *, const std::vector<CTexture*> *textures = nullptr);
-		~CDynamicBatch();
+		CDynamicArrayBatch(Material *, const std::vector<CTexture*> *textures = nullptr);
+		~CDynamicArrayBatch();
 
-		void draw(uint32_t cameraUniformID, uint32_t lightUniformID);
+		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
 
 		void addMeshData();
 

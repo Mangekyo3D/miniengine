@@ -27,7 +27,7 @@ void WorldTile::setup_draw_operations()
 		textures.push_back(ResourceManager::get().loadTexture("grass.bmp"));
 		Material* material = ResourceManager::get().loadMaterial("genericTextured");
 
-		auto newBatch = std::make_unique <CBatch> (&m_mesh, material, &textures);
+		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, material, &textures);
 		m_batch = newBatch.get();
 		renderer.addNewBatch(std::move(newBatch));
 	}

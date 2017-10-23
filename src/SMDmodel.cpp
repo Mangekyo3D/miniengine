@@ -98,7 +98,7 @@ bool SMDModel::openFromFile(const char *filename)
 	return true;
 }
 
-CBatch* SMDModel::getBatch()
+CIndexedInstancedBatch* SMDModel::getBatch()
 {
 	if (!m_batch)
 	{
@@ -113,7 +113,7 @@ CBatch* SMDModel::getBatch()
 			material = ResourceManager::get().loadMaterial("generic");
 		}
 
-		auto newBatch = std::make_unique <CBatch> (m_mesh.get(), material, &m_textures);
+		auto newBatch = std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), material, &m_textures);
 		m_batch = newBatch.get();
 		renderer.addNewBatch(std::move(newBatch));
 	}

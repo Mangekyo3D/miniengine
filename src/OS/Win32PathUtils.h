@@ -7,4 +7,7 @@ public:
 	virtual std::string getShaderPath() const override;
 	virtual std::string getModelPath() const override;
 	virtual std::string getTexturePath() const override;
+
+private:
+	std::string getRootPath() const;
 };

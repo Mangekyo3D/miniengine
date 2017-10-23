@@ -11,7 +11,7 @@
 //ALuint Plane::buffer;
 //ALuint Plane::engineBuf;
 
-CBatch* Plane::s_batch = nullptr;
+CIndexedInstancedBatch* Plane::s_batch = nullptr;
 
 Plane::Plane(Vec3 initPos)
 {
@@ -187,7 +187,7 @@ void Plane::pitch(float fpitch)
 	m_rotation.normalize();
 }
 
-CDynamicBatch* Bullet::s_batch = nullptr;
+CDynamicArrayBatch* Bullet::s_batch = nullptr;
 
 Bullet::Bullet()
 {
@@ -195,7 +195,7 @@ Bullet::Bullet()
 	{
 		Renderer& renderer = Renderer::get();
 		Material* material = ResourceManager::get().loadMaterial("genericTextured");
-		auto batch = std::make_unique <CDynamicBatch> (material);
+		auto batch = std::make_unique <CDynamicArrayBatch> (material);
 		s_batch = batch.get();
 
 		renderer.addNewBatch(std::move(batch));

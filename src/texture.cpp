@@ -32,14 +32,14 @@ CTexture::CTexture(uint16_t width, uint16_t height, bool bMipmapped)
 
 CTexture::CTexture(std::string filename, bool bMipmapped)
 {
-	Bitmap file;
+	Bitmap imageFile;
 
-	if (file.openFromFile(filename.c_str()))
+	if (imageFile.openFromFile(filename.c_str()))
 	{
 		auto& device = IDevice::get <CDevice>();
 
-		m_width = file.getWidth();
-		m_height = file.getHeight();
+		m_width = imageFile.getWidth();
+		m_height = imageFile.getHeight();
 
 		if (bMipmapped)
 		{
@@ -61,7 +61,7 @@ CTexture::CTexture(std::string filename, bool bMipmapped)
 		device.glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
 		device.glTextureStorage2D(m_id, m_mipLevels, GL_RGB8, m_width, m_height);
 
-		device.glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GL_BGR, GL_UNSIGNED_BYTE, file.getData());
+		device.glTextureSubImage2D(m_id, 0, 0, 0, m_width, m_height, GL_BGR, GL_UNSIGNED_BYTE, imageFile.getData());
 		// TODO: implement application downsampling for mipmaps, use driver provided one for now
 		device.glGenerateTextureMipmap(m_id);
 	}

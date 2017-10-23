@@ -144,7 +144,7 @@ void TexturedMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t in
 	device.glBindSampler(0, m_sampler);
 }
 
-CBatch::CBatch(IMesh *m, Material *ma, const std::vector<CTexture *> *textures)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, Material *ma, const std::vector<CTexture *> *textures)
 	: m_material(ma)
 	, m_instanceBuffer(0)
 	, m_numInstances(0)
@@ -166,7 +166,7 @@ CBatch::CBatch(IMesh *m, Material *ma, const std::vector<CTexture *> *textures)
 	device.glNamedBufferStorage(m_indexBuffer, m->getIndexSize() * m->getNumIndices(), m->getIndices(), 0);
 }
 
-CBatch::~CBatch()
+CIndexedInstancedBatch::~CIndexedInstancedBatch()
 {
 	auto device = IDevice::get <CDevice>();
 
@@ -189,7 +189,7 @@ static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
 	return GL_TRIANGLES;
 }
 
-void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
+void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 {
 	if (m_instanceData.size() == 0)
 	{
@@ -231,12 +231,12 @@ void CBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 	m_instanceData.clear();
 }
 
-void CBatch::addMeshInstance(MeshInstanceData& instance)
+void CIndexedInstancedBatch::addMeshInstance(MeshInstanceData& instance)
 {
 	m_instanceData.push_back(instance);
 }
 
-void CBatch::setupInstanceBuffer()
+void CIndexedInstancedBatch::setupInstanceBuffer()
 {
 	auto device = IDevice::get <CDevice>();
 
@@ -261,7 +261,7 @@ void CBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicBatch::CDynamicBatch(Material *material, const std::vector<CTexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(Material *material, const std::vector<CTexture *> *textures)
 	: m_material(material)
 {
 	if (textures)
@@ -270,13 +270,13 @@ CDynamicBatch::CDynamicBatch(Material *material, const std::vector<CTexture *> *
 	}
 }
 
-CDynamicBatch::~CDynamicBatch()
+CDynamicArrayBatch::~CDynamicArrayBatch()
 {
 	auto device = IDevice::get <CDevice>();
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 }
 
-void CDynamicBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
+void CDynamicArrayBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
 {
 
 }

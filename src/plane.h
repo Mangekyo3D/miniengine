@@ -3,8 +3,8 @@
 #include "ALcontext.h"
 #include "controller.h"
 
-class CBatch;
-class CDynamicBatch;
+class CIndexedInstancedBatch;
+class CDynamicArrayBatch;
 
 class Plane : public WorldEntity
 {
@@ -24,7 +24,7 @@ class Plane : public WorldEntity
 		static void initializeSound();
 		static void cleanUpSound();
 
-		static CBatch* s_batch;
+		static CIndexedInstancedBatch* s_batch;
 
 	private:
 		bool  m_gun;
@@ -73,5 +73,5 @@ class Bullet : public WorldEntity
 	private:
 		Vec3 m_heading;
 		Plane* m_emitter;
-		static CDynamicBatch* s_batch;
+		static CDynamicArrayBatch* s_batch;
 };

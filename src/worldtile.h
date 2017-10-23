@@ -17,5 +17,5 @@ class WorldTile {
 	private:
 		uint16_t m_resolution;
 		Mesh <VertexFormatVNT> m_mesh;
-		CBatch* m_batch = nullptr;
+		CIndexedInstancedBatch* m_batch = nullptr;
 };
