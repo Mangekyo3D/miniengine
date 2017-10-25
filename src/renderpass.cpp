@@ -138,10 +138,15 @@ void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, ui
 
 	if (m_depthOutput)
 	{
-		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 1.0f, 0);
+		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 0.0f, 0);
 	}
 
 	device.glEnable(GL_DEPTH_TEST);
+
+	device.glDepthFunc(GL_GEQUAL);
+	// inverse depth trick
+	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	device.glDepthRangef(1.0f, 0.0f);
 
 	for (auto& batch : batches)
 	{

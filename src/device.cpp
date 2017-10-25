@@ -31,6 +31,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	this->glClear = ::glClear;
 	this->glClearDepth = ::glClearDepth;
 	this->glViewport = ::glViewport;
+	this->glDepthFunc = ::glDepthFunc;
 
 	INITFUNCTION(glClearNamedFramebufferfv)
 	INITFUNCTION(glClearNamedFramebufferfi)
@@ -110,6 +111,9 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glVertexArrayBindingDivisor)
 
 	INITFUNCTION(glPrimitiveRestartIndex)
+
+	INITFUNCTION(glDepthRangef)
+	INITFUNCTION(glClipControl)
 
 	if (bDebugContext)
 	{

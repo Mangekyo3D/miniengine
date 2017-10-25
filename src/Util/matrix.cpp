@@ -457,13 +457,13 @@ Matrix44 Matrix44::generatePerspective(float nearPlane, float farPlane, float as
 	// column 3
 	m.m_data[8] = 0.0f;
 	m.m_data[9] = 0.0f;
-	m.m_data[10] = -(nearPlane + farPlane) / (farPlane - nearPlane);
+	m.m_data[10] = farPlane / (nearPlane - farPlane);
 	m.m_data[11] = -1.0;
 
 	// column 4
 	m.m_data[12] = 0.0f;
 	m.m_data[13] = 0.0f;
-	m.m_data[14] = -2.0f * farPlane * nearPlane / (farPlane - nearPlane);
+	m.m_data[14] = farPlane * nearPlane / (nearPlane - farPlane);
 	m.m_data[15] = 0.0f;
 
 	return m;
