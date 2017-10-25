@@ -102,8 +102,8 @@ CIndexedInstancedBatch* SMDModel::getBatch()
 {
 	if (!m_batch)
 	{
-		Renderer& renderer = Renderer::get();
-		Material* material;
+		IRenderer& renderer = IRenderer::get();
+		PipelineObject* material;
 		if (m_texCoordData.size() > 0)
 		{
 			material = ResourceManager::get().loadMaterial("genericTextured");

@@ -1,15 +1,13 @@
-#ifndef PROGRAM_H
-#define PROGRAM_H
-
+#pragma once
 #include "shader.h"
 #include <map>
 
-class Program
+class CProgram
 {
 public:
-	Program();
+	CProgram();
 
-	void attach(Shader& shader);
+	void attach(CShader& shader);
 	void use();
 
 	// loading should be done after we have attached all shaders
@@ -17,8 +15,6 @@ public:
 	void unload();
 
 private:
-	std::map <Shader::EType, Shader*> m_shaders;
+	std::map <CShader::EType, CShader*> m_shaders;
 	uint32_t m_ID;
 };
-
-#endif // PROGRAM_H

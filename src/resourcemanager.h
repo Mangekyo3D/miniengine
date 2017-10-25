@@ -3,7 +3,7 @@
 #include <memory>
 
 class SMDModel;
-class Material;
+class PipelineObject;
 class CTexture;
 
 class ResourceManager
@@ -14,7 +14,7 @@ class ResourceManager
 		ResourceManager(const ResourceManager&) = delete;
 
 		SMDModel* loadModel(std::string modelName);
-		Material* loadMaterial(std::string materialName);
+		PipelineObject* loadMaterial(std::string materialName);
 		CTexture* loadTexture(std::string textureName);
 
 		void initialize();
@@ -25,7 +25,7 @@ class ResourceManager
 		ResourceManager();
 
 		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
-		std::map <std::string, std::unique_ptr<Material> > m_materials;
+		std::map <std::string, std::unique_ptr<PipelineObject> > m_materials;
 		std::map <std::string, std::unique_ptr<CTexture> > m_textures;
 };
 

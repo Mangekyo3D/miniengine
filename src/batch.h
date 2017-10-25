@@ -8,46 +8,55 @@
 class CTexture;
 
 // material descriptor wraps and sets up all data needed for a shader
-class IMaterialDescriptor
+class IDescriptorInterface
 {
 	public:
-		virtual ~IMaterialDescriptor() {}
+		IDescriptorInterface() 	: m_vertexArrayObject(0) {}
+		virtual ~IDescriptorInterface() {}
 		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) = 0;
-};
+		void bind();
 
-class GenericMaterialDescriptor : public IMaterialDescriptor
-{
-	public:
-		GenericMaterialDescriptor();
-		virtual ~GenericMaterialDescriptor();
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
-
-	private:
+	protected:
 		uint32_t m_vertexArrayObject;
 };
 
-class TexturedMaterialDescriptor : public IMaterialDescriptor
+class ArrayDescriptorV : public IDescriptorInterface
 {
 	public:
-		TexturedMaterialDescriptor();
-		virtual ~TexturedMaterialDescriptor();
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf);
+		ArrayDescriptorV();
+		virtual ~ArrayDescriptorV();
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
+};
+
+class IndexedInstancedDescriptorV : public IDescriptorInterface
+{
+	public:
+		IndexedInstancedDescriptorV();
+		virtual ~IndexedInstancedDescriptorV();
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
+};
+
+class IndexedInstancedDescriptorVT : public IDescriptorInterface
+{
+	public:
+		IndexedInstancedDescriptorVT();
+		virtual ~IndexedInstancedDescriptorVT();
+		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
 
 	private:
-		uint32_t m_vertexArrayObject;
 		uint32_t m_sampler;
 };
 
-class Material {
+class PipelineObject {
 	public:
-		Material(std::string shaderFileName, std::unique_ptr <IMaterialDescriptor> descriptor);
+		PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor);
 
-		IMaterialDescriptor& getDescriptor() { return *m_descriptor.get();}
+		IDescriptorInterface& getDescriptor() { return *m_descriptor.get();}
 		void bind();
 
 	private:
-		Program m_program;
-		std::unique_ptr <IMaterialDescriptor> m_descriptor;
+		CProgram m_program;
+		std::unique_ptr <IDescriptorInterface> m_descriptor;
 };
 
 /* Mesh - one material per vertex buffer */
@@ -130,7 +139,7 @@ class IBatch
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IMesh *, Material *, const std::vector<CTexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IMesh *, PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
@@ -144,8 +153,9 @@ class CIndexedInstancedBatch : public IBatch
 		std::vector <CTexture*> m_textures;
 		bool m_bEnablePrimRestart;
 		size_t m_numIndices;
+		bool   m_bShortIndices;
 		IMesh::EPrimitiveType m_primType;
-		Material* m_material;
+		PipelineObject* m_pipelineState;
 		uint32_t m_vertexBuffer;
 		uint32_t m_indexBuffer;
 		// attributes that are specific to a certain instance
@@ -159,7 +169,7 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(Material *, const std::vector<CTexture*> *textures = nullptr);
+		CDynamicArrayBatch(PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
 		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
@@ -169,7 +179,7 @@ class CDynamicArrayBatch : public IBatch
 	private:
 		std::vector <CTexture*> m_textures;
 		IMesh::EPrimitiveType m_primType;
-		Material* m_material;
+		PipelineObject* m_material;
 
 		// current buffer
 		uint32_t m_vertexBuffer;

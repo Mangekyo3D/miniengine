@@ -19,13 +19,13 @@ WorldTile::~WorldTile()
 
 void WorldTile::setup_draw_operations()
 {
-	Renderer& renderer = Renderer::get();
+	IRenderer& renderer = IRenderer::get();
 
 	if (!m_batch)
 	{
 		std::vector <CTexture*> textures;
 		textures.push_back(ResourceManager::get().loadTexture("grass.bmp"));
-		Material* material = ResourceManager::get().loadMaterial("genericTextured");
+		PipelineObject* material = ResourceManager::get().loadMaterial("genericTextured");
 
 		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, material, &textures);
 		m_batch = newBatch.get();

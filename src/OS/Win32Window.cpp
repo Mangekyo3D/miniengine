@@ -137,7 +137,6 @@ Win32Window::Win32Window(bool bDebugContext)
 	pfd.cRedBits = 8;
 	pfd.cGreenBits = 8;
 	pfd.cGreenBits = 8;
-	pfd.cDepthBits = 24;
 	pfd.iLayerType = PFD_MAIN_PLANE;
 	pfd.iPixelType = PFD_TYPE_RGBA;
 
@@ -189,8 +188,8 @@ Win32Window::Win32Window(bool bDebugContext)
 			WGL_ACCUM_GREEN_BITS_ARB, 0,
 			WGL_ACCUM_BLUE_BITS_ARB, 0,
 			WGL_ACCUM_ALPHA_BITS_ARB, 0,
-			WGL_DEPTH_BITS_ARB, 24,
-			WGL_STENCIL_BITS_ARB, 8,
+			WGL_DEPTH_BITS_ARB, 0,
+			WGL_STENCIL_BITS_ARB, 0,
 			WGL_AUX_BUFFERS_ARB, 0,
 			0
 		};

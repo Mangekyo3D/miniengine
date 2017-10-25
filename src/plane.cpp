@@ -96,7 +96,7 @@ Vec3 &Plane::getPosition()
 
 void Plane::fire()
 {
-	if(m_shootDelay > 0)
+	if (m_shootDelay > 0)
 	{
 		--m_shootDelay;
 		return;
@@ -193,8 +193,8 @@ Bullet::Bullet()
 {
 	if (!s_batch)
 	{
-		Renderer& renderer = Renderer::get();
-		Material* material = ResourceManager::get().loadMaterial("genericTextured");
+		IRenderer& renderer = IRenderer::get();
+		PipelineObject* material = ResourceManager::get().loadMaterial("genericTextured");
 		auto batch = std::make_unique <CDynamicArrayBatch> (material);
 		s_batch = batch.get();
 

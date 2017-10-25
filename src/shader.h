@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-class Shader 
+class CShader
 {
 public:
 	enum class EType {
@@ -13,8 +13,8 @@ public:
 		eCompute
 	};
 
-	Shader(std::string filename, EType type);
-	~Shader();
+	CShader(std::string filename, EType type);
+	~CShader();
 
 	bool compile();
 	void unload();

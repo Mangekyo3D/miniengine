@@ -23,11 +23,12 @@ Engine::~Engine()
 void Engine::startup(SCommandLineOptions& options)
 {
 	auto& factory = OSFactory::get();
-	Renderer& renderer = Renderer::get();
 	ResourceManager& resourceManager = ResourceManager::get();
 
 	m_gameWindow = factory.createGameWindow(options.bDebugContext);
-	renderer.initialize(*m_gameWindow, options.bDebugContext);
+	IRenderer::initialize(*m_gameWindow, options.bDebugContext);
+
+	IRenderer& renderer = IRenderer::get();
 	resourceManager.initialize();
 
 	m_gameWindow->onResize.connect(this, [this, &renderer] (ResizeEvent& event)
@@ -79,7 +80,7 @@ void Engine::enterGameLoop()
 	unsigned int time = 0;
 
 	ResourceManager& resourceManager = ResourceManager::get();
-	Renderer& renderer = Renderer::get();
+	IRenderer& renderer = IRenderer::get();
 
 	while (true)
 	{
@@ -152,7 +153,7 @@ void Engine::enterGameLoop()
 	m_effects.clear();
 	m_worldEntities.clear();
 
-	renderer.shutdown();
+	IRenderer::shutdown();
 }
 
 void Engine::setPlayerEntity(WorldEntity* entity)

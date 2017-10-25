@@ -1,28 +1,27 @@
 #include "program.h"
-#include "renderer.h"
 #include "cdevice.h"
 #include <iostream>
 
-Program::Program()
+CProgram::CProgram()
 	: m_ID(0)
 {
 }
 
-void Program::attach(Shader& shader)
+void CProgram::attach(CShader& shader)
 {
 	m_shaders[shader.getType()] = &shader;
 }
 
-void Program::use()
+void CProgram::use()
 {
-	auto device = IDevice::get <CDevice> ();
+	auto& device = IDevice::get <CDevice> ();
 	device.glUseProgram(m_ID);
 }
 
 
-bool Program::link()
+bool CProgram::link()
 {
-	auto device = IDevice::get <CDevice> ();
+	auto& device = IDevice::get <CDevice> ();
 
 	bool bFailedCompilation = false;
 	m_ID = device.glCreateProgram();
@@ -30,7 +29,7 @@ bool Program::link()
 	// compile all attached shaders
 	for (auto iter : m_shaders)
 	{
-		Shader* shader = iter.second;
+		CShader* shader = iter.second;
 
 		if (!shader->compile())
 		{
@@ -43,7 +42,7 @@ bool Program::link()
 
 	for (auto iter : m_shaders)
 	{
-		Shader* shader = iter.second;
+		CShader* shader = iter.second;
 		device.glDetachShader(m_ID, shader->getID());
 	}
 
@@ -82,11 +81,11 @@ bool Program::link()
 	return true;
 }
 
-void Program::unload()
+void CProgram::unload()
 {
 	if (m_ID)
 	{
-		auto device = IDevice::get <CDevice> ();
+		auto& device = IDevice::get <CDevice> ();
 		device.glDeleteProgram(m_ID);
 		m_ID = 0;
 	}

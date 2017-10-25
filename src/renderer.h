@@ -2,45 +2,35 @@
 
 #include <vector>
 #include <memory>
+#include "compositingpipeline.h"
 
 class GameWindow;
 class IDevice;
 class Camera;
-class CGPUBuffer;
 class IBatch;
-class Material;
-struct IMesh;
-class CTexture;
 
-class Renderer
+class IRenderer
 {
-public:
-	~Renderer();
-	Renderer(const Renderer&) = delete;
-	Renderer& operator = (const Renderer&) = delete;
+	public:
+		virtual ~IRenderer() {}
 
-	static Renderer& get() { return s_renderer; }
+		IRenderer(const IRenderer&) = delete;
+		IRenderer& operator = (const IRenderer&) = delete;
 
-	void initialize(GameWindow&, bool bDebugContext);
-	void addNewBatch(std::unique_ptr<IBatch> batch);
+		static IRenderer& get() { return *s_renderer.get(); }
 
-	void updateFrameUniforms(Camera& camera);
-	void drawFrame();
+		static void initialize(GameWindow&, bool bDebugContext);
+		static void shutdown();
 
-	void setViewport(uint32_t width, uint32_t height);
+		virtual void addNewBatch(std::unique_ptr<IBatch> batch) = 0;
 
-	void shutdown();
+		virtual void updateFrameUniforms(Camera& camera) = 0;
+		virtual void drawFrame() = 0;
 
-private:
-	Renderer();
-	static Renderer s_renderer;
+		virtual void setViewport(uint32_t width, uint32_t height) = 0;
 
-	/* batches that will be sent to GPU for rendering */
-	std::vector <std::unique_ptr<IBatch> > m_batches;
-	std::unique_ptr <IDevice> m_device;
-	std::unique_ptr <CGPUBuffer> m_cameraUniform;
-	std::unique_ptr <CGPUBuffer> m_lightUniform;
-
-	uint32_t m_viewportWidth;
-	uint32_t m_viewportHeight;
+	protected:
+		IRenderer() {}
+		static std::unique_ptr <IRenderer> s_renderer;
+		static std::unique_ptr <IDevice> s_device;
 };

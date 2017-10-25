@@ -8,10 +8,7 @@ class CDevice : public IDevice
 {
 public:
 	CDevice(GameWindow& win, bool bDebugContext);
-
-	void drawBatch(IBatch& batch) override;
-	void clearFramebuffer(bool bDepth) override;
-	void setViewport(uint32_t width, uint32_t height) override;
+	CDevice(const CDevice&) = delete;
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;
 	PFNGLCLEARNAMEDFRAMEBUFFERFIPROC glClearNamedFramebufferfi;
@@ -21,6 +18,7 @@ public:
 	PFNGLDISABLEPROC    glDisable;
 	PFNGLCLEARPROC      glClear;
 	PFNGLCLEARDEPTHPROC glClearDepth;
+	PFNGLVIEWPORTPROC   glViewport;
 
 	PFNGLATTACHSHADERPROC glAttachShader;
 	PFNGLDETACHSHADERPROC glDetachShader;
@@ -57,12 +55,13 @@ public:
 	PFNGLBINDSAMPLERPROC       glBindSampler;
 
 	PFNGLCREATEFRAMEBUFFERSPROC glCreateFramebuffers;
+	PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 	PFNGLCREATERENDERBUFFERSPROC glCreateRenderbuffers;
 	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 	PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
 	PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
 	PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
-	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+	PFNGLNAMEDFRAMEBUFFERTEXTUREPROC glNamedFramebufferTexture;
 	PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
 
 	PFNGLBINDBUFFERPROC glBindBuffer;

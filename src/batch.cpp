@@ -2,11 +2,11 @@
 #include "cdevice.h"
 #include "texture.h"
 
-Material::Material(std::string shaderFileName, std::unique_ptr <IMaterialDescriptor> descriptor)
+PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)
 	: m_descriptor(std::move(descriptor))
 {
-	Shader fragment_shader(shaderFileName + ".frag", Shader::EType::eFragment);
-	Shader vertex_shader(shaderFileName + ".vert", Shader::EType::eVertex);
+	CShader fragment_shader(shaderFileName, CShader::EType::eFragment);
+	CShader vertex_shader(shaderFileName, CShader::EType::eVertex);
 
 	m_program.attach(vertex_shader);
 	m_program.attach(fragment_shader);
@@ -14,16 +14,42 @@ Material::Material(std::string shaderFileName, std::unique_ptr <IMaterialDescrip
 	m_program.link();
 }
 
-void Material::bind()
+void PipelineObject::bind()
 {
-	auto device = IDevice::get <CDevice>();
 	m_program.use();
 }
 
-GenericMaterialDescriptor::GenericMaterialDescriptor()
-	: m_vertexArrayObject(0)
+void IDescriptorInterface::bind()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
+	device.glBindVertexArray(m_vertexArrayObject);
+}
+
+ArrayDescriptorV::ArrayDescriptorV()
+{
+	auto& device = IDevice::get <CDevice>();
+	device.glCreateVertexArrays(1, &m_vertexArrayObject);
+
+	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
+	device.glVertexArrayAttribFormat(m_vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexFormatV, vertex));
+}
+
+ArrayDescriptorV::~ArrayDescriptorV()
+{
+	auto& device = IDevice::get <CDevice>();
+	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
+}
+
+void ArrayDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+{
+	auto& device = IDevice::get <CDevice>();
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatV));
+	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
+}
+
+IndexedInstancedDescriptorV::IndexedInstancedDescriptorV()
+{
+	auto& device = IDevice::get <CDevice>();
 	device.glCreateVertexArrays(1, &m_vertexArrayObject);
 
 	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
@@ -49,21 +75,18 @@ GenericMaterialDescriptor::GenericMaterialDescriptor()
 	device.glVertexArrayBindingDivisor(m_vertexArrayObject, 1, 1);
 }
 
-GenericMaterialDescriptor::~GenericMaterialDescriptor()
+IndexedInstancedDescriptorV::~IndexedInstancedDescriptorV()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 }
 
-void GenericMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+void IndexedInstancedDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVN));
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
 	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
-
-	// enable and bind the array
-	device.glBindVertexArray(m_vertexArrayObject);
 
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
@@ -75,10 +98,9 @@ void GenericMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t ind
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 3);
 }
 
-TexturedMaterialDescriptor::TexturedMaterialDescriptor()
-	: m_vertexArrayObject(0)
+IndexedInstancedDescriptorVT::IndexedInstancedDescriptorVT()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glCreateVertexArrays(1, &m_vertexArrayObject);
 
 	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
@@ -114,21 +136,19 @@ TexturedMaterialDescriptor::TexturedMaterialDescriptor()
 	device.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-TexturedMaterialDescriptor::~TexturedMaterialDescriptor()
+IndexedInstancedDescriptorVT::~IndexedInstancedDescriptorVT()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 	device.glDeleteSamplers(1, &m_sampler);
 }
 
-void TexturedMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+void IndexedInstancedDescriptorVT::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVNT));
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
 	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
-
-	device.glBindVertexArray(m_vertexArrayObject);
 
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
@@ -144,11 +164,12 @@ void TexturedMaterialDescriptor::setVertexStream(uint32_t vertexBuf, uint32_t in
 	device.glBindSampler(0, m_sampler);
 }
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, Material *ma, const std::vector<CTexture *> *textures)
-	: m_material(ma)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, const std::vector<CTexture *> *textures)
+	: m_pipelineState(ma)
 	, m_instanceBuffer(0)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
+	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
 	, m_primType(m->m_primType)
 	, m_bEnablePrimRestart(m->m_bEnablePrimRestart)
 {
@@ -157,7 +178,7 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, Material *ma, const std
 		 m_textures = *textures;
 	}
 
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 
 	device.glCreateBuffers(1, &m_vertexBuffer);
 	device.glNamedBufferStorage(m_vertexBuffer, m->getVertexSize() * m->getNumVertices(), m->getVertices(), 0);
@@ -168,7 +189,7 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, Material *ma, const std
 
 CIndexedInstancedBatch::~CIndexedInstancedBatch()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 	device.glDeleteBuffers(1, &m_indexBuffer);
@@ -198,9 +219,10 @@ void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUnifor
 
 	setupInstanceBuffer();
 
-	m_material->bind();
+	m_pipelineState->bind();
 
-	IMaterialDescriptor& desc = m_material->getDescriptor();
+	IDescriptorInterface& desc = m_pipelineState->getDescriptor();
+	desc.bind();
 	desc.setVertexStream(m_vertexBuffer, m_indexBuffer, m_instanceBuffer);
 
 	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
@@ -208,7 +230,7 @@ void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUnifor
 		m_textures[i]->bind(static_cast<uint8_t>(i));
 	}
 
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraUniformID);
 	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightUniformID);
 	device.glEnable(GL_CULL_FACE);
@@ -220,7 +242,8 @@ void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUnifor
 	}
 
 	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
-								   GL_UNSIGNED_SHORT, nullptr, static_cast <GLint> (m_instanceData.size()));
+								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
+								   static_cast <GLint> (m_instanceData.size()));
 
 	device.glDisable(GL_CULL_FACE);
 	if (m_bEnablePrimRestart)
@@ -238,7 +261,7 @@ void CIndexedInstancedBatch::addMeshInstance(MeshInstanceData& instance)
 
 void CIndexedInstancedBatch::setupInstanceBuffer()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 
 	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
@@ -261,7 +284,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(Material *material, const std::vector<CTexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vector<CTexture *> *textures)
 	: m_material(material)
 {
 	if (textures)
@@ -272,7 +295,7 @@ CDynamicArrayBatch::CDynamicArrayBatch(Material *material, const std::vector<CTe
 
 CDynamicArrayBatch::~CDynamicArrayBatch()
 {
-	auto device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <CDevice>();
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 }
 

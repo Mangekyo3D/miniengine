@@ -38,7 +38,7 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 	}
 }
 
-Material* ResourceManager::loadMaterial(std::string materialName)
+PipelineObject* ResourceManager::loadMaterial(std::string materialName)
 {
 	auto iter = m_materials.find(materialName);
 	if (iter != m_materials.end())
@@ -72,17 +72,12 @@ CTexture* ResourceManager::loadTexture(std::string textureName)
 
 void ResourceManager::initialize()
 {
-	// initialize standard material library
-	auto& utils =  OSUtils::get();
-
 	std::string materialName = "generic";
-	std::string shaderFileName = utils.getShaderPath() + materialName;
-	auto material = std::make_unique <Material> (shaderFileName, std::make_unique <GenericMaterialDescriptor> ());
+	auto material = std::make_unique <PipelineObject> (materialName, std::make_unique <IndexedInstancedDescriptorV> ());
 	m_materials[materialName] = std::move(material);
 
 	materialName = "genericTextured";
-	shaderFileName = utils.getShaderPath() + materialName;
-	material = std::make_unique <Material> (shaderFileName, std::make_unique <TexturedMaterialDescriptor> ());
+	material = std::make_unique <PipelineObject> (materialName, std::make_unique <IndexedInstancedDescriptorVT> ());
 	m_materials[materialName] = std::move(material);
 }
 

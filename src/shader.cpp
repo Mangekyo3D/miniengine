@@ -7,7 +7,7 @@
 #include "cdevice.h"
 #include "OS/OSFactory.h"
 
-int Shader::shaderTypeToGLType(EType type)
+int CShader::shaderTypeToGLType(EType type)
 {
 	switch (type)
 	{
@@ -30,30 +30,42 @@ int Shader::shaderTypeToGLType(EType type)
 	return 0;
 }
 
-Shader::Shader(std::string filename, EType type)
+CShader::CShader(std::string filename, EType type)
 	: m_ID (0)
-	, m_filename(filename)
 	, m_type(type)
 {
+	auto& utils =  OSUtils::get();
+
+	switch(type)
+	{
+		case EType::eFragment:
+			filename += ".frag";
+			break;
+		case EType::eVertex:
+			filename += ".vert";
+			break;
+	}
+
+	m_filename = utils.getShaderPath() + filename;
 }
 
-Shader::~Shader()
+CShader::~CShader()
 {
 	unload();
 }
 
-void Shader::unload()
+void CShader::unload()
 {
 	if (m_ID)
 	{
-		auto device = IDevice::get <CDevice>();
+		auto& device = IDevice::get <CDevice>();
 		device.glDeleteShader(m_ID);
 		m_ID = 0;
 	}
 }
 
 
-bool Shader::compile()
+bool CShader::compile()
 {
 	if (m_ID != 0)
 	{
@@ -64,7 +76,7 @@ bool Shader::compile()
 
 	if (file)
 	{
-		auto device = IDevice::get <CDevice>();
+		auto& device = IDevice::get <CDevice>();
 		std::string source;
 
 		file.seekg(0, std::ios::end);

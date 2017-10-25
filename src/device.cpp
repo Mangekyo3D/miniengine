@@ -26,13 +26,14 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	if (name == nullptr) \
 	{ throw 0; }
 
-	INITFUNCTION(glClearNamedFramebufferfv)
-	INITFUNCTION(glClearNamedFramebufferfi)
-
 	this->glEnable = ::glEnable;
 	this->glDisable = ::glDisable;
 	this->glClear = ::glClear;
 	this->glClearDepth = ::glClearDepth;
+	this->glViewport = ::glViewport;
+
+	INITFUNCTION(glClearNamedFramebufferfv)
+	INITFUNCTION(glClearNamedFramebufferfi)
 
 	INITFUNCTION(glDrawArrays)
 
@@ -78,12 +79,13 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glUniform1f)
 
 	INITFUNCTION(glCreateFramebuffers)
+	INITFUNCTION(glDeleteFramebuffers)
 	INITFUNCTION(glCreateRenderbuffers)
 	INITFUNCTION(glBindFramebuffer)
 	INITFUNCTION(glBindRenderbuffer)
 	INITFUNCTION(glRenderbufferStorage)
 	INITFUNCTION(glFramebufferRenderbuffer)
-	INITFUNCTION(glFramebufferTexture2D)
+	INITFUNCTION(glNamedFramebufferTexture)
 	INITFUNCTION(glGenerateMipmap)
 
 	INITFUNCTION(glNamedBufferData)
@@ -122,43 +124,6 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	// not very nice but meh
 	s_device = this;
 }
-
-void CDevice::drawBatch(IBatch& batch)
-{
-}
-
-void CDevice::clearFramebuffer(bool bDepth)
-{
-	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-	glClearNamedFramebufferfv(0, GL_COLOR, 0, vClearColor);
-
-	if (bDepth)
-	{
-		glClearNamedFramebufferfi(0, GL_DEPTH_STENCIL, 0, 1.0f, 0);
-	}
-
-// Use this to get correct display on renderdoc
-//	glClearColor(vClearColor[0], vClearColor[1], vClearColor[2], vClearColor[3]);
-
-//	if (bDepth)
-//	{
-//		glClearDepth(1.0);
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	}awd
-//	else
-//	{
-//		glClear(GL_COLOR_BUFFER_BIT);
-//	}
-
-	glEnable(GL_DEPTH_TEST);
-}
-
-void CDevice::setViewport(uint32_t width, uint32_t height)
-{
-	glViewport(0, 0, width, height);
-}
-
 
 std::unique_ptr<IDevice> IDevice::createDevice(GameWindow& win, bool bDebugContext)
 {

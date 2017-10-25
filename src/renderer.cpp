@@ -19,22 +19,43 @@ struct LightUniformBuffer
 	Vec3 lightDir;
 };
 
-Renderer Renderer::s_renderer;
+
+class Renderer : public IRenderer
+{
+	public:
+		Renderer();
+		~Renderer();
+		Renderer(const Renderer&) = delete;
+		Renderer& operator = (const Renderer&) = delete;
+
+		virtual void addNewBatch(std::unique_ptr<IBatch> batch) override;
+
+		virtual void updateFrameUniforms(Camera& camera);
+		virtual void drawFrame();
+
+		virtual void setViewport(uint32_t width, uint32_t height);
+		static void shutdown();
+
+	private:
+		/* batches that will be sent to GPU for rendering */
+		std::vector <std::unique_ptr<IBatch> > m_batches;
+
+		CGPUBuffer m_cameraUniform;
+		CGPUBuffer m_lightUniform;
+
+		CCompositingPipeline m_compositor;
+};
 
 Renderer::Renderer ()
+	: m_cameraUniform(sizeof(SceneUniformBuffer))
+	, m_lightUniform(sizeof(LightUniformBuffer))
 {
-}
-
-void Renderer::initialize(GameWindow& win, bool bDebugContext)
-{
-	m_device = IDevice::createDevice(win, bDebugContext);
-	m_cameraUniform = std::make_unique <CGPUBuffer> (sizeof(SceneUniformBuffer));
-	m_lightUniform = std::make_unique <CGPUBuffer> (sizeof(LightUniformBuffer));
 }
 
 Renderer::~Renderer()
 {
-	m_cameraUniform.reset();
+	// make sure all render data are released before the device is
+	m_batches.clear();
 }
 
 void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
@@ -49,8 +70,9 @@ void Renderer::updateFrameUniforms(Camera& camera)
 	normalMat.invertFast();
 	normalMat.transpose();
 
-	if (SceneUniformBuffer* pBuffer = CGPUBuffer::CAutoLock <SceneUniformBuffer> (*m_cameraUniform))
+	if (auto lock = CGPUBuffer::CAutoLock <SceneUniformBuffer> (m_cameraUniform))
 	{
+		SceneUniformBuffer* pBuffer = lock;
 		Matrix44 projmat = camera.getProjectionMatrix();
 
 		for (int i = 0; i < 16; ++i)
@@ -70,8 +92,9 @@ void Renderer::updateFrameUniforms(Camera& camera)
 		}
 	}
 
-	if (LightUniformBuffer* pBuffer = CGPUBuffer::CAutoLock <LightUniformBuffer> (*m_lightUniform))
+	if (auto lock = CGPUBuffer::CAutoLock <LightUniformBuffer> (m_lightUniform))
 	{
+		LightUniformBuffer* pBuffer = lock;
 		Vec3 lightDir = normalMat * Vec3(-1.0, -1.0, 1.0);
 		lightDir.normalize();
 
@@ -87,15 +110,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 void Renderer::drawFrame()
 {
-	m_device->setViewport(m_viewportWidth, m_viewportHeight);
-	m_device->clearFramebuffer(true);
-
-	/* draw all batches */
-	for (auto& batch : m_batches)
-	{
-		batch->draw(m_cameraUniform->getID(), m_lightUniform->getID());
-	}
-
+	m_compositor.draw(m_batches, m_cameraUniform.getID(), m_lightUniform.getID());
 	/*
 	// light position
 	float sunHeight = sin(0.01*gtime);
@@ -201,17 +216,27 @@ void Renderer::drawFrame()
 	}
 	glDisable(GL_TEXTURE_2D);
 
-	glFlush();
 	gtime+=0.1;*/
 }
 
 void Renderer::setViewport(uint32_t width, uint32_t height)
 {
-	m_viewportHeight = height;
-	m_viewportWidth = width;
+	m_compositor.resize(width, height);
 }
 
-void Renderer::shutdown()
+
+std::unique_ptr <IRenderer> IRenderer::s_renderer;
+std::unique_ptr <IDevice> IRenderer::s_device;
+
+void IRenderer::initialize(GameWindow& win, bool bDebugContext)
 {
-	m_batches.clear();
+	s_device = IDevice::createDevice(win, bDebugContext);
+	s_renderer = std::make_unique <Renderer> ();
 }
+
+void IRenderer::shutdown()
+{
+	s_renderer.reset();
+	s_device.reset();
+}
+

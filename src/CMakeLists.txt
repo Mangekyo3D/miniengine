@@ -17,6 +17,8 @@ set (SRC
 	gpubuffer.cpp
 	resourcemanager.cpp
 	texture.cpp
+	compositingpipeline.cpp
+	renderpass.cpp
 )
 
 set (INC
@@ -38,6 +40,8 @@ set (INC
 	resourcemanager.h
 	controller.h
 	texture.h
+	compositingpipeline.h
+	renderpass.h
 	)
 
 set (SHADER_SRC
@@ -45,6 +49,8 @@ set (SHADER_SRC
 	${CMAKE_SOURCE_DIR}/shaders/generic.frag
 	${CMAKE_SOURCE_DIR}/shaders/genericTextured.vert
 	${CMAKE_SOURCE_DIR}/shaders/genericTextured.frag
+	${CMAKE_SOURCE_DIR}/shaders/toneMapping.vert
+	${CMAKE_SOURCE_DIR}/shaders/toneMapping.frag
 	)
 
 add_subdirectory(OS)
