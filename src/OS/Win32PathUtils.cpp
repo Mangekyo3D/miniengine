@@ -2,21 +2,6 @@
 #include <windows.h>
 #include <array>
 
-std::string Win32PathUtils::getShaderPath() const
-{
-	return getRootPath() + "\\shaders\\";
-}
-
-std::string Win32PathUtils::getModelPath() const
-{
-	return getRootPath() + "\\models\\";
-}
-
-std::string Win32PathUtils::getTexturePath() const
-{
-	return getRootPath() + "\\textures\\";
-}
-
 std::string Win32PathUtils::getRootPath() const
 {
 	HMODULE module = GetModuleHandle(nullptr);

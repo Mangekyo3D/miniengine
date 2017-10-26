@@ -18,14 +18,27 @@ class OSFactory
 class OSUtils
 {
 	public:
-		virtual std::string getShaderPath() const = 0;
-		virtual std::string getModelPath() const = 0;
-		virtual std::string getTexturePath() const = 0;
+	std::string getShaderPath() const
+	{
+		return getRootPath() + "/shaders/";
+	}
 
-		static const OSUtils& get();
+	std::string getModelPath() const
+	{
+		return getRootPath() + "/models/";
+	}
+
+	std::string getTexturePath() const
+	{
+		return getRootPath() + "/textures/";
+	}
+
+	static const OSUtils& get();
 
 	protected:
+		virtual std::string getRootPath() const = 0;
 		OSUtils() {}
+
 	private:
 		static std::unique_ptr <OSUtils> s_utils;
 };

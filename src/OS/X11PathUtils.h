@@ -2,9 +2,6 @@
 
 class X11PathUtils : public OSUtils
 {
-public:
-	virtual std::string getShaderPath() const override;
-	virtual std::string getModelPath() const override;
-	virtual std::string getTexturePath() const override;
-
+protected:
+	virtual std::string getRootPath() const override;
 };
