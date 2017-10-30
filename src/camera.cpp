@@ -22,6 +22,11 @@ const Matrix34& Camera::getViewMatrix()
 	return getWorldToObjectMatrix();
 }
 
+const Matrix34&Camera::getViewMatrixInverse()
+{
+	return getObjectToWorldMatrix();
+}
+
 const Matrix44& Camera::getProjectionMatrix()
 {
 	if (m_invalidPerspMatrix)

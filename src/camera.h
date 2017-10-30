@@ -7,7 +7,8 @@ class Camera : public WorldEntity
 		Camera();
 		virtual ~Camera();
 		void lookAtWorldPosition(Vec3 pos, Vec3 up);
-		const Matrix34 &getViewMatrix();
+		const Matrix34& getViewMatrix();
+		const Matrix34& getViewMatrixInverse();
 		const Matrix44& getProjectionMatrix();
 		void setViewport(uint32_t width, uint32_t height, float near, float far, float fov);
 		Vec3 getViewVector();

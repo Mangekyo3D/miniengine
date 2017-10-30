@@ -53,6 +53,13 @@ Quaternion Quaternion::operator* (const Quaternion& q)
 				);
 }
 
+void Quaternion::invertUnit()
+{
+	m_x = -m_x;
+	m_y = -m_y;
+	m_z = -m_z;
+}
+
 void Quaternion::normalize()
 {
 	float lenSq = m_x * m_x + m_y * m_y + m_z * m_z + m_w * m_w;
@@ -156,22 +163,6 @@ Vec3 Matrix34::getColumn(int column) const
 {
 	return Vec3(m_data + column * 3);
 }
-
-void Matrix34::invertFast()
-{
-	Matrix33 rotationPart(*this);
-	rotationPart.invertFast();
-	Vec3 invPos = rotationPart * Vec3(&m_data[9]);
-
-	for (int i = 0; i < 9; ++i)
-	{
-		m_data[i] = rotationPart.getData()[i];
-	}
-	m_data[9] = -invPos.x();
-	m_data[10] = -invPos.y();
-	m_data[11] = -invPos.z();
-}
-
 
 Matrix33::Matrix33()
 {
@@ -280,52 +271,6 @@ Matrix33::Matrix33(const Matrix44& m)
 	m_data[6] = m.getData()[8];
 	m_data[7] = m.getData()[9];
 	m_data[8] = m.getData()[10];
-}
-
-void Matrix33::invertFast()
-{
-	Vec3 column1(m_data);
-	Vec3 column2(m_data + 3);
-	Vec3 column3(m_data + 6);
-
-	float f1 = 1.0f / column1.normalize();
-	float f2 = 1.0f / column2.normalize();
-	float f3 = 1.0f / column3.normalize();
-
-	m_data[0] = f1 * column1.x();
-	m_data[1] = f1 * column2.x();
-	m_data[2] = f1 * column3.x();
-
-	m_data[3] = f2 * column1.y();
-	m_data[4] = f2 * column2.y();
-	m_data[5] = f2 * column3.y();
-
-	m_data[6] = f3 * column1.z();
-	m_data[7] = f3 * column2.z();
-	m_data[8] = f3 * column3.z();
-}
-
-void Matrix33::orthonormalizeFast()
-{
-	Vec3 column1(m_data);
-	Vec3 column2(m_data + 3);
-	Vec3 column3(m_data + 6);
-
-	float f1 = 1.0f / column1.normalize();
-	float f2 = 1.0f / column2.normalize();
-	float f3 = 1.0f / column3.normalize();
-
-	m_data[0] *= f1;
-	m_data[1] *= f1;
-	m_data[2] *= f1;
-
-	m_data[3] *= f2;
-	m_data[4] *= f2;
-	m_data[5] *= f2;
-
-	m_data[6] *= f3;
-	m_data[7] *= f3;
-	m_data[8] *= f3;
 }
 
 void Matrix33::factorZYX(float &z, float &y, float &x)

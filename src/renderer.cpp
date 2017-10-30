@@ -66,8 +66,7 @@ void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
 void Renderer::updateFrameUniforms(Camera& camera)
 {
 	Matrix44 viewmat = camera.getViewMatrix();
-	Matrix33 normalMat(viewmat);
-	normalMat.invertFast();
+	Matrix33 normalMat(camera.getViewMatrixInverse());
 	normalMat.transpose();
 
 	if (auto lock = CGPUBuffer::CAutoLock <SceneUniformBuffer> (m_cameraUniform))

@@ -1,6 +1,4 @@
-#ifndef MATRIX_H
-#define MATRIX_H
-
+#pragma once
 #include "vertex.h"
 
 class Matrix44;
@@ -21,6 +19,7 @@ public:
 	// hamilton product of two quaternions
 	Quaternion operator* (const Quaternion& q);
 
+	void invertUnit();
 	// normalize a quaternion to unit length
 	void normalize();
 
@@ -63,8 +62,6 @@ public:
 	const float* getConstData() const {return m_data;}
 	float* getData() {return m_data;}
 	Vec3 getColumn(int column) const;
-	// assume that rotation/scaling matrix is orthogonal
-	void invertFast();
 
 	static Matrix34 generateTranslation(float x, float y, float z);
 
@@ -87,9 +84,6 @@ public:
 	const float* getData() const { return m_data; }
 	Vec3 getColumn(int column) const;
 
-	// those two functions assume that matrix is orthogonal
-	void invertFast();
-	void orthonormalizeFast();
 	// factor as rotation between z, y and x angles
 	void factorZYX(float& z, float& y, float& x);
 	void factorYXZ(float& y, float& x, float& z);
@@ -105,5 +99,3 @@ public:
 private:
 	float m_data[9];
 };
-
-#endif // MATRIX_H
