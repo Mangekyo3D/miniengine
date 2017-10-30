@@ -54,7 +54,6 @@ Matrix34&WorldEntity::getWorldToObjectMatrix()
 {
 	if (m_flags & eInvalidInverseWorldTransform)
 	{
-		getObjectToWorldMatrix();
 		Quaternion invQuat = m_rotation;
 		invQuat.invertUnit();
 		Matrix33 rotationPart(invQuat);

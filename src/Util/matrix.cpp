@@ -36,11 +36,15 @@ Quaternion::Quaternion(Vec3 axis, float angle)
 // we assume that m is orthogonal
 Quaternion::Quaternion(Matrix33& m)
 {
-	m_w = sqrtf (std::max(0.0f, 1.0f + m.getData() [0] + m.getData() [4] + m.getData() [8])) * 0.5f;
-	float w4 = 1.0f / (4.0f * m_w);
-	m_x = (m.getData() [5] - m.getData() [7]) * w4;
-	m_y = (m.getData() [6] - m.getData() [2]) * w4;
-	m_z = (m.getData() [1] - m.getData() [3]) * w4;
+	float T = sqrtf (std::max(0.0f, 1.0f + m.getData() [0] + m.getData() [4] + m.getData() [8]));
+	float S = 0.5f / T;
+
+	m_w = T * 0.5f;
+	m_x = (m.getData() [5] - m.getData() [7]) * S;
+	m_y = (m.getData() [6] - m.getData() [2]) * S;
+	m_z = (m.getData() [1] - m.getData() [3]) * S;
+
+	normalize();
 }
 
 Quaternion Quaternion::operator* (const Quaternion& q)
