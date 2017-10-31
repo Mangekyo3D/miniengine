@@ -19,6 +19,7 @@ class Plane : public WorldEntity
 		void roll(float froll);
 		void accelerate(float throttle);
 		Vec3& getPosition(void);
+		float getSpeed() const { return m_speed; }
 		void update() override;
 
 		static void initializeSound();

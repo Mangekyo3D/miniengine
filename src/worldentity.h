@@ -8,8 +8,9 @@ class WorldEntity
 		WorldEntity();
 		WorldEntity(Vec3 position);
 		virtual ~WorldEntity();
-		Vec3 getPosition();
+		Vec3 getPosition() const;
 		void setPosition(Vec3 val);
+		Quaternion getRotation() const;
 		void setRotation(Quaternion q);
 		void setScale(float scale);
 		Matrix34& getObjectToWorldMatrix();

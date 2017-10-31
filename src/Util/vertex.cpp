@@ -95,7 +95,7 @@ float Vec3::normalize()
 {
 	float l = length();
 
-	if (l != 0)
+	if (l != 0.0f)
 	{
 		float inv_len = 1.0f / length();
 

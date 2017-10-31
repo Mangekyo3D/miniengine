@@ -1,5 +1,7 @@
 #include "camera.h"
 #include <cmath>
+#include "Util/mathutils.h"
+#include <algorithm>
 
 Camera::Camera()
 {
@@ -79,4 +81,47 @@ void Camera::lookAtWorldPosition(Vec3 pos, Vec3 up)
 			setRotation(q);
 		}
 	}
+}
+
+void Camera::followFromBehind(WorldEntity& entity, float distance, float maxTurnDegrees, float maxDiffDegrees)
+{
+	Matrix33 transform(entity.getRotation());
+	// construct new transform for camera
+	Matrix33 newTransform(transform.getColumn(0), transform.getColumn(2), -transform.getColumn(1));
+
+	// construct a quaternion from the new 3x3 matrix
+	Quaternion finalRot(newTransform);
+
+	Quaternion rot = m_rotation;
+	if (dot(m_rotation, finalRot) < 0.0f)
+	{
+		finalRot = -finalRot;
+	}
+
+	// The quaternion to rotate from m_rotation to q is q * m_rotation ^ -1
+	rot.invertUnit();
+	rot = finalRot * rot;
+	Vec3 rotAxis = rot.getRotationAxis();
+	float rotAngle = rot.getRotationAngle();
+
+	// don't change the rotation if we are less than an angle off. It keeps the camera from jittering
+	if (rotAngle > degreesToRads(1.0f))
+	{
+		const float fMaxTurnRads = degreesToRads(maxTurnDegrees);
+		const float fMaxDiffRads = degreesToRads(maxDiffDegrees);
+		// first, clamp the rate of rotation by the maximum per frame rotation
+		float fRot = std::min(fMaxTurnRads, rotAngle);
+
+		// if camera is way off, then also keep the angle difference clamped
+		if (rotAngle - fRot > fMaxDiffRads)
+		{
+			fRot = rotAngle - fMaxDiffRads;
+		}
+
+		rot = Quaternion(rotAxis, fRot);
+
+		setRotation(rot * m_rotation);
+	}
+
+	setPosition(entity.getPosition() + distance * getObjectToWorldMatrix().getColumn(2).getNormalized());
 }

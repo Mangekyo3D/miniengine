@@ -352,8 +352,8 @@ void PlanePlayerController::update()
 	Engine& engine = Engine::get();
 	const SUserInputState& inputState = engine.getInputState();
 
-	const float fPitchSpeed = 0.005f;
-	const float fRollSpeed = 0.01f;
+	const float fPitchSpeed = 0.5f * m_plane->getSpeed();
+	const float fRollSpeed = 1.0f * m_plane->getSpeed();
 
 	if(inputState.firePressed)
 	{

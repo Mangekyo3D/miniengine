@@ -15,7 +15,7 @@ WorldEntity::~WorldEntity()
 {
 }
 
-Vec3 WorldEntity::getPosition()
+Vec3 WorldEntity::getPosition() const
 {
 	return m_position; 
 }
@@ -25,6 +25,11 @@ void WorldEntity::setPosition(Vec3 val)
 {
 	m_position = val; 
 	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
+}
+
+Quaternion WorldEntity::getRotation() const
+{
+	return m_rotation;
 }
 
 void WorldEntity::setRotation(Quaternion q)
@@ -50,7 +55,7 @@ Matrix34& WorldEntity::getObjectToWorldMatrix()
 	return m_objectToWorldMatrix;
 }
 
-Matrix34&WorldEntity::getWorldToObjectMatrix()
+Matrix34& WorldEntity::getWorldToObjectMatrix()
 {
 	if (m_flags & eInvalidInverseWorldTransform)
 	{

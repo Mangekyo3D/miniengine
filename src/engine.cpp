@@ -89,6 +89,7 @@ void Engine::enterGameLoop()
 			;
 		time = clock();
 
+		m_inputState.reset();
 		m_gameWindow->handleOSEvents();
 
 		if (m_inputState.menuPressed)
@@ -132,10 +133,7 @@ void Engine::enterGameLoop()
 		/* startup, create world */
 		m_currentWorldTile.setup_draw_operations();
 
-		Matrix34 playerEntityTransform = m_playerEntity->getObjectToWorldMatrix();
-
-		m_camera.setPosition(m_playerEntity->getPosition() - playerEntityTransform.getColumn(1).getNormalized());
-		m_camera.lookAtWorldPosition(m_playerEntity->getPosition(), playerEntityTransform.getColumn(2).getNormalized());
+		m_camera.followFromBehind(*m_playerEntity, 1.0f, 0.2f, 30.0f);
 
 		renderer.updateFrameUniforms(m_camera);
 		renderer.drawFrame();

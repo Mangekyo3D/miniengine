@@ -3,6 +3,7 @@
 #include <cmath>
 #include <utility>
 #include <algorithm>
+#include "mathutils.h"
 
 Quaternion::Quaternion()
 	: m_w(1.0f)
@@ -57,6 +58,11 @@ Quaternion Quaternion::operator* (const Quaternion& q)
 				);
 }
 
+Quaternion Quaternion::operator-()
+{
+	return Quaternion(-m_w, -m_x, -m_y, -m_z);
+}
+
 void Quaternion::invertUnit()
 {
 	m_x = -m_x;
@@ -73,6 +79,16 @@ void Quaternion::normalize()
 	m_y *= invLen;
 	m_z *= invLen;
 	m_w *= invLen;
+}
+
+float Quaternion::getRotationAngle()
+{
+	return 2.0f * acos(m_w);
+}
+
+Vec3 Quaternion::getRotationAxis()
+{
+	return Vec3(m_x, m_y, m_z);
 }
 
 Matrix44::Matrix44()
@@ -375,7 +391,7 @@ Matrix44 Matrix44::generatePerspective(float nearPlane, float farPlane, float as
 {
 	Matrix44 m;
 
-	float tanval = tan(static_cast <float> (fov * M_PI / 180.0));
+	float tanval = tan(degreesToRads(fov));
 	float width, height;
 
 	// here we modify the standard perspective transform slightly to ensure that the wider
@@ -418,3 +434,8 @@ Matrix44 Matrix44::generatePerspective(float nearPlane, float farPlane, float as
 	return m;
 }
 
+
+float dot(Quaternion& q1, Quaternion& q2)
+{
+	return q1.x() * q2.x() + q1.y() * q2.y() + q1.z() * q2.z() + q1.w() * q2.w();
+}

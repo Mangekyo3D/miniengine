@@ -7,6 +7,7 @@ class Camera : public WorldEntity
 		Camera();
 		virtual ~Camera();
 		void lookAtWorldPosition(Vec3 pos, Vec3 up);
+		void followFromBehind(WorldEntity& entity, float distance = 1.0f, float maxTurnDegrees = 1.0f, float maxDiffDegrees = 15.0f);
 		const Matrix34& getViewMatrix();
 		const Matrix34& getViewMatrixInverse();
 		const Matrix44& getProjectionMatrix();

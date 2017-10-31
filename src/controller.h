@@ -15,7 +15,7 @@ struct SUserInputState
 
 	void reset()
 	{
-		*this = {0};
+		accelarateTick = 0;
 	}
 
 	void printDebug()

@@ -18,10 +18,14 @@ public:
 
 	// hamilton product of two quaternions
 	Quaternion operator* (const Quaternion& q);
+	Quaternion operator- ();
 
 	void invertUnit();
 	// normalize a quaternion to unit length
 	void normalize();
+
+	float getRotationAngle();
+	Vec3  getRotationAxis();
 
 	float w() const { return m_w; }
 	float x() const { return m_x; }
@@ -34,6 +38,8 @@ private:
 	float m_y;
 	float m_z;
 };
+
+float dot(Quaternion& q1, Quaternion& q2);
 
 class Matrix44
 {

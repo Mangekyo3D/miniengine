@@ -2,6 +2,7 @@ set (SRC
 	matrix.cpp
 	perlin.cpp
 	vertex.cpp
+	mathutils.cpp
 )
 
 set (INC
@@ -9,6 +10,7 @@ set (INC
 	vertex.h
 	perlin.h
 	signal.h
+	mathutils.h
 )
 
 add_library (Util STATIC ${SRC} ${INC})
