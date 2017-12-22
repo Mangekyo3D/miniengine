@@ -7,7 +7,7 @@
 
 class GameWindow;
 class OSFactory;
-class CAudioDevice;
+class IAudioDevice;
 class WorldEntity;
 class Effect;
 class Controller;
@@ -41,7 +41,6 @@ private:
 	Engine(const Engine&) = delete;
 
 	std::unique_ptr <GameWindow>        m_gameWindow;
-	std::unique_ptr <CAudioDevice>      m_audioDevice;
 
 	WorldTile                           m_currentWorldTile;
 

@@ -72,7 +72,7 @@ void Engine::startup(SCommandLineOptions& options)
 
 	m_gameWindow->maximize();
 
-	m_audioDevice = std::make_unique <CNullAudioDevice>();
+	IAudioDevice::initialize();
 }
 
 void Engine::enterGameLoop()
@@ -140,7 +140,7 @@ void Engine::enterGameLoop()
 
 		m_gameWindow->swapBuffers();
 
-		if (!m_audioDevice->checkStatus())
+		if (!IAudioDevice::get().checkStatus())
 		{
 			std::cout << "Audio Error" << std::endl;
 		}
@@ -152,6 +152,7 @@ void Engine::enterGameLoop()
 	m_worldEntities.clear();
 
 	IRenderer::shutdown();
+	IAudioDevice::shutdown();
 }
 
 void Engine::setPlayerEntity(WorldEntity* entity)

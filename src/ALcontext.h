@@ -1,32 +1,30 @@
 #pragma once
+#include <memory>
 
-class CAudioDevice
+class IAudioDevice
 {
-	public:
-		virtual ~CAudioDevice() {}
-		virtual bool checkStatus() = 0;
+public:
+	virtual ~IAudioDevice() {}
+
+	static void initialize();
+	static void shutdown();
+	static IAudioDevice& get();
+
+	virtual bool checkStatus() = 0;
+
+protected:
+	static std::unique_ptr <IAudioDevice> s_audioDevice;
+	IAudioDevice() {}
+	IAudioDevice(const IAudioDevice&) = delete;
 };
 
-class CNullAudioDevice : public CAudioDevice
+class IAudioComponent
 {
-		virtual bool checkStatus() override { return true; }
+public:
+	~IAudioComponent() {}
+
+	virtual void playOnce() = 0;
+	virtual void loop() = 0;
+
+	virtual void setLocation() = 0;
 };
-
-#ifdef OPENAL_FOUND
-#include <AL/alut.h>
-#include <AL/alc.h>
-class OpenALContext : public CAudioDevice
-{
-	private:
-		ALCcontext *alc;
-		ALCdevice *aldev;
-
-	public:
-		OpenALContext();
-		~OpenALContext();
-
-		virtual bool checkStatus() override { 
-			return alGetError() != AL_NO_ERROR;
-		}
-};
-#endif

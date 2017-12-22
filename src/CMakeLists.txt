@@ -64,13 +64,23 @@ if (UNIX)
 	set (LIBS 
 		X11
 		GL
-		openal 
-		alut
 		)
 elseif (WIN32)
 	set (LIBS 
 		opengl32
 		)
 endif()
+
+set (INC_DIRS)
+
+find_package(OpenAL)
+
+if (OpenAL_FOUND)
+	add_definitions(-DOPENAL_FOUND)
+	list(APPEND INC_DIRS ${OpenAL_INCLUDE_DIRS})
+	list(APPEND LIBS ${OPENAL_LIBRARY})
+endif()
+
+include_directories(${INC_DIRS})
 
 target_link_libraries(shooter ${LIBS} OS Util)
