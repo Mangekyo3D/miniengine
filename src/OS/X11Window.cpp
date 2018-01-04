@@ -20,7 +20,7 @@ X11Window::X11Window(Display *dpy, bool bDebugContext)
 					 GLX_GREEN_SIZE, 8,
 					 GLX_BLUE_SIZE, 8,
 					 GLX_ALPHA_SIZE, 0,
-					 GLX_DEPTH_SIZE, 24,
+					 GLX_DEPTH_SIZE, 0,
 					 GLX_STENCIL_SIZE, 8,
 					 None};
 
