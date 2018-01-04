@@ -133,7 +133,7 @@ class IBatch
 {
 	public:
 		virtual ~IBatch() {}
-		virtual void draw(uint32_t cameraUniformID, uint32_t lightUniformID) = 0;
+		virtual void draw() = 0;
 };
 
 class CIndexedInstancedBatch : public IBatch
@@ -142,7 +142,7 @@ class CIndexedInstancedBatch : public IBatch
 		CIndexedInstancedBatch(IMesh *, PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
-		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
+		void draw() override;
 
 		void addMeshInstance(MeshInstanceData& instance);
 
@@ -172,7 +172,7 @@ class CDynamicArrayBatch : public IBatch
 		CDynamicArrayBatch(PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
-		void draw(uint32_t cameraUniformID, uint32_t lightUniformID) override;
+		void draw() override;
 
 		void addMeshData();
 

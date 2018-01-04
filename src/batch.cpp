@@ -210,7 +210,7 @@ static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
 	return GL_TRIANGLES;
 }
 
-void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
+void CIndexedInstancedBatch::draw()
 {
 	if (m_instanceData.size() == 0)
 	{
@@ -231,8 +231,6 @@ void CIndexedInstancedBatch::draw(uint32_t cameraUniformID, uint32_t lightUnifor
 	}
 
 	auto& device = IDevice::get <CDevice>();
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraUniformID);
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightUniformID);
 	device.glEnable(GL_CULL_FACE);
 
 	if (m_bEnablePrimRestart)
@@ -299,7 +297,7 @@ CDynamicArrayBatch::~CDynamicArrayBatch()
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 }
 
-void CDynamicArrayBatch::draw(uint32_t cameraUniformID, uint32_t lightUniformID)
+void CDynamicArrayBatch::draw()
 {
 
 }

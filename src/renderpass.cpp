@@ -148,9 +148,12 @@ void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, ui
 	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	device.glDepthRangef(1.0f, 0.0f);
 
+	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraID);
+	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightID);
+
 	for (auto& batch : batches)
 	{
-		batch->draw(cameraID, lightID);
+		batch->draw();
 	}
 
 	device.glDisable(GL_DEPTH_TEST);
