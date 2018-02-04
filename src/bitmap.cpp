@@ -72,28 +72,28 @@ bool Bitmap::openFromFile(const char *fileName)
 
 	m_width = infoHeader.biWidth;
 	m_height = infoHeader.biHeight;
-	m_length = m_width * m_height * 3;
+	size_t length = m_width * m_height * 3;
 
-	if(m_length == 0)
+	if(length == 0)
 	{
-		cout << "Empty image. Length read: " << m_length << endl;
+		cout << "Empty image. Length read: " << length << endl;
 		m_width = 0;
 		m_height = 0;
 		return false;
 	}
 
-	m_data.reset(new uint8_t[m_length]);
+	m_data.reset(new uint8_t[length]);
 
 	if (m_data.get() == nullptr)
 	{
-		cout << "Error during allocation: " << m_length << endl;
+		cout << "Error during allocation: " << length << endl;
 		m_width = 0;
 		m_height = 0;
 		return false;
 	}
 
 	//fill the bitmap in the memory
-	file.read(reinterpret_cast<char*> (m_data.get()), m_length);
+	file.read(reinterpret_cast<char*> (m_data.get()), length);
 
 	file.close();
 	return true;

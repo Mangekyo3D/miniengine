@@ -3,6 +3,7 @@ set (SRC
 	perlin.cpp
 	vertex.cpp
 	mathutils.cpp
+	colorutils.cpp
 )
 
 set (INC
@@ -11,6 +12,7 @@ set (INC
 	perlin.h
 	signal.h
 	mathutils.h
+	colorutils.h
 )
 
 add_library (Util STATIC ${SRC} ${INC})

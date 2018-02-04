@@ -32,6 +32,7 @@ CDevice::CDevice(GameWindow& win, bool bDebugContext)
 	this->glClearDepth = ::glClearDepth;
 	this->glViewport = ::glViewport;
 	this->glDepthFunc = ::glDepthFunc;
+	this->glPixelStorei = ::glPixelStorei;
 
 	INITFUNCTION(glClearNamedFramebufferfv)
 	INITFUNCTION(glClearNamedFramebufferfi)
