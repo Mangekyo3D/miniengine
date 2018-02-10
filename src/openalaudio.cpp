@@ -6,6 +6,9 @@
 #include <iostream>
 #include <fstream>
 
+#define READMEMBER(member) \
+	file.read(reinterpret_cast<char *>(&member), sizeof(member))
+
 class OpenALAudioResource : public IAudioResource
 {
 public:
@@ -31,20 +34,127 @@ public:
 
 		if (file)
 		{
-			std::cout << "Audio file " << m_filename << " found!" << std::endl;
-
 			// read file header according to wav file specification
 			char magicchar[4];
-			file.read(magicchar, 4);
+			READMEMBER(magicchar);
 
 			if (strncmp(magicchar, "RIFF", 4) !=0)
+			{
+				std::cout << "Audio file " << m_filename << " is not a RIFF/WAV file" << std::endl;
+				return;
+			}
+
+			uint32_t fileSize;
+			READMEMBER(fileSize);
+			READMEMBER(magicchar);
+
+			if (strncmp(magicchar, "WAVE", 4) !=0)
 			{
 				std::cout << "Audio file " << m_filename << " is not a WAV file" << std::endl;
 				return;
 			}
-			// data has been read, time to generate the buffer
-			alGenBuffers(1, &m_buffer);
-			//alBufferData(m_buffer, format, data, size, frequency);
+
+			// format chunk
+			READMEMBER(magicchar);
+			if (strncmp(magicchar, "fmt ", 4) !=0)
+			{
+				std::cout << "Audio file " << m_filename << " has incorrect format chunk" << std::endl;
+				return;
+			}
+
+			// chunk size
+			READMEMBER(fileSize);
+
+			uint16_t formatWav;
+			READMEMBER(formatWav);
+			if (formatWav != 1)
+			{
+				std::cout << "Audio file " << m_filename << " has incorrect format" << std::endl;
+				return;
+			}
+
+			uint16_t numChannels;
+			READMEMBER(numChannels);
+			uint32_t samplingRate;
+			READMEMBER(samplingRate);
+			uint32_t avgBytesPerSec;
+			READMEMBER(avgBytesPerSec);
+			uint16_t blockAlign;
+			READMEMBER(blockAlign);
+			uint16_t bitDepth;
+			READMEMBER(bitDepth);
+
+			// fix struct alignment issue on some wav writers.
+			if (fileSize == 18)
+			{
+				uint16_t dummy;
+				READMEMBER(dummy);
+			}
+
+			ALenum alFormat;
+
+			if (numChannels == 1)
+			{
+				if (bitDepth == 8)
+				{
+					alFormat = AL_FORMAT_MONO8;
+				}
+				else if (bitDepth == 16)
+				{
+					alFormat = AL_FORMAT_MONO16;
+				}
+				else
+				{
+					std::cout << "Audio file " << m_filename << " unsupported bit depth " << bitDepth << std::endl;
+					return;
+				}
+			}
+			else if (numChannels == 2)
+			{
+				if (bitDepth == 8)
+				{
+					alFormat = AL_FORMAT_STEREO8;
+				}
+				else if (bitDepth == 16)
+				{
+					alFormat = AL_FORMAT_STEREO16;
+				}
+				else
+				{
+					std::cout << "Audio file " << m_filename << " unsupported bit depth " << bitDepth << std::endl;
+					return;
+				}
+			}
+			else
+			{
+				std::cout << "Audio file " << m_filename << " unsupported number of channels " << numChannels << std::endl;
+				return;
+			}
+
+			READMEMBER(magicchar);
+			if (strncmp(magicchar, "data", 4) !=0)
+			{
+				std::cout << "Audio file " << m_filename << " has incorrect data chunk" << std::endl;
+				return;
+			}
+
+			uint32_t dataSize;
+			READMEMBER(dataSize);
+
+			if (dataSize > 0)
+			{
+				std::unique_ptr<char[]> soundData(new char[dataSize]);
+
+				file.read(soundData.get(), dataSize);
+
+				// data has been read, time to generate the openAL buffer
+				alGenBuffers(1, &m_buffer);
+				alBufferData(m_buffer, alFormat, soundData.get(), dataSize, samplingRate);
+			}
+		}
+		else
+		{
+			std::cout << "Audio file " << m_filename << " was not found!" << std::endl;
 		}
 	}
 

@@ -48,7 +48,7 @@ bool Bitmap::openFromFile(const char *fileName)
 		return false;
 	}
 #define READMEMBER(member) \
-	file.read((char *)&member, sizeof(member));
+	file.read(reinterpret_cast<char *>(&member), sizeof(member));
 
 
 	// this spells trouble, different compilers will align members and structs differently. seekg might help if members are quasi aligned the same

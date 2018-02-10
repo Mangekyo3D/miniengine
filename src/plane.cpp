@@ -8,9 +8,6 @@
 #include "engine.h"
 #include "resourcemanager.h"
 
-//ALuint Plane::buffer;
-//ALuint Plane::engineBuf;
-
 CIndexedInstancedBatch* Plane::s_batch = nullptr;
 IAudioResource* Plane::s_engineAudio = nullptr;
 IAudioResource* Plane::s_laserAudio = nullptr;
