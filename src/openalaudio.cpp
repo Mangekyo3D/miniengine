@@ -1,8 +1,8 @@
 #include "audiointerface.h"
 
 #ifdef OPENAL_FOUND
-#include <AL/alut.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 #include <iostream>
 #include <fstream>
 
@@ -34,10 +34,17 @@ public:
 			std::cout << "Audio file " << m_filename << " found!" << std::endl;
 
 			// read file header according to wav file specification
+			char magicchar[4];
+			file.read(magicchar, 4);
 
+			if (strncmp(magicchar, "RIFF", 4) !=0)
+			{
+				std::cout << "Audio file " << m_filename << " is not a WAV file" << std::endl;
+				return;
+			}
 			// data has been read, time to generate the buffer
 			alGenBuffers(1, &m_buffer);
-			alBufferData(m_buffer, format, data, size, frequency);
+			//alBufferData(m_buffer, format, data, size, frequency);
 		}
 	}
 
@@ -130,6 +137,7 @@ std::unique_ptr <IAudioResource>OpenALDevice::createAudioResource(std::string& f
 class CNullAudioDevice : public IAudioDevice
 {
 		virtual bool checkStatus() override { return true; }
+		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) { return nullptr; }
 };
 
 IAudioDevice& IAudioDevice::get()

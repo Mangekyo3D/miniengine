@@ -75,9 +75,9 @@ set (INC_DIRS)
 
 find_package(OpenAL)
 
-if (OpenAL_FOUND)
+if (OPENAL_FOUND)
 	add_definitions(-DOPENAL_FOUND)
-	list(APPEND INC_DIRS ${OpenAL_INCLUDE_DIRS})
+	list(APPEND INC_DIRS ${OPENAL_INCLUDE_DIR})
 	list(APPEND LIBS ${OPENAL_LIBRARY})
 endif()
 
