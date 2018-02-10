@@ -199,6 +199,36 @@ public:
 		alDeleteSources(1, &m_source);
 	}
 
+	virtual void setPosition(Vec3 pos)
+	{
+		alSourcefv(m_source, AL_POSITION, pos.data());
+	}
+
+	virtual void setVelocity(Vec3 vel)
+	{
+		alSourcefv(m_source, AL_VELOCITY, vel.data());
+	}
+
+	virtual void setPitchMultiplier(float mult)
+	{
+		alSourcef(m_source, AL_PITCH, mult);
+	}
+
+	void loop(bool bLoop)
+	{
+		alSourcei(m_source, AL_LOOPING, bLoop ? AL_TRUE : AL_FALSE);
+	}
+
+	void play()
+	{
+		alSourcePlay(m_source);
+	}
+
+	void stop()
+	{
+		alSourceStop(m_source);
+	}
+
 private:
 	ALuint m_source;
 };
@@ -212,6 +242,8 @@ class OpenALDevice : public IAudioDevice
 		// pool of one-shot sounds
 		std::vector<ALuint> m_oneshotSounds;
 		uint32_t m_currentOneShotSound;
+		// looping sounds
+		std::vector<std::unique_ptr <OpenALAudioInstance> > m_loopingSounds;
 
 	public:
 		OpenALDevice();
@@ -222,6 +254,7 @@ class OpenALDevice : public IAudioDevice
 		virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&);
 		virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&);
 		virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity);
+		virtual void deleteResource(IAudioInstance*);
 };
 
 OpenALDevice::OpenALDevice()
@@ -244,7 +277,9 @@ OpenALDevice::OpenALDevice()
 
 OpenALDevice::~OpenALDevice()
 {
+	// clear individual sound resources before clearing the
 	alDeleteSources(MAXONESHOTSOUNDS, &m_oneshotSounds[0]);
+	m_loopingSounds.clear();
 
 	alc = alcGetCurrentContext();
 	aldev = alcGetContextsDevice(alc);
@@ -311,9 +346,14 @@ void OpenALDevice::playResourceOnce(const IAudioResource &resource, const SAudio
 	alSourcePlay(source);
 }
 
-IAudioInstance* OpenALDevice::loopResource(const IAudioResource &, const SAudioInitParams &)
+IAudioInstance* OpenALDevice::loopResource(const IAudioResource &resource, const SAudioInitParams &params)
 {
-	return nullptr;
+	auto newSound = std::make_unique<OpenALAudioInstance> (resource, params);
+	newSound->loop(true);
+	newSound->play();
+	IAudioInstance* ret = static_cast<IAudioInstance*> (newSound.get());
+	m_loopingSounds.push_back(std::move(newSound));
+	return ret;
 }
 
 void OpenALDevice::updateListener(Vec3 position, Vec3 orientation, Vec3 velocity)
@@ -321,6 +361,18 @@ void OpenALDevice::updateListener(Vec3 position, Vec3 orientation, Vec3 velocity
 	alListenerfv(AL_POSITION, position.data());
 	alListenerfv(AL_ORIENTATION, orientation.data());
 	alListenerfv(AL_VELOCITY, velocity.data());
+}
+
+void OpenALDevice::deleteResource(IAudioInstance* res)
+{
+	for (auto iter = m_loopingSounds.begin(); iter < m_loopingSounds.end(); ++iter)
+	{
+		if (iter->get() == res)
+		{
+			m_loopingSounds.erase(iter);
+			break;
+		}
+	}
 }
 
 #endif
@@ -333,6 +385,7 @@ public:
 	virtual void playResourceOnce(IAudioResource&, SAudioInitParams&) {}
 	virtual IAudioInstance* loopResource(IAudioResource&, SAudioInitParams&) {}
 	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) {}
+	virtual void deleteResource(IAudioInstance*) {}
 };
 
 IAudioDevice& IAudioDevice::get()

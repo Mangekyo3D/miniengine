@@ -6,6 +6,7 @@
 class CIndexedInstancedBatch;
 class CDynamicArrayBatch;
 class IAudioResource;
+class IAudioInstance;
 
 class Plane : public WorldEntity
 {

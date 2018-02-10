@@ -31,6 +31,7 @@ public:
 	virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&) = 0;
 	// play a resource continuously, return a handle so that users can tweak the parameters dynamically
 	virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&) = 0;
+	virtual void deleteResource(IAudioInstance*) = 0;
 	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) = 0;
 
 protected:
@@ -60,10 +61,11 @@ protected:
 class IAudioInstance
 {
 public:
-	~IAudioInstance() {}
+	IAudioInstance() {}
+	IAudioInstance(const IAudioInstance&) = delete;
+	virtual ~IAudioInstance() {}
 
-	virtual void playOnce() = 0;
-	virtual void loop() = 0;
-
-	virtual void setLocation() = 0;
+	virtual void setPosition(Vec3) = 0;
+	virtual void setVelocity(Vec3) = 0;
+	virtual void setPitchMultiplier(float) = 0;
 };

@@ -6,7 +6,6 @@
 #include <iostream>
 #include "worldentity.h"
 #include <cmath>
-#include "plane.h"
 #include "audiointerface.h"
 #include "resourcemanager.h"
 
@@ -87,7 +86,7 @@ void Engine::enterGameLoop()
 	while (true)
 	{
 		// 60 fps timing
-		while ((clock() - time) / static_cast<double> (CLOCKS_PER_SEC) < 0.016)
+		while ((clock() - time) / static_cast<double> (CLOCKS_PER_SEC) < 0.033)
 			;
 		time = clock();
 

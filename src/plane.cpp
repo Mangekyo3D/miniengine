@@ -51,25 +51,13 @@ Plane::Plane(Vec3 initPos)
 
 	setScale(0.01f);
 
-	/*
-	alGenSources(1, &m_soundSource);
-	alGenSources(1, &m_engineSource);
+	IAudioDevice& audioDevice = IAudioDevice::get();
+	SAudioInitParams params;
 
-	alSourcei(m_soundSource, AL_BUFFER, buffer);
-	alSourcef(m_soundSource, AL_REFERENCE_DISTANCE, 0.5);
-	alSourcef(m_soundSource, AL_ROLLOFF_FACTOR, 1.0);
-	alSourcef(m_engineSource, AL_GAIN, 0.3);
+	params.position = m_position;
+	params.gain = 0.3f;
 
-
-	alSourcei(m_soundSource, AL_BUFFER, engineBuf);
-	alSourcef(m_soundSource, AL_REFERENCE_DISTANCE, 0.5);
-	alSourcef(m_soundSource, AL_ROLLOFF_FACTOR, 0.1);
-	alSourcef(m_soundSource, AL_GAIN, 0.3);
-	alSourcef(m_soundSource, AL_MAX_GAIN, 0.3);
-	alSourcei(m_soundSource, AL_LOOPING, AL_TRUE);
-
-	alSourcePlay(m_engineSource);
-*/
+	m_engineAudio = audioDevice.loopResource(*s_engineAudio, params);
 }
 
 Plane::~Plane()
@@ -79,10 +67,8 @@ Plane::~Plane()
 
 void Plane::stopSound()
 {
-	/*
-	alDeleteSources(1, &m_soundSource);
-	alDeleteSources(1, &m_engineSource);
-*/
+	IAudioDevice& audioDevice = IAudioDevice::get();
+	audioDevice.deleteResource(m_engineAudio);
 }
 
 void Plane::setColor(float *initColor)
@@ -100,7 +86,8 @@ void Plane::accelerate(float throttle)
 		m_speed = 0.01f;
 	if(m_speed > 0.11f)
 		m_speed = 0.11f;
-	//	alSourcef(m_engineSource, AL_PITCH, 1.0 + 2.5*(m_speed-0.01));
+
+	m_engineAudio->setPitchMultiplier(1.0 + 2.5*(m_speed-0.01));
 }
 
 Vec3 &Plane::getPosition()
@@ -176,10 +163,9 @@ void Plane::update()
 	setPosition(position);
 
 	Vec3 thead = m_speed * heading;
-	/*
-	alSourcefv(m_engineSource, AL_POSITION, (float *)&m_position);
-	alSourcefv(m_engineSource, AL_VELOCITY, (float*)&thead);
-	*/
+
+	m_engineAudio->setPosition(m_position);
+	m_engineAudio->setVelocity(thead);
 
 	if (s_batch)
 	{
