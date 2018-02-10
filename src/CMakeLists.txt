@@ -1,5 +1,5 @@
 set (SRC
-	ALcontext.cpp
+	openalaudio.cpp
 	batch.cpp
 	bitmap.cpp
 	camera.cpp
@@ -22,7 +22,7 @@ set (SRC
 )
 
 set (INC
-	ALcontext.h
+	audiointerface.h
 	batch.h
 	bitmap.h
 	camera.h

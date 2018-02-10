@@ -1,10 +1,11 @@
 #include "worldentity.h"
 #include "bitmap.h"
-#include "ALcontext.h"
+#include "audiointerface.h"
 #include "controller.h"
 
 class CIndexedInstancedBatch;
 class CDynamicArrayBatch;
+class IAudioResource;
 
 class Plane : public WorldEntity
 {
@@ -25,7 +26,10 @@ class Plane : public WorldEntity
 		static void initializeSound();
 		static void cleanUpSound();
 
+		// temporary, make a unified way for components to request class wide components
 		static CIndexedInstancedBatch* s_batch;
+		static IAudioResource* s_engineAudio;
+		static IAudioResource* s_laserAudio;
 
 	private:
 		bool  m_gun;
@@ -34,10 +38,8 @@ class Plane : public WorldEntity
 		int   m_health;
 
 		float  m_color[3];
-		//ALuint m_soundSource;
-		//ALuint m_engineSource;
-		//static ALuint buffer;
-		//static ALuint engineBuf;
+
+		IAudioInstance* m_engineAudio;
 };
 
 class PlaneAIController : public Controller

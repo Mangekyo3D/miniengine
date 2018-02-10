@@ -12,6 +12,8 @@
 //ALuint Plane::engineBuf;
 
 CIndexedInstancedBatch* Plane::s_batch = nullptr;
+IAudioResource* Plane::s_engineAudio = nullptr;
+IAudioResource* Plane::s_laserAudio = nullptr;
 
 Plane::Plane(Vec3 initPos)
 {
@@ -33,6 +35,21 @@ Plane::Plane(Vec3 initPos)
 		{
 			s_batch = model->getBatch();
 		}
+	}
+
+	if (!s_engineAudio)
+	{
+		s_engineAudio = ResourceManager::get().loadAudio("engine.wav");
+
+		if (s_engineAudio)
+		{
+
+		}
+	}
+
+	if (!s_laserAudio)
+	{
+		s_laserAudio = ResourceManager::get().loadAudio("laser.wav");
 	}
 
 	setScale(0.01f);

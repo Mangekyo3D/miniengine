@@ -1,6 +1,6 @@
 #pragma once
 #include "Util/vertex.h"
-#include "ALcontext.h"
+#include "audiointerface.h"
 
 class Effect
 {

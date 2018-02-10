@@ -33,6 +33,11 @@ class OSUtils
 		return getRootPath() + "/textures/";
 	}
 
+	std::string getAudioPath() const
+	{
+		return getRootPath() + "/audio/";
+	}
+
 	static const OSUtils& get();
 
 	protected:

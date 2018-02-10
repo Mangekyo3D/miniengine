@@ -1,9 +1,58 @@
-#include "ALcontext.h"
+#include "audiointerface.h"
 
 #ifdef OPENAL_FOUND
 #include <AL/alut.h>
 #include <AL/alc.h>
 #include <iostream>
+#include <fstream>
+
+class OpenALAudioResource : public IAudioResource
+{
+public:
+	OpenALAudioResource(std::string& filename)
+		: IAudioResource(filename)
+		, m_buffer(0)
+	{
+		load();
+	}
+
+	~OpenALAudioResource()
+	{
+		unload();
+	}
+
+
+	void load()
+	{
+		std::ifstream file(m_filename);
+
+		// first unload the resource in case it has been loaded before
+		unload();
+
+		if (file)
+		{
+			std::cout << "Audio file " << m_filename << " found!" << std::endl;
+
+			// read file header according to wav file specification
+
+			// data has been read, time to generate the buffer
+			alGenBuffers(1, &m_buffer);
+			alBufferData(m_buffer, format, data, size, frequency);
+		}
+	}
+
+	void unload()
+	{
+		if (m_buffer)
+		{
+			alDeleteBuffers(1, &m_buffer);
+			m_buffer = 0;
+		}
+	}
+
+private:
+	ALuint m_buffer;
+};
 
 class OpenALDevice : public IAudioDevice
 {
@@ -16,6 +65,7 @@ class OpenALDevice : public IAudioDevice
 		~OpenALDevice();
 
 		virtual bool checkStatus() override;
+		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename);
 };
 
 OpenALDevice::OpenALDevice()
@@ -30,7 +80,6 @@ OpenALDevice::OpenALDevice()
 	alc = alcCreateContext(aldev, nullptr);
 	alcMakeContextCurrent(alc);
 	alGetError();
-	//alutInitWithoutContext(nullptr, nullptr);
 }
 
 OpenALDevice::~OpenALDevice()
@@ -40,7 +89,6 @@ OpenALDevice::~OpenALDevice()
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(alc);
 	alcCloseDevice(aldev);
-	//alutExit();
 }
 
 bool OpenALDevice::checkStatus()
@@ -69,6 +117,12 @@ bool OpenALDevice::checkStatus()
 	return false;
 
 #undef HANDLE_ENUM_ERR
+}
+
+
+std::unique_ptr <IAudioResource>OpenALDevice::createAudioResource(std::string& filename)
+{
+	return std::make_unique <OpenALAudioResource> (filename);
 }
 
 #endif

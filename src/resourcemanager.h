@@ -5,6 +5,7 @@
 class SMDModel;
 class PipelineObject;
 class CTexture;
+class IAudioResource;
 
 class ResourceManager
 {
@@ -16,6 +17,7 @@ class ResourceManager
 		SMDModel* loadModel(std::string modelName);
 		PipelineObject* loadMaterial(std::string materialName);
 		CTexture* loadTexture(std::string textureName);
+		IAudioResource* loadAudio(std::string audioName);
 
 		void initialize();
 		void cleanup();
@@ -27,5 +29,6 @@ class ResourceManager
 		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
 		std::map <std::string, std::unique_ptr<PipelineObject> > m_materials;
 		std::map <std::string, std::unique_ptr<CTexture> > m_textures;
+		std::map <std::string, std::unique_ptr<IAudioResource> > m_audio;
 };
 

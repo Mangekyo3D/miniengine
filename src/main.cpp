@@ -3,7 +3,7 @@
 #include "plane.h"
 #include "Util/perlin.h"
 #include "effect.h"
-#include "ALcontext.h"
+#include "audiointerface.h"
 #include "SMDmodel.h"
 #include <memory>
 #include <iostream>

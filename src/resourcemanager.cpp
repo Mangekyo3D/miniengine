@@ -3,6 +3,7 @@
 #include "batch.h"
 #include "texture.h"
 #include "OS/OSFactory.h"
+#include "audiointerface.h"
 
 ResourceManager ResourceManager::s_manager;
 
@@ -66,6 +67,25 @@ CTexture* ResourceManager::loadTexture(std::string textureName)
 		auto texture = std::make_unique <CTexture> (finalFileName, true);
 		CTexture* result = texture.get();
 		m_textures[textureName] = std::move(texture);
+		return result;
+	}
+}
+
+IAudioResource *ResourceManager::loadAudio(std::string audioName)
+{
+	auto iter = m_audio.find(audioName);
+	if (iter != m_audio.end())
+	{
+		return iter->second.get();
+	}
+	else
+	{
+		auto& utils =  OSUtils::get();
+		std::string finalFileName = utils.getAudioPath() + audioName;
+
+		auto audio = IAudioDevice::get().createAudioResource(finalFileName);
+		IAudioResource* result = audio.get();
+		m_audio[audioName] = std::move(audio);
 		return result;
 	}
 }
