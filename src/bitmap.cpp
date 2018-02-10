@@ -37,11 +37,11 @@ typedef struct tagBITMAPINFOHEADER{
 
 bool Bitmap::openFromFile(const char *fileName)
 {
-	ifstream file;
 	BITMAPFILEHEADER fileHeader;
 	BITMAPINFOHEADER infoHeader;
 
-	file.open(fileName, ios::in|ios::binary);
+	ifstream file(fileName, ios::in|ios::binary);
+
 	if(!file)
 	{
 		cout << fileName << " not found!" << endl;

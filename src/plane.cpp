@@ -134,7 +134,7 @@ void Plane::fire()
 
 	params.position = b1->getPosition();
 	params.decayDistance = 0.5f;
-	params.gain = 0.3;
+	params.gain = 0.3f;
 
 	audioDevice.playResourceOnce(*s_laserAudio, params);
 

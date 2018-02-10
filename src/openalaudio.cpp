@@ -32,7 +32,7 @@ public:
 
 	void load()
 	{
-		std::ifstream file(m_filename);
+		std::fstream file(m_filename, std::ios::in | std::ios::binary);
 
 		// first unload the resource in case it has been loaded before
 		unload();
@@ -313,7 +313,7 @@ void OpenALDevice::playResourceOnce(const IAudioResource &resource, const SAudio
 
 IAudioInstance* OpenALDevice::loopResource(const IAudioResource &, const SAudioInitParams &)
 {
-
+	return nullptr;
 }
 
 void OpenALDevice::updateListener(Vec3 position, Vec3 orientation, Vec3 velocity)
