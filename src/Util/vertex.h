@@ -29,6 +29,7 @@ public:
 
 	// get data in provided pointer. Pointer must have size 3 * float
 	void getData(float* data) const;
+	const float* data() const {return &m_x;}
 	float x() const {return m_x;}
 	float y() const {return m_y;}
 	float z() const {return m_z;}

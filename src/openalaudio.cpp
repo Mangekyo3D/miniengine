@@ -5,6 +5,10 @@
 #include <alc.h>
 #include <iostream>
 #include <fstream>
+#include <cstring>
+#include <vector>
+
+#define MAXONESHOTSOUNDS 30
 
 #define READMEMBER(member) \
 	file.read(reinterpret_cast<char *>(&member), sizeof(member))
@@ -24,6 +28,7 @@ public:
 		unload();
 	}
 
+	ALuint getHandle() const { return m_buffer; }
 
 	void load()
 	{
@@ -171,11 +176,42 @@ private:
 	ALuint m_buffer;
 };
 
+class OpenALAudioInstance : public IAudioInstance
+{
+public:
+	OpenALAudioInstance(const IAudioResource& resource, const struct SAudioInitParams& params)
+	{
+		const OpenALAudioResource& alResource = static_cast<const OpenALAudioResource&> (resource);
+
+		alGenSources(1, &m_source);
+
+		alSourcei(m_source, AL_BUFFER, alResource.getHandle());
+		alSourcefv(m_source, AL_POSITION, params.position.data());
+		alSourcefv(m_source, AL_VELOCITY, params.velocity.data());
+		alSourcef(m_source, AL_REFERENCE_DISTANCE, params.decayDistance);
+		alSourcef(m_source, AL_ROLLOFF_FACTOR, params.decayFactor);
+		alSourcef(m_source, AL_GAIN, params.gain);
+		alSourcef(m_source, AL_MAX_GAIN, params.maxGain);
+	}
+
+	~OpenALAudioInstance()
+	{
+		alDeleteSources(1, &m_source);
+	}
+
+private:
+	ALuint m_source;
+};
+
+
 class OpenALDevice : public IAudioDevice
 {
 	private:
 		ALCcontext *alc;
 		ALCdevice *aldev;
+		// pool of one-shot sounds
+		std::vector<ALuint> m_oneshotSounds;
+		uint32_t m_currentOneShotSound;
 
 	public:
 		OpenALDevice();
@@ -183,10 +219,15 @@ class OpenALDevice : public IAudioDevice
 
 		virtual bool checkStatus() override;
 		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename);
+		virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&);
+		virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&);
+		virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity);
 };
 
 OpenALDevice::OpenALDevice()
+	: m_oneshotSounds(MAXONESHOTSOUNDS)
 {
+	m_currentOneShotSound = 0;
 	const char *device = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
 	aldev = alcOpenDevice(device);
 
@@ -197,15 +238,24 @@ OpenALDevice::OpenALDevice()
 	alc = alcCreateContext(aldev, nullptr);
 	alcMakeContextCurrent(alc);
 	alGetError();
+
+	alGenSources(MAXONESHOTSOUNDS, &m_oneshotSounds[0]);
 }
 
 OpenALDevice::~OpenALDevice()
 {
+	alDeleteSources(MAXONESHOTSOUNDS, &m_oneshotSounds[0]);
+
 	alc = alcGetCurrentContext();
 	aldev = alcGetContextsDevice(alc);
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(alc);
 	alcCloseDevice(aldev);
+
+	// default values for the sound module
+	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+	alSpeedOfSound(3.0);
+	alDopplerFactor(4.0);
 }
 
 bool OpenALDevice::checkStatus()
@@ -242,12 +292,47 @@ std::unique_ptr <IAudioResource>OpenALDevice::createAudioResource(std::string& f
 	return std::make_unique <OpenALAudioResource> (filename);
 }
 
+void OpenALDevice::playResourceOnce(const IAudioResource &resource, const SAudioInitParams &params)
+{
+	ALuint source = m_oneshotSounds[m_currentOneShotSound++];
+	m_currentOneShotSound %= MAXONESHOTSOUNDS;
+
+	const OpenALAudioResource& alResource = static_cast<const OpenALAudioResource&> (resource);
+
+	// stop the source, in case it is still playing
+	alSourceStop(source);
+	alSourcefv(source, AL_POSITION, params.position.data());
+	alSourcefv(source, AL_VELOCITY, params.velocity.data());
+	alSourcei(source, AL_BUFFER, alResource.getHandle());
+	alSourcef(source, AL_REFERENCE_DISTANCE, params.decayDistance);
+	alSourcef(source, AL_ROLLOFF_FACTOR, params.decayFactor);
+	alSourcef(source, AL_GAIN, params.gain);
+	alSourcef(source, AL_MAX_GAIN, params.maxGain);
+	alSourcePlay(source);
+}
+
+IAudioInstance* OpenALDevice::loopResource(const IAudioResource &, const SAudioInitParams &)
+{
+
+}
+
+void OpenALDevice::updateListener(Vec3 position, Vec3 orientation, Vec3 velocity)
+{
+	alListenerfv(AL_POSITION, position.data());
+	alListenerfv(AL_ORIENTATION, orientation.data());
+	alListenerfv(AL_VELOCITY, velocity.data());
+}
+
 #endif
 
 class CNullAudioDevice : public IAudioDevice
 {
-		virtual bool checkStatus() override { return true; }
-		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) { return nullptr; }
+public:
+	virtual bool checkStatus() override { return true; }
+	virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) { return nullptr; }
+	virtual void playResourceOnce(IAudioResource&, SAudioInitParams&) {}
+	virtual IAudioInstance* loopResource(IAudioResource&, SAudioInitParams&) {}
+	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) {}
 };
 
 IAudioDevice& IAudioDevice::get()

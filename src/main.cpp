@@ -37,10 +37,6 @@ int main(int argc, char** argv)
 
 	// ALuint music, msrc;
 
-	//alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
-	//alSpeedOfSound(3.0);
-	//alDopplerFactor(4.0);
-
 	//	Plane::initializeSound();
 	//	Explosion::initializeSound();
 	/*
@@ -72,11 +68,6 @@ int main(int argc, char** argv)
 
 	/* program main loop */
 	engine.enterGameLoop();
-
-	//	alDeleteSources(1, &msrc);
-	//	alDeleteBuffers(1, &music);
-	Plane::cleanUpSound();
-	Explosion::cleanUpSound();
 }
 
 void CreateLists()

@@ -23,9 +23,6 @@ class Plane : public WorldEntity
 		float getSpeed() const { return m_speed; }
 		void update() override;
 
-		static void initializeSound();
-		static void cleanUpSound();
-
 		// temporary, make a unified way for components to request class wide components
 		static CIndexedInstancedBatch* s_batch;
 		static IAudioResource* s_engineAudio;

@@ -129,14 +129,17 @@ void Plane::fire()
 	auto b1 = std::make_unique <Bullet> (m_position + weaponOffset, heading);
 	b1->setEmitter(*this);
 
+	IAudioDevice& audioDevice = IAudioDevice::get();
+	SAudioInitParams params;
+
+	params.position = b1->getPosition();
+	params.decayDistance = 0.5f;
+	params.gain = 0.3;
+
+	audioDevice.playResourceOnce(*s_laserAudio, params);
+
 	auto& engine = Engine::get();
 	engine.addWorldEntity(std::move(b1));
-
-	/*
-	alSourcefv(m_soundSource, AL_POSITION, (float *)&b1.getPosition());
-	alSource3f(m_soundSource, AL_VELOCITY, 0.0, 0.0, 0.0);
-	alSourcePlay(m_soundSource);
-	*/
 
 	m_shootDelay = 3;
 }
@@ -281,19 +284,6 @@ void Bullet::update()
 	}
 
 	m_position = m_position + 1.0f * m_heading;
-}
-
-
-void Plane::initializeSound()
-{
-	//	buffer = alutCreateBufferFromFile("audio/laser.wav");
-	//	engineBuf = alutCreateBufferFromFile("audio/engine.wav");
-}
-
-void Plane::cleanUpSound()
-{
-	//	alDeleteBuffers(1, &buffer);
-	//	alDeleteBuffers(1, &engineBuf);
 }
 
 PlaneAIController::PlaneAIController(Plane* plane)

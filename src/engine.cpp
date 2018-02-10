@@ -7,6 +7,7 @@
 #include "worldentity.h"
 #include <cmath>
 #include "plane.h"
+#include "audiointerface.h"
 #include "resourcemanager.h"
 
 Engine Engine::s_engine;
@@ -81,6 +82,7 @@ void Engine::enterGameLoop()
 
 	ResourceManager& resourceManager = ResourceManager::get();
 	IRenderer& renderer = IRenderer::get();
+	IAudioDevice& audioDevice = IAudioDevice::get();
 
 	while (true)
 	{
@@ -134,6 +136,8 @@ void Engine::enterGameLoop()
 		m_currentWorldTile.setup_draw_operations();
 
 		m_camera.followFromBehind(*m_playerEntity, 1.0f, 0.2f, 30.0f);
+
+		audioDevice.updateListener(m_playerEntity->getPosition(), m_playerEntity->getObjectToWorldMatrix().getColumn(1), Vec3(0.0f, 0.0f, 0.0f));
 
 		renderer.updateFrameUniforms(m_camera);
 		renderer.drawFrame();
