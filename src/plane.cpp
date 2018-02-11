@@ -87,7 +87,7 @@ void Plane::accelerate(float throttle)
 	if(m_speed > 0.11f)
 		m_speed = 0.11f;
 
-	m_engineAudio->setPitchMultiplier(1.0 + 2.5*(m_speed-0.01));
+	m_engineAudio->setPitchMultiplier(1.0f + 2.5f*(m_speed-0.01f));
 }
 
 Vec3 &Plane::getPosition()

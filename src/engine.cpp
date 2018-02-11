@@ -83,6 +83,10 @@ void Engine::enterGameLoop()
 	IRenderer& renderer = IRenderer::get();
 	IAudioDevice& audioDevice = IAudioDevice::get();
 
+	IAudioResource* bgMusic = resourceManager.loadAudio("lvl1.wav");
+	SAudioInitParams params;
+	audioDevice.loopResource(*bgMusic, params);
+
 	while (true)
 	{
 		// 60 fps timing
