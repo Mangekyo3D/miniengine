@@ -19,6 +19,7 @@ struct MouseWheelEvent;
 struct SCommandLineOptions
 {
 	bool bDebugContext = false;
+	bool bWithVulkan = false;
 };
 
 class Engine{

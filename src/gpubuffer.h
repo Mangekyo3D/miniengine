@@ -5,13 +5,11 @@
 class IGPUBuffer
 {
 public:
-	IGPUBuffer(size_t size);
-	~IGPUBuffer();
+	IGPUBuffer(size_t size) : m_size(size) {}
+	virtual ~IGPUBuffer() {}
 
-	void* lock();
-	void  unlock();
-	// this should not be necessary, it's implementation detail
-	unsigned int getID() {return m_ID;}
+	virtual void* lock() = 0;
+	virtual void  unlock() = 0;
 
 	// convenience template class that locks a buffer and can be dereferenced to the constant buffer type
 	// it has been instantiated from
@@ -55,7 +53,6 @@ public:
 		T* m_mapPtr;
 	};
 
-private:
-	uint32_t m_ID;
+protected:
 	size_t m_size;
 };

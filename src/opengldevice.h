@@ -8,7 +8,9 @@ class COpenGLDevice : public IDevice
 {
 public:
 	COpenGLDevice(GameWindow& win, bool bDebugContext);
-	COpenGLDevice(const COpenGLDevice&) = delete;
+
+	static COpenGLDevice& get() { return static_cast<COpenGLDevice&> (*s_device); }
+	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size);
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;
 	PFNGLCLEARNAMEDFRAMEBUFFERFIPROC glClearNamedFramebufferfi;

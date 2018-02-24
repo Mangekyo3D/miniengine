@@ -4,7 +4,7 @@
 #include "texture.h"
 #include <iostream>
 #include "batch.h"
-#include "gpubuffer.h"
+#include "openglbuffer.h"
 
 struct SFullScreenData
 {
@@ -23,7 +23,7 @@ struct SFullScreenData
 	}
 
 	ArrayDescriptorV m_fullScreenTriangleDescriptor;
-	IGPUBuffer       m_fullScreenTriangle;
+	COpenGLBuffer    m_fullScreenTriangle;
 	CProgram         m_program;
 };
 
@@ -40,7 +40,7 @@ CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
 	m_data->m_program.link();
 
 	// create sampler for texture sampling of material
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glCreateSamplers(1, &m_sampler);
 	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -50,7 +50,7 @@ CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
 
 CFullScreenRenderPass::~CFullScreenRenderPass()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	if (m_framebufferObject)
 	{
@@ -64,7 +64,7 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 
 void CFullScreenRenderPass::draw()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 
@@ -82,7 +82,7 @@ void CFullScreenRenderPass::draw()
 
 void CRenderPass::resetOutputs()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	if (m_framebufferObject)
 	{
@@ -96,7 +96,7 @@ void CRenderPass::resetOutputs()
 
 void CRenderPass::finalize()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	if (m_colorOutputs.size() > 4)
 	{
@@ -121,9 +121,9 @@ void CRenderPass::finalize()
 	}
 }
 
-void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, uint32_t cameraID, uint32_t lightID)
+void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -148,8 +148,11 @@ void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, ui
 	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	device.glDepthRangef(1.0f, 0.0f);
 
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraID);
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, lightID);
+	COpenGLBuffer& bglCameraData = static_cast<COpenGLBuffer&>(cameraData);
+	COpenGLBuffer& bglLightData = static_cast<COpenGLBuffer&>(lightData);
+
+	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, bglCameraData.getID());
+	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, bglLightData.getID());
 
 	for (auto& batch : batches)
 	{

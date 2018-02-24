@@ -2,6 +2,7 @@
 #include "renderpass.h"
 class CTexture;
 class IBatch;
+class IGPUBuffer;
 
 class CCompositingPipeline
 {
@@ -9,7 +10,7 @@ class CCompositingPipeline
 		CCompositingPipeline();
 		~CCompositingPipeline();
 
-		void draw(std::vector<std::unique_ptr<IBatch> >& batches, uint32_t cameraID, uint32_t lightID);
+		void draw(std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
 		void resize(uint32_t width, uint32_t height);
 
 	private:

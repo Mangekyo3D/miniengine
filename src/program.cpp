@@ -14,14 +14,14 @@ void CProgram::attach(CShader& shader)
 
 void CProgram::use()
 {
-	auto& device = IDevice::get <COpenGLDevice> ();
+	auto& device = COpenGLDevice::get();
 	device.glUseProgram(m_ID);
 }
 
 
 bool CProgram::link()
 {
-	auto& device = IDevice::get <COpenGLDevice> ();
+	auto& device = COpenGLDevice::get();
 
 	bool bFailedCompilation = false;
 	m_ID = device.glCreateProgram();
@@ -85,7 +85,7 @@ void CProgram::unload()
 {
 	if (m_ID)
 	{
-		auto& device = IDevice::get <COpenGLDevice> ();
+		auto& device = COpenGLDevice::get();
 		device.glDeleteProgram(m_ID);
 		m_ID = 0;
 	}

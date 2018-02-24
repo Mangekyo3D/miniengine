@@ -5,6 +5,7 @@
 
 class CTexture;
 class IBatch;
+class IGPUBuffer;
 
 class CRenderPass
 {
@@ -74,5 +75,5 @@ class CFullScreenRenderPass : public CRenderPass
 class CSceneRenderPass : public CRenderPass
 {
 	public:
-		void draw(std::vector<std::unique_ptr<IBatch> >& batches, uint32_t cameraID, uint32_t lightID);
+		void draw(std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
 };

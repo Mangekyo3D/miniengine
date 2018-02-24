@@ -40,22 +40,24 @@ class Renderer : public IRenderer
 		/* batches that will be sent to GPU for rendering */
 		std::vector <std::unique_ptr<IBatch> > m_batches;
 
-		IGPUBuffer m_cameraUniform;
-		IGPUBuffer m_lightUniform;
+		std::unique_ptr<IGPUBuffer> m_cameraUniform;
+		std::unique_ptr<IGPUBuffer> m_lightUniform;
 
 		CCompositingPipeline m_compositor;
 };
 
 Renderer::Renderer ()
-	: m_cameraUniform(sizeof(SceneUniformBuffer))
-	, m_lightUniform(sizeof(LightUniformBuffer))
 {
+	m_cameraUniform = s_device->createGPUBuffer(sizeof(SceneUniformBuffer));
+	m_lightUniform = s_device->createGPUBuffer(sizeof(LightUniformBuffer));
 }
 
 Renderer::~Renderer()
 {
 	// make sure all render data are released before the device is
 	m_batches.clear();
+	m_cameraUniform.reset();
+	m_lightUniform.reset();
 }
 
 void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
@@ -69,7 +71,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 	Matrix33 normalMat(camera.getViewMatrixInverse());
 	normalMat.transpose();
 
-	if (auto lock = IGPUBuffer::CAutoLock <SceneUniformBuffer> (m_cameraUniform))
+	if (auto lock = IGPUBuffer::CAutoLock <SceneUniformBuffer> (*m_cameraUniform))
 	{
 		SceneUniformBuffer* pBuffer = lock;
 		Matrix44 projmat = camera.getProjectionMatrix();
@@ -91,7 +93,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 		}
 	}
 
-	if (auto lock = IGPUBuffer::CAutoLock <LightUniformBuffer> (m_lightUniform))
+	if (auto lock = IGPUBuffer::CAutoLock <LightUniformBuffer> (*m_lightUniform))
 	{
 		LightUniformBuffer* pBuffer = lock;
 		Vec3 lightDir = normalMat * Vec3(-1.0, -1.0, 1.0);
@@ -109,7 +111,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 void Renderer::drawFrame()
 {
-	m_compositor.draw(m_batches, m_cameraUniform.getID(), m_lightUniform.getID());
+	m_compositor.draw(m_batches, *m_cameraUniform, *m_lightUniform);
 	/*
 	// light position
 	float sunHeight = sin(0.01*gtime);

@@ -11,7 +11,7 @@ CTexture::CTexture(EFormat format, uint16_t width, uint16_t height, bool bMipmap
 	, m_height(height)
 	, m_format(format)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	if (bMipmapped)
 	{
@@ -40,7 +40,7 @@ CTexture::CTexture(std::string filename, bool bMipmapped)
 
 	if (imageFile.openFromFile(filename.c_str()))
 	{
-		auto& device = IDevice::get <COpenGLDevice>();
+		auto& device = COpenGLDevice::get();
 		uint8_t currentMipmap = 0;
 
 		m_width = imageFile.getWidth();
@@ -197,14 +197,14 @@ CTexture::CTexture(std::string filename, bool bMipmapped)
 
 CTexture::~CTexture()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	device.glDeleteTextures(1, &m_id);
 }
 
 void CTexture::bind(uint8_t unit)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	device.glBindTextureUnit(unit, m_id);
 }

@@ -58,7 +58,7 @@ void CShader::unload()
 {
 	if (m_ID)
 	{
-		auto& device = IDevice::get <COpenGLDevice>();
+		auto& device = COpenGLDevice::get();
 		device.glDeleteShader(m_ID);
 		m_ID = 0;
 	}
@@ -76,7 +76,7 @@ bool CShader::compile()
 
 	if (file)
 	{
-		auto& device = IDevice::get <COpenGLDevice>();
+		auto& device = COpenGLDevice::get();
 		std::string source;
 
 		file.seekg(0, std::ios::end);

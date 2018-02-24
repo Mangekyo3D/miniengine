@@ -21,13 +21,13 @@ void PipelineObject::bind()
 
 void IDescriptorInterface::bind()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glBindVertexArray(m_vertexArrayObject);
 }
 
 ArrayDescriptorV::ArrayDescriptorV()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glCreateVertexArrays(1, &m_vertexArrayObject);
 
 	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
@@ -36,20 +36,20 @@ ArrayDescriptorV::ArrayDescriptorV()
 
 ArrayDescriptorV::~ArrayDescriptorV()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 }
 
 void ArrayDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatV));
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 }
 
 IndexedInstancedDescriptorV::IndexedInstancedDescriptorV()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glCreateVertexArrays(1, &m_vertexArrayObject);
 
 	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
@@ -77,13 +77,13 @@ IndexedInstancedDescriptorV::IndexedInstancedDescriptorV()
 
 IndexedInstancedDescriptorV::~IndexedInstancedDescriptorV()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 }
 
 void IndexedInstancedDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVN));
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
 	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
@@ -100,7 +100,7 @@ void IndexedInstancedDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t i
 
 IndexedInstancedDescriptorVT::IndexedInstancedDescriptorVT()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glCreateVertexArrays(1, &m_vertexArrayObject);
 
 	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
@@ -138,14 +138,14 @@ IndexedInstancedDescriptorVT::IndexedInstancedDescriptorVT()
 
 IndexedInstancedDescriptorVT::~IndexedInstancedDescriptorVT()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 	device.glDeleteSamplers(1, &m_sampler);
 }
 
 void IndexedInstancedDescriptorVT::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVNT));
 	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
 	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
@@ -178,7 +178,7 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, con
 		 m_textures = *textures;
 	}
 
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	device.glCreateBuffers(1, &m_vertexBuffer);
 	device.glNamedBufferStorage(m_vertexBuffer, m->getVertexSize() * m->getNumVertices(), m->getVertices(), 0);
@@ -189,7 +189,7 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, con
 
 CIndexedInstancedBatch::~CIndexedInstancedBatch()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 	device.glDeleteBuffers(1, &m_indexBuffer);
@@ -230,7 +230,7 @@ void CIndexedInstancedBatch::draw()
 		m_textures[i]->bind(static_cast<uint8_t>(i));
 	}
 
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glEnable(GL_CULL_FACE);
 
 	if (m_bEnablePrimRestart)
@@ -259,7 +259,7 @@ void CIndexedInstancedBatch::addMeshInstance(MeshInstanceData& instance)
 
 void CIndexedInstancedBatch::setupInstanceBuffer()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 
 	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
@@ -293,7 +293,7 @@ CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vect
 
 CDynamicArrayBatch::~CDynamicArrayBatch()
 {
-	auto& device = IDevice::get <COpenGLDevice>();
+	auto& device = COpenGLDevice::get();
 	device.glDeleteBuffers(1, &m_vertexBuffer);
 }
 

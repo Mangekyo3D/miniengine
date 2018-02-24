@@ -3,6 +3,7 @@
 
 class IBatch;
 class GameWindow;
+class IGPUBuffer;
 
 class IDevice
 {
@@ -10,9 +11,9 @@ public:
 	IDevice() {}
 	IDevice(const IDevice&) = delete;
 	virtual ~IDevice() {}
+	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) = 0;
 
 	static std::unique_ptr<IDevice> createDevice(GameWindow &win, bool bDebugContext, bool bVulkanDevice);
-	template <class T> static T& get() { return static_cast<T&> (*s_device); }
 
 protected:
 	static IDevice* s_device;

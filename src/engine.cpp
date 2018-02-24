@@ -26,9 +26,8 @@ void Engine::startup(SCommandLineOptions& options)
 	ResourceManager& resourceManager = ResourceManager::get();
 
 	m_gameWindow = factory.createGameWindow(options.bDebugContext);
-	IRenderer::initialize(*m_gameWindow, options.bDebugContext, false);
+	IRenderer::initialize(*m_gameWindow, options.bDebugContext, options.bWithVulkan);
 
-	IRenderer& renderer = IRenderer::get();
 	resourceManager.initialize();
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);

@@ -10,9 +10,9 @@ CCompositingPipeline::~CCompositingPipeline()
 {
 }
 
-void CCompositingPipeline::draw(std::vector <std::unique_ptr<IBatch> > & batches, uint32_t cameraID, uint32_t lightID)
+void CCompositingPipeline::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
 {
-	m_sceneDrawPass.draw(batches, cameraID, lightID);
+	m_sceneDrawPass.draw(batches, cameraData, lightData);
 	m_toneMappingPass.draw();
 }
 

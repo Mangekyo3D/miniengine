@@ -14,9 +14,7 @@ set (SRC
 	shader.cpp
 	device.cpp
 	opengldevice.cpp
-	opengldevice.h
 	vulkandevice.cpp
-	vulkandevice.h
 	program.cpp
 	gpubuffer.cpp
 	resourcemanager.cpp
@@ -46,6 +44,11 @@ set (INC
 	texture.h
 	compositingpipeline.h
 	renderpass.h
+
+	opengldevice.h
+	openglbuffer.h
+
+	vulkandevice.h
 	)
 
 set (SHADER_SRC

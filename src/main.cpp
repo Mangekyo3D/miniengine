@@ -18,6 +18,10 @@ void interpretCommandLineOptions(int argc, char** argv, SCommandLineOptions& opt
 		{
 			options.bDebugContext = true;
 		}
+		if (strcmp(argv[i], "--with-vulkan") == 0)
+		{
+			options.bWithVulkan = true;
+		}
 	}
 }
 
