@@ -40,8 +40,8 @@ class Renderer : public IRenderer
 		/* batches that will be sent to GPU for rendering */
 		std::vector <std::unique_ptr<IBatch> > m_batches;
 
-		CGPUBuffer m_cameraUniform;
-		CGPUBuffer m_lightUniform;
+		IGPUBuffer m_cameraUniform;
+		IGPUBuffer m_lightUniform;
 
 		CCompositingPipeline m_compositor;
 };
@@ -69,7 +69,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 	Matrix33 normalMat(camera.getViewMatrixInverse());
 	normalMat.transpose();
 
-	if (auto lock = CGPUBuffer::CAutoLock <SceneUniformBuffer> (m_cameraUniform))
+	if (auto lock = IGPUBuffer::CAutoLock <SceneUniformBuffer> (m_cameraUniform))
 	{
 		SceneUniformBuffer* pBuffer = lock;
 		Matrix44 projmat = camera.getProjectionMatrix();
@@ -91,7 +91,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 		}
 	}
 
-	if (auto lock = CGPUBuffer::CAutoLock <LightUniformBuffer> (m_lightUniform))
+	if (auto lock = IGPUBuffer::CAutoLock <LightUniformBuffer> (m_lightUniform))
 	{
 		LightUniformBuffer* pBuffer = lock;
 		Vec3 lightDir = normalMat * Vec3(-1.0, -1.0, 1.0);
@@ -227,9 +227,9 @@ void Renderer::setViewport(uint32_t width, uint32_t height)
 std::unique_ptr <IRenderer> IRenderer::s_renderer;
 std::unique_ptr <IDevice> IRenderer::s_device;
 
-void IRenderer::initialize(GameWindow& win, bool bDebugContext)
+void IRenderer::initialize(GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
-	s_device = IDevice::createDevice(win, bDebugContext);
+	s_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
 	s_renderer = std::make_unique <Renderer> ();
 }
 

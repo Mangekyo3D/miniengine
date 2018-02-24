@@ -12,6 +12,10 @@ class WorldEntity;
 class Effect;
 class Controller;
 
+struct KeyEvent;
+struct ResizeEvent;
+struct MouseWheelEvent;
+
 struct SCommandLineOptions
 {
 	bool bDebugContext = false;
@@ -39,6 +43,10 @@ public:
 private:
 	Engine();
 	Engine(const Engine&) = delete;
+
+	void onKeyEvent(KeyEvent& event);
+	void onMouseWheelEvent(MouseWheelEvent& event);
+	void onResizeEvent(ResizeEvent& event);
 
 	std::unique_ptr <GameWindow>        m_gameWindow;
 

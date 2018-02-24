@@ -4,10 +4,10 @@
 #include <functional>
 #include <algorithm>
 
-template <typename ...T> class CSignal
+template <typename ...Args> class CSignal
 {
 	public:
-		void connect(intptr_t id, std::function <void(T...)> func)
+		void connect(intptr_t id, std::function <void(Args...)> func)
 		{
 			auto iter = std::find_if(m_observers.begin(), m_observers.end(),
 				[id] (const Observer& obs) -> bool
@@ -27,9 +27,23 @@ template <typename ...T> class CSignal
 			}
 		}
 
-		void connect(void* id, std::function <void(T...)> func)
+		void connect(void* id, std::function <void(Args...)> func)
 		{
 			connect(reinterpret_cast <uintptr_t> (id), func);
+		}
+
+		template <typename T>
+		void connect(T *id, void (T::*func)(Args...)) {
+			connect(reinterpret_cast <uintptr_t> (id), [=](Args... args) {
+				(id->*func)(args...);
+			});
+		}
+
+		template <typename T>
+		void connect(T *inst, void (T::*func)(Args...) const) {
+			connect(reinterpret_cast <uintptr_t> (id), [=](Args... args) {
+				(id->*func)(args...);
+			});
 		}
 
 		void disconnect(intptr_t id)
@@ -46,7 +60,7 @@ template <typename ...T> class CSignal
 			disconnect(reinterpret_cast <uintptr_t> (id));
 		}
 
-		void operator () (T... args)
+		void operator () (Args... args)
 		{
 			// by iterating in reverse, we guarantee that any observer that
 			// wants to disconnect during the signal, can do so
@@ -60,7 +74,7 @@ template <typename ...T> class CSignal
 		struct Observer
 		{
 			intptr_t id;
-			std::function <void(T...)> func;
+			std::function <void(Args...)> func;
 		};
 
 		std::vector <Observer> m_observers;

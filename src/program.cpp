@@ -1,5 +1,5 @@
 #include "program.h"
-#include "cdevice.h"
+#include "opengldevice.h"
 #include <iostream>
 
 CProgram::CProgram()
@@ -14,14 +14,14 @@ void CProgram::attach(CShader& shader)
 
 void CProgram::use()
 {
-	auto& device = IDevice::get <CDevice> ();
+	auto& device = IDevice::get <COpenGLDevice> ();
 	device.glUseProgram(m_ID);
 }
 
 
 bool CProgram::link()
 {
-	auto& device = IDevice::get <CDevice> ();
+	auto& device = IDevice::get <COpenGLDevice> ();
 
 	bool bFailedCompilation = false;
 	m_ID = device.glCreateProgram();
@@ -85,7 +85,7 @@ void CProgram::unload()
 {
 	if (m_ID)
 	{
-		auto& device = IDevice::get <CDevice> ();
+		auto& device = IDevice::get <COpenGLDevice> ();
 		device.glDeleteProgram(m_ID);
 		m_ID = 0;
 	}

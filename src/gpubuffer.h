@@ -2,11 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-class CGPUBuffer
+class IGPUBuffer
 {
 public:
-	CGPUBuffer(size_t size);
-	~CGPUBuffer();
+	IGPUBuffer(size_t size);
+	~IGPUBuffer();
 
 	void* lock();
 	void  unlock();
@@ -18,7 +18,7 @@ public:
 	template <typename T> class CAutoLock
 	{
 	public:
-		CAutoLock(CGPUBuffer& buffer)
+		CAutoLock(IGPUBuffer& buffer)
 		    : m_buffer(buffer)
 		    , m_mapPtr(nullptr)
 		{
@@ -51,7 +51,7 @@ public:
 		}
 
 	private:
-		CGPUBuffer& m_buffer;
+		IGPUBuffer& m_buffer;
 		T* m_mapPtr;
 	};
 

@@ -1,6 +1,6 @@
 #include "renderpass.h"
 #include "program.h"
-#include "cdevice.h"
+#include "opengldevice.h"
 #include "texture.h"
 #include <iostream>
 #include "batch.h"
@@ -11,7 +11,7 @@ struct SFullScreenData
 	SFullScreenData()
 		: m_fullScreenTriangle(3 * sizeof(VertexFormatV))
 	{
-		if (auto lock = CGPUBuffer::CAutoLock <VertexFormatV>(m_fullScreenTriangle))
+		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(m_fullScreenTriangle))
 		{
 			VertexFormatV *v = lock;
 			v[0].vertex = Vec3(-1.0, -1.0, 0.0);
@@ -23,7 +23,7 @@ struct SFullScreenData
 	}
 
 	ArrayDescriptorV m_fullScreenTriangleDescriptor;
-	CGPUBuffer       m_fullScreenTriangle;
+	IGPUBuffer       m_fullScreenTriangle;
 	CProgram         m_program;
 };
 
@@ -40,7 +40,7 @@ CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
 	m_data->m_program.link();
 
 	// create sampler for texture sampling of material
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 	device.glCreateSamplers(1, &m_sampler);
 	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -50,7 +50,7 @@ CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
 
 CFullScreenRenderPass::~CFullScreenRenderPass()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	if (m_framebufferObject)
 	{
@@ -64,7 +64,7 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 
 void CFullScreenRenderPass::draw()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 
@@ -82,7 +82,7 @@ void CFullScreenRenderPass::draw()
 
 void CRenderPass::resetOutputs()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	if (m_framebufferObject)
 	{
@@ -96,7 +96,7 @@ void CRenderPass::resetOutputs()
 
 void CRenderPass::finalize()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	if (m_colorOutputs.size() > 4)
 	{
@@ -123,7 +123,7 @@ void CRenderPass::finalize()
 
 void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, uint32_t cameraID, uint32_t lightID)
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
 

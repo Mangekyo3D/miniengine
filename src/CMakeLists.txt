@@ -13,6 +13,10 @@ set (SRC
 	worldtile.cpp
 	shader.cpp
 	device.cpp
+	opengldevice.cpp
+	opengldevice.h
+	vulkandevice.cpp
+	vulkandevice.h
 	program.cpp
 	gpubuffer.cpp
 	resourcemanager.cpp

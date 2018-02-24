@@ -4,11 +4,11 @@
 #define NOMINMAX
 #include "glcorearb.h"
 
-class CDevice : public IDevice
+class COpenGLDevice : public IDevice
 {
 public:
-	CDevice(GameWindow& win, bool bDebugContext);
-	CDevice(const CDevice&) = delete;
+	COpenGLDevice(GameWindow& win, bool bDebugContext);
+	COpenGLDevice(const COpenGLDevice&) = delete;
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;
 	PFNGLCLEARNAMEDFRAMEBUFFERFIPROC glClearNamedFramebufferfi;

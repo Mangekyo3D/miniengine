@@ -19,7 +19,7 @@ class IRenderer
 
 		static IRenderer& get() { return *s_renderer.get(); }
 
-		static void initialize(GameWindow&, bool bDebugContext);
+		static void initialize(GameWindow&, bool bDebugContext, bool bVulkanContext);
 		static void shutdown();
 
 		virtual void addNewBatch(std::unique_ptr<IBatch> batch) = 0;

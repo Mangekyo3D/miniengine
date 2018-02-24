@@ -1,32 +1,32 @@
 #include "gpubuffer.h"
-#include "cdevice.h"
+#include "opengldevice.h"
 
-CGPUBuffer::CGPUBuffer(size_t size)
+IGPUBuffer::IGPUBuffer(size_t size)
 	: m_size(size)
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	device.glCreateBuffers(1, &m_ID);
 	device.glNamedBufferStorage(m_ID, size, nullptr, GL_MAP_WRITE_BIT);
 }
 
-CGPUBuffer::~CGPUBuffer()
+IGPUBuffer::~IGPUBuffer()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	device.glDeleteBuffers(1, &m_ID);
 }
 
-void* CGPUBuffer::lock()
+void* IGPUBuffer::lock()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	return device.glMapNamedBufferRange(m_ID, 0, m_size, GL_MAP_WRITE_BIT);
 }
 
-void  CGPUBuffer::unlock()
+void  IGPUBuffer::unlock()
 {
-	auto& device = IDevice::get <CDevice>();
+	auto& device = IDevice::get <COpenGLDevice>();
 
 	device.glUnmapNamedBuffer(m_ID);
 }

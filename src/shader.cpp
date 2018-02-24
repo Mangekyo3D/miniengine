@@ -4,7 +4,7 @@
 #include <streambuf>
 #include <iostream>
 #include <memory>
-#include "cdevice.h"
+#include "opengldevice.h"
 #include "OS/OSFactory.h"
 
 int CShader::shaderTypeToGLType(EType type)
@@ -58,7 +58,7 @@ void CShader::unload()
 {
 	if (m_ID)
 	{
-		auto& device = IDevice::get <CDevice>();
+		auto& device = IDevice::get <COpenGLDevice>();
 		device.glDeleteShader(m_ID);
 		m_ID = 0;
 	}
@@ -76,7 +76,7 @@ bool CShader::compile()
 
 	if (file)
 	{
-		auto& device = IDevice::get <CDevice>();
+		auto& device = IDevice::get <COpenGLDevice>();
 		std::string source;
 
 		file.seekg(0, std::ios::end);

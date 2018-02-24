@@ -26,53 +26,59 @@ void Engine::startup(SCommandLineOptions& options)
 	ResourceManager& resourceManager = ResourceManager::get();
 
 	m_gameWindow = factory.createGameWindow(options.bDebugContext);
-	IRenderer::initialize(*m_gameWindow, options.bDebugContext);
+	IRenderer::initialize(*m_gameWindow, options.bDebugContext, false);
 
 	IRenderer& renderer = IRenderer::get();
 	resourceManager.initialize();
 
-	m_gameWindow->onResize.connect(this, [this, &renderer] (ResizeEvent& event)
-	{
-		m_camera.setViewport(event.width, event.height, 0.1f, 100.0f, 30.0f);
-		renderer.setViewport(event.width, event.height);
-	});
-
-	m_gameWindow->onKey.connect(this, [this] (KeyEvent& event)
-	{
-		bool pressed = event.type == KeyEvent::EType::ePress;
-
-		switch (event.key)
-		{
-			case KeyEvent::EKey::eSpace:
-			case KeyEvent::EKey::eLeftMouse:
-				m_inputState.firePressed = pressed;
-				break;
-			case KeyEvent::EKey::eAKey:
-				m_inputState.leftPressed = pressed;
-				break;
-			case KeyEvent::EKey::eDKey:
-				m_inputState.rightPressed = pressed;
-				break;
-			case KeyEvent::EKey::eWKey:
-				m_inputState.upPressed = pressed;
-				break;
-			case KeyEvent::EKey::eSKey:
-				m_inputState.downPressed = pressed;
-				break;
-			case KeyEvent::EKey::eEscape:
-				m_inputState.menuPressed = pressed;
-				break;
-		}
-	});
-
-	m_gameWindow->onMouseWheel.connect(this, [this] (MouseWheelEvent& event)
-	{
-		m_inputState.accelarateTick = event.ticks;
-	});
+	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
+	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);
+	m_gameWindow->onMouseWheel.connect(this, &Engine::onMouseWheelEvent);
 
 	m_gameWindow->maximize();
 
 	IAudioDevice::initialize();
+}
+
+void Engine::onKeyEvent(KeyEvent& event)
+{
+	bool pressed = event.type == KeyEvent::EType::ePress;
+
+	switch (event.key)
+	{
+		case KeyEvent::EKey::eSpace:
+		case KeyEvent::EKey::eLeftMouse:
+			m_inputState.firePressed = pressed;
+			break;
+		case KeyEvent::EKey::eAKey:
+			m_inputState.leftPressed = pressed;
+			break;
+		case KeyEvent::EKey::eDKey:
+			m_inputState.rightPressed = pressed;
+			break;
+		case KeyEvent::EKey::eWKey:
+			m_inputState.upPressed = pressed;
+			break;
+		case KeyEvent::EKey::eSKey:
+			m_inputState.downPressed = pressed;
+			break;
+		case KeyEvent::EKey::eEscape:
+			m_inputState.menuPressed = pressed;
+			break;
+	}
+}
+
+void Engine::onMouseWheelEvent(MouseWheelEvent& event)
+{
+	m_inputState.accelarateTick = event.ticks;
+}
+
+void Engine::onResizeEvent(ResizeEvent& event)
+{
+	IRenderer& renderer = IRenderer::get();
+
+	m_camera.setViewport(event.width, event.height, 0.1f, 100.0f, 30.0f);
+	renderer.setViewport(event.width, event.height);
 }
 
 void Engine::enterGameLoop()
