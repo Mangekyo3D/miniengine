@@ -20,8 +20,8 @@ void CCompositingPipeline::resize(uint32_t width, uint32_t height)
 {
 	m_sceneDrawPass.resetOutputs();
 
-	m_sceneHDRTex.reset(new CTexture(CTexture::eRGB16f, width, height));
-	m_DepthTex.reset(new CTexture(CTexture::eDepth32f, width, height));
+	m_sceneHDRTex = std::make_unique <CTexture> (CTexture::eRGB16f, width, height);
+	m_DepthTex = std::make_unique <CTexture> (CTexture::eDepth32f, width, height);
 
 	m_sceneDrawPass.addColorOutput(m_sceneHDRTex.get());
 	m_sceneDrawPass.addDepthOutput(m_DepthTex.get());
@@ -29,4 +29,5 @@ void CCompositingPipeline::resize(uint32_t width, uint32_t height)
 
 	m_toneMappingPass.resetInputs();
 	m_toneMappingPass.addInput(m_sceneHDRTex.get());
+	m_toneMappingPass.setDefaultOutput(width, height);
 }

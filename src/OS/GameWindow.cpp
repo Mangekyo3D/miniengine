@@ -12,39 +12,6 @@ GameWindow::~GameWindow()
 
 bool GameWindow::queryExtension(const char *extName, const char *extensionList)
 {
-	/*
-	const char *iter = extensionList;
-
-    int nameLength = strlen(extName);
-    if(iter == NULL)
-        return GL_FALSE;
-
-    while(true)
-    {
-		const char *internalIter = iter;
-
-        while((*internalIter != ' ') && (*internalIter != '\0'))
-            internalIter++;
-
-        if((internalIter-iter) == nameLength)
-        {
-            int i;
-            for(i = 0; *(iter + i) == *(extName+i); i++)
-                ;
-
-            if(i==nameLength)
-                return GL_TRUE;
-        }
-
-        //go past the space
-        if(*internalIter == '\0')
-			break;
-        else iter = internalIter+1;
-    }
-
-    return GL_FALSE;
-    */
-
 	return false;
 }
 

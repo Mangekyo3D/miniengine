@@ -2,9 +2,9 @@
 #include "program.h"
 #include "opengldevice.h"
 #include "texture.h"
-#include <iostream>
 #include "batch.h"
 #include "openglbuffer.h"
+#include <iostream>
 
 struct SFullScreenData
 {
@@ -67,8 +67,10 @@ void CFullScreenRenderPass::draw()
 	auto& device = COpenGLDevice::get();
 
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
+	device.glViewport(0, 0, m_width, m_height);
 
 	m_data->m_program.use();
+
 	m_data->m_fullScreenTriangleDescriptor.bind();
 
 	for (int i = 0; i < m_inputs.size(); ++i)
@@ -78,6 +80,20 @@ void CFullScreenRenderPass::draw()
 	}
 
 	device.glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void CRenderPass::addColorOutput(CTexture* tex)
+{
+	m_colorOutputs.push_back(tex);
+	m_width = tex->getWidth();
+	m_height = tex->getHeight();
+}
+
+void CRenderPass::addDepthOutput(CTexture* tex)
+{
+	m_depthOutput = tex;
+	m_width = tex->getWidth();
+	m_height = tex->getHeight();
 }
 
 void CRenderPass::resetOutputs()
@@ -92,6 +108,8 @@ void CRenderPass::resetOutputs()
 
 	m_colorOutputs.clear();
 	m_depthOutput = nullptr;
+
+	m_width = m_height = 0;
 }
 
 void CRenderPass::finalize()
@@ -129,7 +147,7 @@ void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IG
 
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 
-	device.glViewport(0, 0, m_colorOutputs[0]->getWidth(), m_colorOutputs[0]->getHeight());
+	device.glViewport(0, 0, m_width, m_height);
 
 	for (int i = 0; i < m_colorOutputs.size(); ++i)
 	{

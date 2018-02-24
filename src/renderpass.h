@@ -13,17 +13,18 @@ class CRenderPass
 		CRenderPass()
 			: m_framebufferObject(0)
 			, m_depthOutput(nullptr)
+			, m_width(0)
+			, m_height(0)
 		{}
 		virtual ~CRenderPass() {}
 
-		void addColorOutput(CTexture* tex)
-		{
-			m_colorOutputs.push_back(tex);
-		}
+		void addColorOutput(CTexture* tex);
+		void addDepthOutput(CTexture* tex);
 
-		void addDepthOutput(CTexture* tex)
+		void setDefaultOutput(uint32_t width, uint32_t height)
 		{
-			m_depthOutput = tex;
+			m_width = width;
+			m_height = height;
 		}
 
 		// deletes the framebuffer object and removes all outputs. Need to call finalize again after this
@@ -40,6 +41,9 @@ class CRenderPass
 		// texture resources
 		std::vector <CTexture*> m_colorOutputs;
 		CTexture*               m_depthOutput;
+		// width and height, used when we render to default framebuffer
+		uint32_t                m_width;
+		uint32_t                m_height;
 
 		// framebuffer object of this renderpass
 		uint32_t m_framebufferObject;
