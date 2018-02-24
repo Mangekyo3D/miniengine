@@ -119,11 +119,14 @@ template <class T> T initWGLfunction(T& f, const char *function)
 	return f;
 }
 
-Win32Window::Win32Window(bool bDebugContext)
+Win32Window::Win32Window()
 {
 	m_hWnd = CreateWindow(m_wndClass.getName(), "Space Pirates",
 						  WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), this);
+}
 
+void Win32Window::createSwapchain(bool bDebugContext)
+{
 	HWND dummyWin = CreateWindow(m_wndClass.getName(), "Dummy Window",
 								 WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), this);
 	m_hdc = GetDC(m_hWnd);

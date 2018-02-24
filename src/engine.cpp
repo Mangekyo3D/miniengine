@@ -25,7 +25,7 @@ void Engine::startup(SCommandLineOptions& options)
 	auto& factory = OSFactory::get();
 	ResourceManager& resourceManager = ResourceManager::get();
 
-	m_gameWindow = factory.createGameWindow(options.bDebugContext);
+	m_gameWindow = factory.createGameWindow();
 	IRenderer::initialize(*m_gameWindow, options.bDebugContext, options.bWithVulkan);
 
 	resourceManager.initialize();

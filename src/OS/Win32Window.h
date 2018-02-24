@@ -4,7 +4,7 @@
 class Win32Window : public GameWindow
 {
 public:
-	Win32Window(bool bDebugContext);
+	Win32Window();
 	~Win32Window();
 
 	virtual void getClientSize(uint32_t& width, uint32_t& height) override;
@@ -12,6 +12,8 @@ public:
 	virtual void swapBuffers() override;
 
 	virtual intptr_t getGLFunctionPointer(const char *) override;
+	virtual void createSwapchain(bool bDebugContext) override;
+
 
 	virtual void handleOSEvents() override;
 	virtual void getMouseState(int& x, int& y) override;

@@ -13,14 +13,14 @@ set (SRC
 	worldtile.cpp
 	shader.cpp
 	device.cpp
-	opengldevice.cpp
-	vulkandevice.cpp
 	program.cpp
 	gpubuffer.cpp
 	resourcemanager.cpp
 	texture.cpp
 	compositingpipeline.cpp
 	renderpass.cpp
+
+	opengldevice.cpp
 )
 
 set (INC
@@ -47,8 +47,6 @@ set (INC
 
 	opengldevice.h
 	openglbuffer.h
-
-	vulkandevice.h
 	)
 
 set (SHADER_SRC
@@ -65,7 +63,9 @@ add_subdirectory(Util)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_executable(shooter ${SRC} ${INC} ${SHADER_SRC})
+find_package(Vulkan)
+
+set (INC_DIRS)
 
 if (UNIX)
 	set (LIBS 
@@ -76,11 +76,24 @@ elseif (WIN32)
 	set (LIBS 
 		opengl32
 		)
+	if (Vulkan_FOUND)
+		add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
+	endif()
 endif()
 
-set (INC_DIRS)
-
 find_package(OpenAL)
+
+if (Vulkan_FOUND)
+	add_definitions(-DBUILD_WITH_VULKAN)
+	list(APPEND LIBS ${Vulkan_LIBRARIES})
+	list(APPEND INC_DIRS ${Vulkan_INCLUDE_DIRS})
+	list(APPEND SRC
+		vulkandevice.cpp
+		)
+	list(APPEND INC
+		vulkandevice.h
+		)
+endif()
 
 if (OPENAL_FOUND)
 	add_definitions(-DOPENAL_FOUND)
@@ -89,5 +102,7 @@ if (OPENAL_FOUND)
 endif()
 
 include_directories(${INC_DIRS})
+
+add_executable(shooter ${SRC} ${INC} ${SHADER_SRC})
 
 target_link_libraries(shooter ${LIBS} OS Util)

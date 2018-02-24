@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "../Util/signal.h"
+#include <memory>
 
 struct ResizeEvent
 {
@@ -48,6 +49,7 @@ class GameWindow
 		virtual void maximize() = 0;
 		virtual void getMouseState(int& x, int& y) = 0;
 		virtual intptr_t getGLFunctionPointer(const char *) = 0;
+		virtual void createSwapchain(bool bDebugContext) = 0;
 
 		bool queryExtension(const char *, const char *);
 		//void saveGLScreenShot();

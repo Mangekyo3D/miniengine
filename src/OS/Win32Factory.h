@@ -6,6 +6,6 @@
 class Win32Factory : public OSFactory
 {
 	public:
-		std::unique_ptr <GameWindow> createGameWindow(bool bDebugContext) const override { return std::make_unique <Win32Window>(bDebugContext); }
+		std::unique_ptr <GameWindow> createGameWindow() const override { return std::make_unique <Win32Window>(); }
 };
 

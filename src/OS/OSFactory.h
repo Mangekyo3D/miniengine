@@ -6,7 +6,7 @@
 class OSFactory
 {
 	public:
-		virtual std::unique_ptr <GameWindow> createGameWindow(bool bDebugContext) const = 0;
+		virtual std::unique_ptr <GameWindow> createGameWindow() const = 0;
 		virtual ~OSFactory(){}
 		static const OSFactory& get();
 	protected:

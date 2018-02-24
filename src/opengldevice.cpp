@@ -21,7 +21,7 @@ template <class T> T initGLfunction(GameWindow& win, T& f, const char *function)
 	return f;
 }
 
-COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
+void COpenGLDevice::initialize(GameWindow& win, bool bDebugContext)
 {
 #define INITFUNCTION(name) initGLfunction(win, name, #name); \
 	if (name == nullptr) \
