@@ -377,15 +377,39 @@ void OpenALDevice::deleteResource(IAudioInstance* res)
 
 #endif
 
+class NullAudioResource : public IAudioResource
+{
+public:
+	NullAudioResource(std::string& filename)
+		: IAudioResource(filename)
+	{}
+	~NullAudioResource() {}
+};
+
+class NullAudioInstance : public IAudioInstance
+{
+public:
+	NullAudioInstance() {}
+	~NullAudioInstance() {}
+
+	virtual void setPosition(Vec3) {}
+	virtual void setVelocity(Vec3) {}
+	virtual void setPitchMultiplier(float) {}
+};
+
+
 class CNullAudioDevice : public IAudioDevice
 {
 public:
 	virtual bool checkStatus() override { return true; }
-	virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) { return nullptr; }
-	virtual void playResourceOnce(IAudioResource&, SAudioInitParams&) {}
-	virtual IAudioInstance* loopResource(IAudioResource&, SAudioInitParams&) {}
-	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) {}
-	virtual void deleteResource(IAudioInstance*) {}
+	virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) override { return std::make_unique<NullAudioResource> (filename); }
+	virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&) override {}
+	virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&) override { return &m_dummyResource;}
+	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) override {}
+	virtual void deleteResource(IAudioInstance*) override {}
+
+private:
+	NullAudioInstance m_dummyResource;
 };
 
 IAudioDevice& IAudioDevice::get()

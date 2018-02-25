@@ -40,7 +40,7 @@ template <typename ...Args> class CSignal
 		}
 
 		template <typename T>
-		void connect(T *inst, void (T::*func)(Args...) const) {
+		void connect(T *id, void (T::*func)(Args...) const) {
 			connect(reinterpret_cast <uintptr_t> (id), [=](Args... args) {
 				(id->*func)(args...);
 			});
