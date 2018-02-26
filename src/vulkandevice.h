@@ -88,9 +88,24 @@ public:
 #define VK_INSTANCE_DEBUG_FUNCTION( fun) PFN_##fun fun;
 #endif
 
+#if !defined(VK_INSTANCE_FUNCTION)
+#define VK_INSTANCE_FUNCTION( fun) PFN_##fun fun;
+#endif
+
+#if !defined(VK_GLOBAL_FUNCTION)
+#define VK_GLOBAL_FUNCTION( fun) PFN_##fun fun;
+#endif
+
+#if !defined(VK_DEVICE_FUNCTION)
+#define VK_DEVICE_FUNCTION( fun) PFN_##fun fun;
+#endif
+
 #include "VulkanFunctions.inl"
 
 #undef VK_INSTANCE_DEBUG_FUNCTION
+#undef VK_INSTANCE_FUNCTION
+#undef VK_GLOBAL_FUNCTION
+#undef VK_DEVICE_FUNCTION
 
 private:
 	void createRenderPasses();

@@ -84,7 +84,7 @@ endif()
 find_package(OpenAL)
 
 if (Vulkan_FOUND)
-	add_definitions(-DBUILD_WITH_VULKAN)
+	add_definitions(-DBUILD_WITH_VULKAN -DVK_NO_PROTOTYPES)
 	list(APPEND LIBS ${Vulkan_LIBRARIES})
 	list(APPEND INC_DIRS ${Vulkan_INCLUDE_DIRS})
 	list(APPEND SRC

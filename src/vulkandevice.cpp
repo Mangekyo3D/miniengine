@@ -57,7 +57,10 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 		std::cout << "Vulkan Runtime not found" << std::endl;
 	}
 
-	/*
+#define VK_EXPORTED_FUNCTION( fun ) PFN_##fun fun;
+	#include "VulkanFunctions.inl"
+#undef VK_EXPORTED_FUNCTION
+
 	#define VK_EXPORTED_FUNCTION( fun ) \
 		if (!(fun = (PFN_##fun)GetProcAddress(m_librarymodule, #fun))) { \
 		std::cout << "Could not load exported function: " << #fun << "!" << std::endl; \
@@ -71,6 +74,8 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 		return;
 	}
 
+	#undef VK_EXPORTED_FUNCTION
+
 	#define VK_GLOBAL_FUNCTION( fun ) \
 		if (!(fun = (PFN_##fun)vkGetInstanceProcAddr(nullptr, #fun))) { \
 		std::cout << "Could not load global function: " << #fun << "!" << std::endl; \
@@ -79,11 +84,13 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 
 	#include "VulkanFunctions.inl"
 
+	#undef VK_GLOBAL_FUNCTION
+
 	if (!bInstanceFunctionsLoaded)
 	{
 		return;
 	}
-	*/
+
 
 	// check if extensions are supported by the implementation
 	uint32_t numExtensions;
@@ -165,13 +172,12 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 		return;
 	}
 
-	/*
+
 	#define VK_INSTANCE_FUNCTION( fun ) \
 	if (!(fun = (PFN_##fun)vkGetInstanceProcAddr(m_instance, #fun))) { \
 		std::cout << "Could not load instance function: " << #fun << "!" << std::endl; \
 		bInstanceFunctionsLoaded = false; \
 	}
-	*/
 
 	#define VK_INSTANCE_DEBUG_FUNCTION( fun ) \
 	if (m_bDebugInstance && !(fun = (PFN_##fun)vkGetInstanceProcAddr(m_instance, #fun))) { \
@@ -228,7 +234,8 @@ SMemoryChunk::SMemoryChunk(VkDeviceMemory memory, const size_t size)
 
 SMemoryChunk::~SMemoryChunk()
 {
-	VkDevice vkDevice = CVulkanDevice::get().getDevice();
+	auto& device = CVulkanDevice::get();
+	VkDevice vkDevice = device.getDevice();
 
 	for (SMemoryBlock& block : m_blocks)
 	{
@@ -240,7 +247,7 @@ SMemoryChunk::~SMemoryChunk()
 
 	if (m_memory)
 	{
-		vkFreeMemory(vkDevice, m_memory, nullptr);
+		device.vkFreeMemory(vkDevice, m_memory, nullptr);
 	}
 }
 
