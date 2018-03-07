@@ -13,6 +13,7 @@ struct KeyEvent
 {
 	enum class EKey
 	{
+		eNone,
 		eLeftMouse,
 		eRightMouse,
 		eSpace,
@@ -28,6 +29,12 @@ struct KeyEvent
 		ePress,
 		eRelease
 	};
+
+	KeyEvent()
+		: key(EKey::eNone)
+		, type(EType::ePress)
+	{
+	}
 
 	EType type;
 	EKey  key;
