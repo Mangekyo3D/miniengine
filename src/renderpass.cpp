@@ -1,9 +1,9 @@
 #include "renderpass.h"
 #include "program.h"
-#include "opengldevice.h"
+#include "render/opengl/opengldevice.h"
 #include "texture.h"
 #include "batch.h"
-#include "openglbuffer.h"
+#include "render/opengl/openglbuffer.h"
 #include <iostream>
 
 struct SFullScreenData

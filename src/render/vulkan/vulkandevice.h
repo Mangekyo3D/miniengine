@@ -2,7 +2,7 @@
 
 #define NOMINMAX
 
-#include "device.h"
+#include "../device.h"
 #include "vulkan/vulkan.h"
 #include <windows.h>
 #include <memory>
@@ -60,8 +60,6 @@ public:
 	virtual void initialize(GameWindow& win, bool bDebugContext) override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
 
-
-	void initialize(bool bDebugInstance);
 	VkDevice getDevice();
 	VkPhysicalDevice getPhysicalDevice();
 

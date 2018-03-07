@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "opengldevice.h"
+#include "render/opengl/opengldevice.h"
 #include "bitmap.h"
 #include "Util/colorutils.h"
 

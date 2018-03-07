@@ -12,26 +12,22 @@ set (SRC
 	worldentity.cpp
 	worldtile.cpp
 	shader.cpp
-	device.cpp
 	program.cpp
-	gpubuffer.cpp
 	resourcemanager.cpp
 	texture.cpp
 	compositingpipeline.cpp
 	renderpass.cpp
 
-	opengldevice.cpp
-)
+	render/device.cpp
+	)
 
 set (INC
 	audiointerface.h
 	batch.h
 	bitmap.h
 	camera.h
-	device.h
 	engine.h
 	effect.h
-	gpubuffer.h
 	plane.h
 	program.h
 	renderer.h
@@ -45,8 +41,8 @@ set (INC
 	compositingpipeline.h
 	renderpass.h
 
-	opengldevice.h
-	openglbuffer.h
+	render/device.h
+	render/gpubuffer.h
 	)
 
 set (SHADER_SRC
@@ -60,41 +56,34 @@ set (SHADER_SRC
 
 add_subdirectory(OS)
 add_subdirectory(Util)
+add_subdirectory(render/opengl)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Vulkan)
-
 set (INC_DIRS)
+set(LIBS
+	openglbackend
+	)
 
 if (UNIX)
-	set (LIBS 
+	list(APPEND LIBS
 		X11
 		GL
 		)
 elseif (WIN32)
-	set (LIBS 
+	list(APPEND LIBS
 		opengl32
 		)
-	if (Vulkan_FOUND)
-		add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
-	endif()
+endif()
+
+find_package(Vulkan)
+if (Vulkan_FOUND)
+	add_subdirectory(render/vulkan)
+	add_definitions(-DBUILD_WITH_VULKAN)
+	list(APPEND LIBS ${Vulkan_LIBRARIES} vulkanbackend)
 endif()
 
 find_package(OpenAL)
-
-if (Vulkan_FOUND)
-	add_definitions(-DBUILD_WITH_VULKAN -DVK_NO_PROTOTYPES)
-	list(APPEND LIBS ${Vulkan_LIBRARIES})
-	list(APPEND INC_DIRS ${Vulkan_INCLUDE_DIRS})
-	list(APPEND SRC
-		vulkandevice.cpp
-		)
-	list(APPEND INC
-		vulkandevice.h
-		)
-endif()
-
 if (OPENAL_FOUND)
 	add_definitions(-DOPENAL_FOUND)
 	list(APPEND INC_DIRS ${OPENAL_INCLUDE_DIR})

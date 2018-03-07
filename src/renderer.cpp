@@ -1,9 +1,9 @@
 #include "renderer.h"
 #include "OS/GameWindow.h"
 #include <iostream>
-#include "device.h"
+#include "render/device.h"
+#include "render/gpubuffer.h"
 #include "camera.h"
-#include "gpubuffer.h"
 #include "batch.h"
 
 struct SceneUniformBuffer

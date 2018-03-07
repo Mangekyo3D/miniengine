@@ -1,5 +1,5 @@
 #include "program.h"
-#include "opengldevice.h"
+#include "render/opengl/opengldevice.h"
 #include <iostream>
 
 CProgram::CProgram()

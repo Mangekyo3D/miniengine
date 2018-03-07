@@ -4,7 +4,7 @@
 #include <streambuf>
 #include <iostream>
 #include <memory>
-#include "opengldevice.h"
+#include "render/opengl/opengldevice.h"
 #include "OS/OSFactory.h"
 
 int CShader::shaderTypeToGLType(EType type)

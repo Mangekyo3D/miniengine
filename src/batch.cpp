@@ -1,5 +1,5 @@
 #include "batch.h"
-#include "opengldevice.h"
+#include "render/opengl/opengldevice.h"
 #include "texture.h"
 
 PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)

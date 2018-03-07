@@ -1,8 +1,7 @@
 #include <iostream>
-#include "OS/GameWindow.h"
+#include "../../OS/GameWindow.h"
 #include "opengldevice.h"
 #include "openglbuffer.h"
-#include "batch.h"
 
 IDevice* IDevice::s_device = nullptr;
 

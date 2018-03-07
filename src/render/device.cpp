@@ -1,6 +1,6 @@
-#include "opengldevice.h"
+#include "opengl/opengldevice.h"
 #if BUILD_WITH_VULKAN
-#include "vulkandevice.h"
+#include "vulkan/vulkandevicefactory.h"
 #endif
 
 std::unique_ptr<IDevice> IDevice::createDevice(bool bVulkanDevice)
@@ -8,7 +8,7 @@ std::unique_ptr<IDevice> IDevice::createDevice(bool bVulkanDevice)
 #if BUILD_WITH_VULKAN
 	if (bVulkanDevice)
 	{
-		return std::make_unique<CVulkanDevice> ();
+		return CVulkanDeviceFactory::createDevice();
 	}
 	else
 #endif

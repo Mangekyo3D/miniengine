@@ -1,0 +1,69 @@
+#if !defined(VK_EXPORTED_FUNCTION)
+#define VK_EXPORTED_FUNCTION( fun )
+#endif
+
+#if !defined(VK_GLOBAL_FUNCTION)
+#define VK_GLOBAL_FUNCTION( fun )
+#endif
+
+#if !defined(VK_INSTANCE_FUNCTION)
+#define VK_INSTANCE_FUNCTION( fun)
+#endif
+
+#if !defined(VK_INSTANCE_DEBUG_FUNCTION)
+#define VK_INSTANCE_DEBUG_FUNCTION( fun)
+#endif
+
+#if !defined(VK_DEVICE_FUNCTION)
+#define VK_DEVICE_FUNCTION( fun)
+#endif
+
+VK_EXPORTED_FUNCTION(vkGetInstanceProcAddr)
+
+VK_GLOBAL_FUNCTION(vkCreateInstance)
+VK_GLOBAL_FUNCTION(vkEnumerateInstanceExtensionProperties)
+VK_GLOBAL_FUNCTION(vkEnumerateInstanceLayerProperties)
+
+VK_INSTANCE_FUNCTION(vkDestroyInstance)
+VK_INSTANCE_FUNCTION(vkEnumeratePhysicalDevices)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceQueueFamilyProperties)
+VK_INSTANCE_FUNCTION(vkCreateDevice)
+VK_INSTANCE_FUNCTION(vkGetDeviceProcAddr)
+VK_INSTANCE_FUNCTION(vkEnumerateDeviceExtensionProperties)
+
+// debugging
+VK_INSTANCE_DEBUG_FUNCTION(vkCreateDebugReportCallbackEXT)
+VK_INSTANCE_DEBUG_FUNCTION(vkDestroyDebugReportCallbackEXT)
+
+VK_INSTANCE_FUNCTION(vkDestroySurfaceKHR)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceFormatsKHR)
+VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfacePresentModesKHR)
+
+VK_INSTANCE_FUNCTION(vkCreateWin32SurfaceKHR)
+
+VK_DEVICE_FUNCTION(vkDestroyDevice)
+VK_DEVICE_FUNCTION(vkGetDeviceQueue)
+VK_DEVICE_FUNCTION(vkDeviceWaitIdle)
+VK_DEVICE_FUNCTION(vkCreateSemaphore)
+VK_DEVICE_FUNCTION(vkDestroySemaphore)
+VK_DEVICE_FUNCTION(vkQueueSubmit)
+
+//swapchain extension
+VK_DEVICE_FUNCTION(vkCreateSwapchainKHR)
+VK_DEVICE_FUNCTION(vkDestroySwapchainKHR)
+VK_DEVICE_FUNCTION(vkGetSwapchainImagesKHR)
+VK_DEVICE_FUNCTION(vkAcquireNextImageKHR)
+VK_DEVICE_FUNCTION(vkQueuePresentKHR)
+VK_DEVICE_FUNCTION(vkCreateCommandPool)
+VK_DEVICE_FUNCTION(vkDestroyCommandPool)
+VK_DEVICE_FUNCTION(vkFreeMemory)
+
+#undef VK_EXPORTED_FUNCTION
+#undef VK_GLOBAL_FUNCTION
+#undef VK_INSTANCE_FUNCTION
+#undef VK_INSTANCE_DEBUG_FUNCTION
+#undef VK_DEVICE_FUNCTION

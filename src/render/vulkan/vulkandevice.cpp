@@ -1,6 +1,6 @@
 #include "vulkandevice.h"
-#include "gpubuffer.h"
-#include "OS/GameWindow.h"
+#include "../gpubuffer.h"
+#include "../../OS/GameWindow.h"
 #include <iostream>
 
 static VkBool32 vulkanDebugCallback(

@@ -1,5 +1,5 @@
 #pragma once
-#include "device.h"
+#include "../device.h"
 #define GL_GLEXT_PROTOTYPES
 #define NOMINMAX
 #include "glcorearb.h"
