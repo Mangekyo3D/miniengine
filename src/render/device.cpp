@@ -3,16 +3,16 @@
 #include "vulkan/vulkandevicefactory.h"
 #endif
 
-std::unique_ptr<IDevice> IDevice::createDevice(bool bVulkanDevice)
+std::unique_ptr<IDevice> IDevice::createDevice(GameWindow &win, bool bDebugContext, bool bVulkanContext)
 {
 #if BUILD_WITH_VULKAN
 	if (bVulkanDevice)
 	{
-		return CVulkanDeviceFactory::createDevice();
+		return CVulkanDeviceFactory::createDevice(win, bDebugContext);
 	}
 	else
 #endif
 	{
-		return std::make_unique<COpenGLDevice> ();
+		return std::make_unique<COpenGLDevice> (win, bDebugContext);
 	}
 }

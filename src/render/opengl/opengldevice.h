@@ -7,8 +7,7 @@
 class COpenGLDevice : public IDevice
 {
 public:
-	COpenGLDevice() {}
-	void initialize (GameWindow& win, bool bDebugContext) override;
+	COpenGLDevice(GameWindow& win, bool bDebugContext);
 
 	static COpenGLDevice& get() { return static_cast<COpenGLDevice&> (*s_device); }
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size);

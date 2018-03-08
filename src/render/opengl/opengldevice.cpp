@@ -31,7 +31,7 @@ template <class T> T initGLfunction(T& f, const char *function)
 	return f;
 }
 
-void COpenGLDevice::initialize(GameWindow& win, bool bDebugContext)
+COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 {
 #ifdef WIN32
 	auto swapchain = std::make_unique <COpenGLSwapchainWin32> (win, bDebugContext);
