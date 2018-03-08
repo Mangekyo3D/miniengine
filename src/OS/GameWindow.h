@@ -3,6 +3,8 @@
 #include "../Util/signal.h"
 #include <memory>
 
+class ISwapchain;
+
 struct ResizeEvent
 {
 	uint32_t width;
@@ -56,7 +58,7 @@ class GameWindow
 		virtual void maximize() = 0;
 		virtual void getMouseState(int& x, int& y) = 0;
 		virtual intptr_t getGLFunctionPointer(const char *) = 0;
-		virtual void createSwapchain(bool bDebugContext) = 0;
+		void assignSwapchain(std::unique_ptr<ISwapchain> swapchain);
 
 		bool queryExtension(const char *, const char *);
 		//void saveGLScreenShot();
@@ -66,5 +68,6 @@ class GameWindow
 		CSignal <MouseWheelEvent&>    onMouseWheel;
 
 	protected:
+		std::unique_ptr <ISwapchain> m_swapchain;
 	private:
 };

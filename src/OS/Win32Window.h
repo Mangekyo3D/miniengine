@@ -1,5 +1,8 @@
 #include "GameWindow.h"
 #include <windows.h>
+#include <memory>
+
+class ISwapchain;
 
 class Win32Window : public GameWindow
 {
@@ -12,12 +15,13 @@ public:
 	virtual void swapBuffers() override;
 
 	virtual intptr_t getGLFunctionPointer(const char *) override;
-	virtual void createSwapchain(bool bDebugContext) override;
-
 
 	virtual void handleOSEvents() override;
 	virtual void getMouseState(int& x, int& y) override;
 	virtual void maximize() override;
+
+	HWND getHandle() {return m_hWnd;}
+	const char* getWndClassName() const { return m_wndClass.getName(); }
 
 private:
 	class CWindowClass
@@ -26,14 +30,11 @@ private:
 		CWindowClass();
 		~CWindowClass();
 
-		const char* getName() { return m_class.lpszClassName; }
+		const char* getName() const { return m_class.lpszClassName; }
 	private:
 		WNDCLASS m_class;
 	};
 
 	CWindowClass m_wndClass;
 	HWND m_hWnd;
-
-	HDC m_hdc;
-	HGLRC m_hrc;
 };

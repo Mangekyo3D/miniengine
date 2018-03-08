@@ -43,6 +43,7 @@ set (INC
 
 	render/device.h
 	render/gpubuffer.h
+	render/iswapchain.h
 	)
 
 set (SHADER_SRC

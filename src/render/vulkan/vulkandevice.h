@@ -65,7 +65,9 @@ public:
 
 	// Creates a device compatible with rendering to a surface. Note, this call will only create a device once
 	void createDevice(VkSurfaceKHR surface);
+	// conversion to instance and device for convenience - allows us to pass the device around in functions
 	operator VkInstance () { return m_instance;}
+	operator VkDevice () { return m_device;}
 
 	VkRenderPass getRenderPass() { return m_renderPass; }
 
@@ -90,10 +92,6 @@ public:
 #define VK_INSTANCE_FUNCTION( fun) PFN_##fun fun;
 #endif
 
-#if !defined(VK_GLOBAL_FUNCTION)
-#define VK_GLOBAL_FUNCTION( fun) PFN_##fun fun;
-#endif
-
 #if !defined(VK_DEVICE_FUNCTION)
 #define VK_DEVICE_FUNCTION( fun) PFN_##fun fun;
 #endif
@@ -102,7 +100,6 @@ public:
 
 #undef VK_INSTANCE_DEBUG_FUNCTION
 #undef VK_INSTANCE_FUNCTION
-#undef VK_GLOBAL_FUNCTION
 #undef VK_DEVICE_FUNCTION
 
 private:

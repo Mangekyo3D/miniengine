@@ -1,6 +1,7 @@
 #include "GameWindow.h"
 #include <cstring>
 #include <fstream>
+#include "../render/iswapchain.h"
 
 GameWindow::GameWindow()
 {
@@ -8,6 +9,11 @@ GameWindow::GameWindow()
 
 GameWindow::~GameWindow()
 {
+}
+
+void GameWindow::assignSwapchain(std::unique_ptr<ISwapchain> swapchain)
+{
+	m_swapchain = std::move(swapchain);
 }
 
 bool GameWindow::queryExtension(const char *extName, const char *extensionList)

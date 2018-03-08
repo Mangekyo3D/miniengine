@@ -57,11 +57,8 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 		std::cout << "Vulkan Runtime not found" << std::endl;
 	}
 
-#define VK_EXPORTED_FUNCTION( fun ) PFN_##fun fun;
-	#include "VulkanFunctions.inl"
-#undef VK_EXPORTED_FUNCTION
-
 	#define VK_EXPORTED_FUNCTION( fun ) \
+		PFN_##fun fun; \
 		if (!(fun = (PFN_##fun)GetProcAddress(m_librarymodule, #fun))) { \
 		std::cout << "Could not load exported function: " << #fun << "!" << std::endl; \
 		bInstanceFunctionsLoaded = false; \
@@ -77,6 +74,7 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 	#undef VK_EXPORTED_FUNCTION
 
 	#define VK_GLOBAL_FUNCTION( fun ) \
+		PFN_##fun fun; \
 		if (!(fun = (PFN_##fun)vkGetInstanceProcAddr(nullptr, #fun))) { \
 		std::cout << "Could not load global function: " << #fun << "!" << std::endl; \
 		bInstanceFunctionsLoaded = false; \
@@ -210,7 +208,7 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 		vkCreateDebugReportCallbackEXT(m_instance, &debugCreateInfo, nullptr, &m_debugHandle);
 	}
 
-	win.createSwapchain(bDebugContext);
+	// create swapchain and device now
 }
 
 std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)

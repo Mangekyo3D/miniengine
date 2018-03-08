@@ -232,7 +232,6 @@ std::unique_ptr <IDevice> IRenderer::s_device;
 void IRenderer::initialize(GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
 	s_device = IDevice::createDevice(bVulkanContext);
-	win.createSwapchain(bDebugContext);
 	s_device->initialize(win, bDebugContext);
 
 	s_renderer = std::make_unique <Renderer> ();

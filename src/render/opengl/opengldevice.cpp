@@ -2,6 +2,7 @@
 #include "../../OS/GameWindow.h"
 #include "opengldevice.h"
 #include "openglbuffer.h"
+#include "openglswapchainwin32.h"
 
 IDevice* IDevice::s_device = nullptr;
 
@@ -22,6 +23,9 @@ template <class T> T initGLfunction(GameWindow& win, T& f, const char *function)
 
 void COpenGLDevice::initialize(GameWindow& win, bool bDebugContext)
 {
+	auto swapchain = std::make_unique <COpenGLSwapchainWin32> (win, bDebugContext);
+	win.assignSwapchain(std::move(swapchain));
+
 #define INITFUNCTION(name) initGLfunction(win, name, #name); \
 	if (name == nullptr) \
 	{ throw 0; }
