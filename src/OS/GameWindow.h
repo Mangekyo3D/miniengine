@@ -54,14 +54,10 @@ class GameWindow
 		virtual ~GameWindow();
 		virtual void getClientSize(uint32_t& width, uint32_t& height) = 0;
 		virtual void handleOSEvents() = 0;
-		virtual void swapBuffers()=0;
 		virtual void maximize() = 0;
 		virtual void getMouseState(int& x, int& y) = 0;
-		virtual intptr_t getGLFunctionPointer(const char *) = 0;
 		void assignSwapchain(std::unique_ptr<ISwapchain> swapchain);
-
-		bool queryExtension(const char *, const char *);
-		//void saveGLScreenShot();
+		void swapBuffers();
 
 		CSignal <ResizeEvent&>        onResize;
 		CSignal <KeyEvent&>           onKey;

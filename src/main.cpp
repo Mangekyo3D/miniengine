@@ -1,13 +1,7 @@
-#include <vector>
-#include <cmath>
-#include "plane.h"
-#include "Util/perlin.h"
-#include "effect.h"
-#include "audiointerface.h"
-#include "SMDmodel.h"
-#include <memory>
-#include <iostream>
+#include "OS/OSFactory.h"
 #include "engine.h"
+#include "plane.h"
+#include <memory>
 #include <cstring>
 
 void interpretCommandLineOptions(int argc, char** argv, SCommandLineOptions& options)
@@ -30,8 +24,12 @@ int main(int argc, char** argv)
 	SCommandLineOptions options;
 	interpretCommandLineOptions(argc, argv, options);
 
+	auto& factory = OSFactory::get();
+
+	auto gameWindow = factory.createGameWindow();
+
 	auto& engine = Engine::get();
-	engine.startup(options);
+	engine.startup(*gameWindow.get(), options);
 
 	float plane1color[] = {0.8f, 0.8f, 0.8f};
 	float plane2color[] = {0.0f, 0.4f, 0.4f};

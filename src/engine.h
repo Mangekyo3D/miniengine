@@ -27,14 +27,14 @@ public:
 	static Engine& get() { return s_engine; }
 	~Engine();
 
-	void startup(SCommandLineOptions& options);
+	void startup(GameWindow& win, SCommandLineOptions& options);
 	void enterGameLoop();
 
 	void addWorldEntity(std::unique_ptr<WorldEntity> entity) { m_worldEntities.push_back(std::move(entity)); }
 
 	void addController(std::unique_ptr<Controller> controller) { m_controllers.push_back(std::move(controller)); }
 
-	void addEffect(std::unique_ptr<Effect> effect) { m_effects.push_back(std::move(effect)); }
+	void addEffect(std::unique_ptr<Effect> effect);
 	void setPlayerEntity(WorldEntity* entity);
 	WorldEntity& getPlayerEntity() { return *m_playerEntity; }
 	WorldTile& getWorld() { return m_currentWorldTile; }
@@ -49,7 +49,7 @@ private:
 	void onMouseWheelEvent(MouseWheelEvent& event);
 	void onResizeEvent(ResizeEvent& event);
 
-	std::unique_ptr <GameWindow>        m_gameWindow;
+	GameWindow* m_gameWindow;
 
 	WorldTile                           m_currentWorldTile;
 

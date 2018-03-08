@@ -1,6 +1,5 @@
 #include "engine.h"
 #include "effect.h"
-#include "OS/OSFactory.h"
 #include "audiointerface.h"
 #include <ctime>
 #include <iostream>
@@ -8,6 +7,7 @@
 #include <cmath>
 #include "audiointerface.h"
 #include "resourcemanager.h"
+#include "OS/GameWindow.h"
 
 Engine Engine::s_engine;
 
@@ -20,13 +20,12 @@ Engine::~Engine()
 {
 }
 
-void Engine::startup(SCommandLineOptions& options)
+void Engine::startup(GameWindow &win, SCommandLineOptions& options)
 {
-	auto& factory = OSFactory::get();
 	ResourceManager& resourceManager = ResourceManager::get();
 
-	m_gameWindow = factory.createGameWindow();
-	IRenderer::initialize(*m_gameWindow, options.bDebugContext, options.bWithVulkan);
+	m_gameWindow = &win;
+	IRenderer::initialize(win, options.bDebugContext, options.bWithVulkan);
 
 	resourceManager.initialize();
 
@@ -165,6 +164,11 @@ void Engine::enterGameLoop()
 
 	IRenderer::shutdown();
 	IAudioDevice::shutdown();
+}
+
+void Engine::addEffect(std::unique_ptr<Effect> effect)
+{
+	m_effects.push_back(std::move(effect));
 }
 
 void Engine::setPlayerEntity(WorldEntity* entity)

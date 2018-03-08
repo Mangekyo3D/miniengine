@@ -16,9 +16,9 @@ void GameWindow::assignSwapchain(std::unique_ptr<ISwapchain> swapchain)
 	m_swapchain = std::move(swapchain);
 }
 
-bool GameWindow::queryExtension(const char *extName, const char *extensionList)
+void GameWindow::swapBuffers()
 {
-	return false;
+	m_swapchain->swapBuffers();
 }
 
 /*

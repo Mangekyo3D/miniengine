@@ -12,8 +12,7 @@ class X11Factory : public OSFactory
 		}
 		~X11Factory()
 		{
-			// this crashes on exit, investigate
-			//XCloseDisplay(m_display);
+			XCloseDisplay(m_display);
 		}
 
 		std::unique_ptr <GameWindow> createGameWindow() const override { return std::make_unique<X11Window> (m_display); }

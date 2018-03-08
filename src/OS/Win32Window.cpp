@@ -135,13 +135,6 @@ Win32Window::CWindowClass::~CWindowClass()
 	UnregisterClass(m_class.lpszClassName, GetModuleHandle(nullptr));
 }
 
-template <class T> T initWGLfunction(T& f, const char *function)
-{
-	f = reinterpret_cast<T> (wglGetProcAddress(function));
-
-	return f;
-}
-
 Win32Window::Win32Window()
 {
 	m_hWnd = CreateWindow(m_wndClass.getName(), "Space Pirates",
@@ -171,11 +164,6 @@ void Win32Window::getClientSize(uint32_t& width, uint32_t& height)
 
 	width = rect.right - rect.left;
 	height = rect.bottom - rect.top;
-}
-
-void Win32Window::swapBuffers()
-{
-	m_swapchain->swapBuffers();
 }
 
 intptr_t Win32Window::getGLFunctionPointer(const char* function)

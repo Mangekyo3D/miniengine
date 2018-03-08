@@ -2,7 +2,13 @@
 #include "../../OS/GameWindow.h"
 #include "opengldevice.h"
 #include "openglbuffer.h"
+#ifdef WIN32
 #include "openglswapchainwin32.h"
+#include "wglext.h"
+#else
+#include <GL/glx.h>
+#include "openglswapchainx11.h"
+#endif
 
 IDevice* IDevice::s_device = nullptr;
 
@@ -15,18 +21,26 @@ static void debugCallback(GLenum source,GLenum type,GLuint id,GLenum severity, G
 	}
 }
 
-template <class T> T initGLfunction(GameWindow& win, T& f, const char *function)
+template <class T> T initGLfunction(T& f, const char *function)
 {
-	f = reinterpret_cast<T> (win.getGLFunctionPointer(function));
+#ifdef WIN32
+	f = reinterpret_cast<T> (wglGetProcAddress(function));
+#else
+	f = reinterpret_cast<T> (glXGetProcAddress((GLubyte *)function));
+#endif
 	return f;
 }
 
 void COpenGLDevice::initialize(GameWindow& win, bool bDebugContext)
 {
+#ifdef WIN32
 	auto swapchain = std::make_unique <COpenGLSwapchainWin32> (win, bDebugContext);
+#else
+	auto swapchain = std::make_unique <COpenGLSwapchainX11> (win, bDebugContext);
+#endif
 	win.assignSwapchain(std::move(swapchain));
 
-#define INITFUNCTION(name) initGLfunction(win, name, #name); \
+#define INITFUNCTION(name) initGLfunction(name, #name); \
 	if (name == nullptr) \
 	{ throw 0; }
 
