@@ -3,7 +3,7 @@
 #include "vulkan/vulkandevicefactory.h"
 #endif
 
-std::unique_ptr<IDevice> IDevice::createDevice(GameWindow &win, bool bDebugContext, bool bVulkanContext)
+std::unique_ptr<IDevice> IDevice::createDevice(GameWindow& win, bool bDebugContext, bool bVulkanDevice)
 {
 #if BUILD_WITH_VULKAN
 	if (bVulkanDevice)

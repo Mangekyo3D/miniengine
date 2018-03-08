@@ -1,7 +1,7 @@
 #include "openglswapchainwin32.h"
 #include "../../OS/Win32Window.h"
 #include "gl/GL.h"
-#include "../../OS/wglext.h"
+#include "wglext.h"
 
 template <class T> T initWGLfunction(T& f, const char *function)
 {

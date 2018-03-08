@@ -13,7 +13,7 @@ public:
 	virtual ~IDevice() {}
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) = 0;
 
-	static std::unique_ptr<IDevice> createDevice(GameWindow& win, bool bDebugContext, bool bVulkanContext);
+	static std::unique_ptr<IDevice> createDevice(GameWindow& win, bool bDebugContext, bool bVulkanDevice);
 
 protected:
 	static IDevice* s_device;

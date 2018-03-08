@@ -1,6 +1,4 @@
 #include "Win32Window.h"
-#include "gl/GL.h"
-#include "wglext.h"
 #include "../render/iswapchain.h"
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -164,11 +162,6 @@ void Win32Window::getClientSize(uint32_t& width, uint32_t& height)
 
 	width = rect.right - rect.left;
 	height = rect.bottom - rect.top;
-}
-
-intptr_t Win32Window::getGLFunctionPointer(const char* function)
-{
-	return reinterpret_cast<intptr_t> (wglGetProcAddress(function));
 }
 
 void Win32Window::handleOSEvents()

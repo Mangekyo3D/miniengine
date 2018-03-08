@@ -53,11 +53,10 @@ struct SMemoryHeap
 class CVulkanDevice : public IDevice
 {
 public:
-	CVulkanDevice();
+	CVulkanDevice(GameWindow& win, bool bDebugContext);
 	~CVulkanDevice();
 	static CVulkanDevice& get();
 
-	virtual void initialize(GameWindow& win, bool bDebugContext) override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
 
 	VkDevice getDevice();

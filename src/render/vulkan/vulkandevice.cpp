@@ -33,18 +33,10 @@ VkPhysicalDevice CVulkanDevice::getPhysicalDevice()
 	return m_physicalDevice;
 }
 
-CVulkanDevice::CVulkanDevice()
+CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	: m_device(VK_NULL_HANDLE)
 	, m_instance(VK_NULL_HANDLE)
 	, m_debugHandle(VK_NULL_HANDLE)
-{
-}
-
-CVulkanDevice::~CVulkanDevice()
-{
-}
-
-void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 {
 	m_bDebugInstance = bDebugContext;
 
@@ -209,6 +201,10 @@ void CVulkanDevice::initialize(GameWindow& win, bool bDebugContext)
 	}
 
 	// create swapchain and device now
+}
+
+CVulkanDevice::~CVulkanDevice()
+{
 }
 
 std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)

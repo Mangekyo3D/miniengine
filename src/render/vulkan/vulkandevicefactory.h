@@ -1,9 +1,10 @@
 #pragma once
 #include <memory>
-#include "../device.h"
+class IDevice;
+class GameWindow;
 
 class CVulkanDeviceFactory
 {
 public:
-	static std::unique_ptr<IDevice> createDevice();
+	static std::unique_ptr<IDevice> createDevice(GameWindow& win, bool bDebugContext);
 };
