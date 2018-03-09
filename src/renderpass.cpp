@@ -19,7 +19,7 @@ struct SFullScreenData
 			v[2].vertex = Vec3(-1.0, 3.0, 0.0);
 		}
 
-		m_fullScreenTriangleDescriptor.setVertexStream(m_fullScreenTriangle.getID(), 0, 0);
+		m_fullScreenTriangleDescriptor.setVertexStream(&m_fullScreenTriangle, nullptr, nullptr);
 	}
 
 	ArrayDescriptorV m_fullScreenTriangleDescriptor;

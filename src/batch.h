@@ -5,6 +5,8 @@
 #include "Util/vertex.h"
 #include "program.h"
 
+
+class IGPUBuffer;
 class CTexture;
 
 // material descriptor wraps and sets up all data needed for a shader
@@ -13,7 +15,7 @@ class IDescriptorInterface
 	public:
 		IDescriptorInterface() 	: m_vertexArrayObject(0) {}
 		virtual ~IDescriptorInterface() {}
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) = 0;
+		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) = 0;
 		void bind();
 
 	protected:
@@ -25,7 +27,7 @@ class ArrayDescriptorV : public IDescriptorInterface
 	public:
 		ArrayDescriptorV();
 		virtual ~ArrayDescriptorV();
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
+		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
 };
 
 class IndexedInstancedDescriptorV : public IDescriptorInterface
@@ -33,7 +35,7 @@ class IndexedInstancedDescriptorV : public IDescriptorInterface
 	public:
 		IndexedInstancedDescriptorV();
 		virtual ~IndexedInstancedDescriptorV();
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
+		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
 };
 
 class IndexedInstancedDescriptorVT : public IDescriptorInterface
@@ -41,7 +43,7 @@ class IndexedInstancedDescriptorVT : public IDescriptorInterface
 	public:
 		IndexedInstancedDescriptorVT();
 		virtual ~IndexedInstancedDescriptorVT();
-		virtual void setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf) override;
+		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
 
 	private:
 		uint32_t m_sampler;
@@ -156,10 +158,10 @@ class CIndexedInstancedBatch : public IBatch
 		bool   m_bShortIndices;
 		IMesh::EPrimitiveType m_primType;
 		PipelineObject* m_pipelineState;
-		uint32_t m_vertexBuffer;
-		uint32_t m_indexBuffer;
+		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
+		std::unique_ptr<IGPUBuffer> m_indexBuffer;
 		// attributes that are specific to a certain instance
-		uint32_t m_instanceBuffer;
+		std::unique_ptr<IGPUBuffer> m_instanceBuffer;
 		// number of instances that fit in the instance buffer
 		uint32_t m_numInstances;
 };
@@ -182,6 +184,6 @@ class CDynamicArrayBatch : public IBatch
 		PipelineObject* m_material;
 
 		// current buffer
-		uint32_t m_vertexBuffer;
+		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		uint32_t m_bufferSize;
 };

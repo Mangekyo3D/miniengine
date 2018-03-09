@@ -1,6 +1,8 @@
 #include "batch.h"
 #include "render/opengl/opengldevice.h"
 #include "texture.h"
+#include "render/opengl/openglbuffer.h"
+#include <cstring>
 
 PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)
 	: m_descriptor(std::move(descriptor))
@@ -40,10 +42,12 @@ ArrayDescriptorV::~ArrayDescriptorV()
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 }
 
-void ArrayDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+void ArrayDescriptorV::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
 {
 	auto& device = COpenGLDevice::get();
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatV));
+	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
+
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatV));
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 }
 
@@ -81,12 +85,16 @@ IndexedInstancedDescriptorV::~IndexedInstancedDescriptorV()
 	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
 }
 
-void IndexedInstancedDescriptorV::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+void IndexedInstancedDescriptorV::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
 {
 	auto& device = COpenGLDevice::get();
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVN));
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
-	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
+	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
+	COpenGLBuffer* ib = static_cast<COpenGLBuffer*> (indexBuf);
+	COpenGLBuffer* instb = static_cast<COpenGLBuffer*> (instanceBuf);
+
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatVN));
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instb->getID(), 0, sizeof(MeshInstanceData));
+	device.glVertexArrayElementBuffer(m_vertexArrayObject, ib->getID());
 
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
@@ -143,12 +151,16 @@ IndexedInstancedDescriptorVT::~IndexedInstancedDescriptorVT()
 	device.glDeleteSamplers(1, &m_sampler);
 }
 
-void IndexedInstancedDescriptorVT::setVertexStream(uint32_t vertexBuf, uint32_t indexBuf, uint32_t instanceBuf)
+void IndexedInstancedDescriptorVT::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
 {
 	auto& device = COpenGLDevice::get();
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vertexBuf, 0, sizeof(VertexFormatVNT));
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instanceBuf, 0, sizeof(MeshInstanceData));
-	device.glVertexArrayElementBuffer(m_vertexArrayObject, indexBuf);
+	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
+	COpenGLBuffer* ib = static_cast<COpenGLBuffer*> (indexBuf);
+	COpenGLBuffer* instb = static_cast<COpenGLBuffer*> (instanceBuf);
+
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatVNT));
+	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instb->getID(), 0, sizeof(MeshInstanceData));
+	device.glVertexArrayElementBuffer(m_vertexArrayObject, ib->getID());
 
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
 	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
@@ -166,7 +178,6 @@ void IndexedInstancedDescriptorVT::setVertexStream(uint32_t vertexBuf, uint32_t 
 
 CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, const std::vector<CTexture *> *textures)
 	: m_pipelineState(ma)
-	, m_instanceBuffer(0)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
 	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
@@ -180,19 +191,23 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, con
 
 	auto& device = COpenGLDevice::get();
 
-	device.glCreateBuffers(1, &m_vertexBuffer);
-	device.glNamedBufferStorage(m_vertexBuffer, m->getVertexSize() * m->getNumVertices(), m->getVertices(), 0);
+	m_vertexBuffer = device.createGPUBuffer(m->getVertexSize() * m->getNumVertices());
+	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_vertexBuffer))
+	{
+		uint8_t* ptr = lock;
+		memcpy(ptr, m->getVertices(), m->getVertexSize() * m->getNumVertices());
+	}
 
-	device.glCreateBuffers(1, &m_indexBuffer);
-	device.glNamedBufferStorage(m_indexBuffer, m->getIndexSize() * m->getNumIndices(), m->getIndices(), 0);
+	m_indexBuffer = device.createGPUBuffer(m->getIndexSize() * m->getNumIndices());
+	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_indexBuffer))
+	{
+		uint8_t* ptr = lock;
+		memcpy(ptr, m->getIndices(), m->getIndexSize() * m->getNumIndices());
+	}
 }
 
 CIndexedInstancedBatch::~CIndexedInstancedBatch()
 {
-	auto& device = COpenGLDevice::get();
-
-	device.glDeleteBuffers(1, &m_vertexBuffer);
-	device.glDeleteBuffers(1, &m_indexBuffer);
 }
 
 static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
@@ -223,7 +238,7 @@ void CIndexedInstancedBatch::draw()
 
 	IDescriptorInterface& desc = m_pipelineState->getDescriptor();
 	desc.bind();
-	desc.setVertexStream(m_vertexBuffer, m_indexBuffer, m_instanceBuffer);
+	desc.setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
 
 	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
 	{
@@ -264,21 +279,19 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
 	{
-		device.glDeleteBuffers(1, &m_instanceBuffer);
-		m_instanceBuffer = 0;
+		m_instanceBuffer.reset();
 	}
 
-	if (m_instanceBuffer == 0)
+	if (!m_instanceBuffer)
 	{
-		device.glCreateBuffers(1, &m_instanceBuffer);
-		device.glNamedBufferStorage(m_instanceBuffer, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data(), GL_DYNAMIC_STORAGE_BIT);
+		m_instanceBuffer = device.createGPUBuffer(sizeof(MeshInstanceData) * m_instanceData.size());
 		m_numInstances = static_cast <uint32_t> (m_instanceData.size());
 	}
-	else
+
+	if (auto lock = IGPUBuffer::CAutoLock<MeshInstanceData>(*m_instanceBuffer))
 	{
-		// invalidate first so that we avoid locking here
-		device.glInvalidateBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size());
-		device.glNamedBufferSubData(m_instanceBuffer, 0, sizeof(MeshInstanceData) * m_instanceData.size(), m_instanceData.data());
+		MeshInstanceData* ptr = lock;
+		memcpy(ptr, m_instanceData.data(), sizeof(MeshInstanceData) * m_instanceData.size());
 	}
 }
 
@@ -293,8 +306,6 @@ CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vect
 
 CDynamicArrayBatch::~CDynamicArrayBatch()
 {
-	auto& device = COpenGLDevice::get();
-	device.glDeleteBuffers(1, &m_vertexBuffer);
 }
 
 void CDynamicArrayBatch::draw()

@@ -22,7 +22,7 @@ void* COpenGLBuffer::lock()
 {
 	auto& device = COpenGLDevice::get();
 
-	return device.glMapNamedBufferRange(m_ID, 0, m_size, GL_MAP_WRITE_BIT);
+	return device.glMapNamedBufferRange(m_ID, 0, m_size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT);
 }
 
 void  COpenGLBuffer::unlock()
