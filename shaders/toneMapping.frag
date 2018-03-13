@@ -18,6 +18,6 @@ vec4 linearToSrgb(in vec4 value)
 void main()
 {
 	vec4 sceneCol = texture(sceneTex, vs_in.vTexCoord);
-	float fVignetteFactor = 1.414 * length(vs_in.vTexCoord - vec2(0.5));
+	float fVignetteFactor = length(vs_in.vTexCoord - vec2(0.5));
 	cColor = (1.0 - fVignetteFactor * fVignetteFactor) * linearToSrgb(sceneCol);
 }
