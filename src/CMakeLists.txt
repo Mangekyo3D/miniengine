@@ -60,7 +60,12 @@ set (SHADERS
 add_custom_target(shaderbindir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/shaders/
     COMMENT "Creating shader binary dir")
-get_filename_component(VULKAN_BIN_DIR ${Vulkan_INCLUDE_DIR} DIRECTORY)
+get_filename_component(VULKAN_HOME_DIR ${Vulkan_INCLUDE_DIR} DIRECTORY)
+if (WIN32)
+	set(VULKAN_BIN_DIR "${VULKAN_HOME_DIR}/Bin")
+elseif(UNIX)
+	set(VULKAN_BIN_DIR "${VULKAN_HOME_DIR}/bin")
+endif()
 
 # generate spir-v modules from source files
 foreach(SHADER ${SHADERS})
@@ -68,11 +73,11 @@ foreach(SHADER ${SHADERS})
     set(SHADER_BINARY_UNOPTIMIZED ${CMAKE_BINARY_DIR}/bin/shaders/${SHADER}_unopt.spv)
     set(SHADER_FILE ${CMAKE_SOURCE_DIR}/shaders/${SHADER})
     add_custom_command(OUTPUT ${SHADER_BINARY_UNOPTIMIZED}
-        COMMAND ${VULKAN_BIN_DIR}/Bin/glslangValidator -V ${SHADER_FILE} -e main -o ${SHADER_BINARY_UNOPTIMIZED}
+        COMMAND ${VULKAN_BIN_DIR}/glslangValidator -V ${SHADER_FILE} -e main -o ${SHADER_BINARY_UNOPTIMIZED}
         COMMENT "SPIR-V: Building ${SHADER}"
-        DEPENDS ${CMAKE_SOURCE_DIR}/shaders/${SHADER})
+        DEPENDS ${CMAKE_SOURCE_DIR}/shaders/${SHADER} shaderbindir)
     add_custom_command(OUTPUT ${SHADER_BINARY}
-        COMMAND ${VULKAN_BIN_DIR}/Bin/spirv-opt
+        COMMAND ${VULKAN_BIN_DIR}/spirv-opt
         --inline-entry-points-exhaustive
         --convert-local-access-chains
         --eliminate-local-single-block
