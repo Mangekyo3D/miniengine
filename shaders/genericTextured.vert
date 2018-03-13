@@ -12,7 +12,7 @@ layout (std140, binding = 0) uniform TransformBlock
 	mat3 mNormal;
 } transform;
 
-out INTERFACE
+out layout(location = 0) INTERFACE
 {
 	vec3 vNormal;
 	vec2 vTexCoord;

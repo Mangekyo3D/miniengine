@@ -2,7 +2,7 @@
 
 in layout(location=0) vec4 ivPos;
 
-out INTERFACE
+out layout(location = 0) INTERFACE
 {
 	vec2 vTexCoord;
 } vs_out;

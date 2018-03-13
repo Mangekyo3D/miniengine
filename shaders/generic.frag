@@ -1,6 +1,6 @@
 #version 450 core
 
-in INTERFACE
+in layout(location = 0) INTERFACE
 {
 	vec3 vNormal;
 } vs_in;
@@ -11,7 +11,7 @@ layout (std140, binding = 1) uniform LightingBlock
 	vec3 lightDir;
 } lighting;
 
-out vec4 cColor;
+out layout (location = 0) vec4 cColor;
 
 void main()
 {

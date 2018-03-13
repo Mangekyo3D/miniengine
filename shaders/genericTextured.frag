@@ -1,6 +1,6 @@
 #version 450 core
 
-in INTERFACE
+in layout(location = 0) INTERFACE
 {
 	vec3 vNormal;
 	vec2 vTexCoord;
@@ -14,7 +14,7 @@ layout (std140, binding = 1) uniform LightingBlock
 
 layout(binding=0) uniform sampler2D diffuseTex;
 
-out vec4 cColor;
+out layout(location = 0) vec4 cColor;
 
 void main()
 {

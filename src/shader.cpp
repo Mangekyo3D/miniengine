@@ -39,10 +39,10 @@ CShader::CShader(std::string filename, EType type)
 	switch(type)
 	{
 		case EType::eFragment:
-			filename += ".frag";
+			filename += ".frag.spv";
 			break;
 		case EType::eVertex:
-			filename += ".vert";
+			filename += ".vert.spv";
 			break;
 	}
 
@@ -72,7 +72,7 @@ bool CShader::compile()
 		return true;
 	}
 
-	std::ifstream file(m_filename);
+	std::ifstream file(m_filename, std::ios::in | std::ios::binary);
 
 	if (file)
 	{
@@ -92,8 +92,8 @@ bool CShader::compile()
 		int shaderLength = static_cast <int> (source.length());
 		const char *str = source.c_str();
 
-		device.glShaderSource(m_ID, 1, &str, &shaderLength);
-		device.glCompileShader(m_ID);
+		device.glShaderBinary(1, &m_ID, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, str, shaderLength);
+		device.glSpecializeShaderARB(m_ID, "main", 0, nullptr, nullptr);
 
 		int status;
 		device.glGetShaderiv(m_ID, GL_COMPILE_STATUS, &status);
