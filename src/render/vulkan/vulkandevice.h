@@ -4,7 +4,6 @@
 
 #include "../device.h"
 #include "vulkan/vulkan.h"
-#include <windows.h>
 #include <memory>
 #include <map>
 #include <vector>
@@ -107,7 +106,13 @@ private:
 	void createMeshes();
 
 	bool           m_bDebugInstance;
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
 	HMODULE        m_librarymodule;
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+	void*          m_librarymodule;
+#endif
+
 	VkInstance     m_instance;
 
 	VkDebugReportCallbackEXT m_debugHandle;

@@ -2,6 +2,15 @@
 #include "../gpubuffer.h"
 #include "../../OS/GameWindow.h"
 #include <iostream>
+#include <cstring>
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+#include <windows.h>
+#define LoadProcAddress GetProcAddress
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+#include <dlfcn.h>
+#define LoadProcAddress dlsym
+#endif
 
 static VkBool32 vulkanDebugCallback(
 	VkDebugReportFlagsEXT flags,
@@ -40,8 +49,11 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 {
 	m_bDebugInstance = bDebugContext;
 
+#ifdef VK_USE_PLATFORM_WIN32_KHR
 	m_librarymodule = LoadLibrary("vulkan-1.dll");
-
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+	m_librarymodule = dlopen( "libvulkan.so", RTLD_NOW);
+#endif
 	bool bInstanceFunctionsLoaded = true;
 
 	if (m_librarymodule == nullptr)
@@ -51,7 +63,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 
 	#define VK_EXPORTED_FUNCTION( fun ) \
 		PFN_##fun fun; \
-		if (!(fun = (PFN_##fun)GetProcAddress(m_librarymodule, #fun))) { \
+		if (!(fun = (PFN_##fun)LoadProcAddress(m_librarymodule, #fun))) { \
 		std::cout << "Could not load exported function: " << #fun << "!" << std::endl; \
 		bInstanceFunctionsLoaded = false; \
 	}
@@ -94,7 +106,11 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	std::vector<const char*> requiredExtensions =
 	{
 		VK_KHR_SURFACE_EXTENSION_NAME,
+#ifdef VK_USE_PLATFORM_WIN32_KHR
 		VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+		VK_KHR_XLIB_SURFACE_EXTENSION_NAME
+#endif
 	};
 
 	if (m_bDebugInstance)
@@ -205,6 +221,18 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 
 CVulkanDevice::~CVulkanDevice()
 {
+	if (m_bDebugInstance)
+	{
+		vkDestroyDebugReportCallbackEXT(m_instance, m_debugHandle, nullptr);
+	}
+
+	vkDestroyInstance(m_instance, nullptr);
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+	CloseHandle(m_librarymodule);
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+	dlclose(m_librarymodule);
+#endif
 }
 
 std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)

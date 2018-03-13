@@ -39,7 +39,12 @@ VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceImageFormatProperties)
 VK_INSTANCE_DEBUG_FUNCTION(vkCreateDebugReportCallbackEXT)
 VK_INSTANCE_DEBUG_FUNCTION(vkDestroyDebugReportCallbackEXT)
 
+#ifdef VK_USE_PLATFORM_WIN32_KHR
 VK_INSTANCE_FUNCTION(vkCreateWin32SurfaceKHR)
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+VK_INSTANCE_FUNCTION(vkCreateXlibSurfaceKHR)
+#endif
+
 VK_INSTANCE_FUNCTION(vkDestroySurfaceKHR)
 
 VK_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)
