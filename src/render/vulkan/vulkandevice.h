@@ -62,7 +62,7 @@ public:
 	VkPhysicalDevice getPhysicalDevice();
 
 	// Creates a device compatible with rendering to a surface. Note, this call will only create a device once
-	void createDevice(VkSurfaceKHR surface);
+	bool ensureDevice(VkSurfaceKHR surface);
 	// conversion to instance and device for convenience - allows us to pass the device around in functions
 	operator VkInstance () { return m_instance;}
 	operator VkDevice () { return m_device;}

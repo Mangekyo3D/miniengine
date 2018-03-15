@@ -9,6 +9,7 @@
 #define LoadProcAddress GetProcAddress
 #elif defined VK_USE_PLATFORM_XLIB_KHR
 #include <dlfcn.h>
+#include "vulkanswapchainx11.h"
 #define LoadProcAddress dlsym
 #endif
 
@@ -42,12 +43,31 @@ VkPhysicalDevice CVulkanDevice::getPhysicalDevice()
 	return m_physicalDevice;
 }
 
+bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
+{
+	uint32_t physicalDeviceCount = 0;
+
+	if (vkEnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
+	{
+		std::cout << "Devices could not be enumerated " << std::endl;
+	}
+
+	if (physicalDeviceCount == 0)
+	{
+		std::cout << "No Vulkan capable devices detected!" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
 CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	: m_device(VK_NULL_HANDLE)
 	, m_instance(VK_NULL_HANDLE)
 	, m_debugHandle(VK_NULL_HANDLE)
 {
 	m_bDebugInstance = bDebugContext;
+	s_device = this;
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 	m_librarymodule = LoadLibrary("vulkan-1.dll");
@@ -196,6 +216,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	if (!bInstanceFunctionsLoaded)
 	{
 		vkDestroyInstance(m_instance, nullptr);
+		m_instance = VK_NULL_HANDLE;
 		return;
 	}
 
@@ -217,6 +238,14 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	}
 
 	// create swapchain and device now
+	VkSurfaceKHR windowSurface = VK_NULL_HANDLE;
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+	auto swapchain = std::make_unique <CVulkanSwapchainWin32> (win);
+#elif defined VK_USE_PLATFORM_XLIB_KHR
+	auto swapchain = std::make_unique <CVulkanSwapchainX11> (win);
+#endif
+	win.assignSwapchain(std::move(swapchain));
 }
 
 CVulkanDevice::~CVulkanDevice()

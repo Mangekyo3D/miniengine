@@ -33,6 +33,8 @@ template <class T> T initGLfunction(T& f, const char *function)
 
 COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 {
+	s_device = this;
+
 #ifdef WIN32
 	auto swapchain = std::make_unique <COpenGLSwapchainWin32> (win, bDebugContext);
 #else
@@ -145,9 +147,6 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 	}
 
 #undef INITFUNCTION
-
-	// not very nice but meh
-	s_device = this;
 }
 
 std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)

@@ -8,6 +8,14 @@ set (INC
 	vulkandevicefactory.h
 	)
 
+if (WIN32)
+	list(APPEND SRC vulkanswapchainwin32.cpp)
+	list(APPEND INC vulkanswapchainwin32.h)
+elseif (UNIX)
+	list(APPEND SRC vulkanswapchainx11.cpp)
+	list(APPEND INC vulkanswapchainx11.h)
+endif()
+
 set (INC_DIRS)
 set (LIBS
 	)
