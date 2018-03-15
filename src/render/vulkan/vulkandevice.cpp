@@ -3,14 +3,16 @@
 #include "../../OS/GameWindow.h"
 #include <iostream>
 #include <cstring>
+#include "vulkanswapchain.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 #include <windows.h>
 #define LoadProcAddress GetProcAddress
+#define CloseDll CloseHandle
 #elif defined VK_USE_PLATFORM_XLIB_KHR
 #include <dlfcn.h>
-#include "vulkanswapchainx11.h"
 #define LoadProcAddress dlsym
+#define CloseDll dlclose
 #endif
 
 static VkBool32 vulkanDebugCallback(
@@ -45,17 +47,206 @@ VkPhysicalDevice CVulkanDevice::getPhysicalDevice()
 
 bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 {
-	uint32_t physicalDeviceCount = 0;
-
-	if (vkEnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
+	if (m_device != VK_NULL_HANDLE)
 	{
-		std::cout << "Devices could not be enumerated " << std::endl;
+		return true;
 	}
 
-	if (physicalDeviceCount == 0)
+	unsigned int numDevices = 0;
+
+	if (vkEnumeratePhysicalDevices(m_instance, &numDevices, nullptr) != VK_SUCCESS || numDevices == 0)
 	{
-		std::cout << "No Vulkan capable devices detected!" << std::endl;
+		std::cout << "No supported Vulkan Devices found!" << std::endl;
 		return false;
+	}
+
+	// we have more than one device available, let's get their properties now
+	std::vector <VkPhysicalDevice> physDevices(numDevices);
+
+	if (vkEnumeratePhysicalDevices(m_instance, &numDevices, &physDevices[0]) != VK_SUCCESS)
+	{
+		std::cout << "Error during Vulkan Device enumeration!" << std::endl;
+		return false;
+	}
+
+	// now that we have our devices, let's check which one supports rendering
+	for (uint32_t deviceIndex = 0; deviceIndex < physDevices.size(); ++deviceIndex)
+	{
+		VkPhysicalDevice& physDevice  = physDevices[deviceIndex];
+		unsigned int numQueueFamilies;
+		VkPhysicalDeviceProperties properties;
+		vkGetPhysicalDeviceProperties(physDevice, &properties);
+
+		std::cout << "Device: " << properties.deviceName << std::endl;
+
+		// get extension properties for this device
+		uint32_t numExtensionProps;
+		if (vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &numExtensionProps, nullptr) != VK_SUCCESS)
+		{
+			std::cout << "Failed to eumerate extensions for device" << std::endl;
+			continue;
+		}
+
+		// no extensions, however we need support for swapchain rendering, so continue to the next device
+		if (numExtensionProps == 0)
+		{
+			continue;
+		}
+
+		std::vector<VkExtensionProperties> deviceExtensions(numExtensionProps);
+		if (vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &numExtensionProps, &deviceExtensions[0]) != VK_SUCCESS)
+		{
+			std::cout << "Failed to eumerate extensions for device" << std::endl;
+			continue;
+		}
+
+		bool bSupportsSwapchainRendering = false;
+		for (VkExtensionProperties& property : deviceExtensions)
+		{
+			if (strcmp(property.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
+			{
+				bSupportsSwapchainRendering = true;
+				break;
+			}
+		}
+
+		if (!bSupportsSwapchainRendering)
+		{
+			continue;
+		}
+
+		vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &numQueueFamilies, nullptr);
+
+		std::vector <VkQueueFamilyProperties> familyProperties(numQueueFamilies);
+		vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &numQueueFamilies, &familyProperties[0]);
+
+		uint32_t presentQueueIndex = 0xFFFFFFFF, graphicsQueueIndex = 0xFFFFFFFF;
+
+		for (uint32_t familyIndex = 0; familyIndex < familyProperties.size(); ++familyIndex)
+		{
+			VkQueueFamilyProperties& queueFamilyProperty  = familyProperties[familyIndex];
+
+			bool bSupportsGraphicsCommands = queueFamilyProperty.queueCount > 0 &&
+					(queueFamilyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT);
+
+			bSupportsSwapchainRendering = false;
+
+			VkBool32 vkbSupportsSwapchainRendering;
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, familyIndex, surface, &vkbSupportsSwapchainRendering) == VK_SUCCESS)
+			{
+				bSupportsSwapchainRendering = (vkbSupportsSwapchainRendering == VK_TRUE);
+			}
+
+			if (presentQueueIndex == 0xFFFFFFFF && bSupportsSwapchainRendering)
+			{
+				presentQueueIndex = familyIndex;
+			}
+
+			if (graphicsQueueIndex == 0xFFFFFFFF && bSupportsGraphicsCommands)
+			{
+				graphicsQueueIndex = familyIndex;
+			}
+
+			if (bSupportsGraphicsCommands && bSupportsSwapchainRendering)
+			{
+				presentQueueIndex = graphicsQueueIndex = familyIndex;
+				break;
+			}
+		}
+
+		if (presentQueueIndex != 0xFFFFFFFF && graphicsQueueIndex != 0xFFFFFFFF)
+		{
+			std::vector<float> queuePriorities = { 1.0f };
+
+			std::vector <VkDeviceQueueCreateInfo> queueCreateInfo;
+
+			VkDeviceQueueCreateInfo presentQueueCreateInfo =
+			{
+				VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+				nullptr,
+				0,
+				presentQueueIndex,
+				static_cast<uint32_t> (queuePriorities.size()),
+				queuePriorities.data()
+			};
+
+			queueCreateInfo.push_back(presentQueueCreateInfo);
+
+			if (presentQueueIndex != graphicsQueueIndex)
+			{
+				VkDeviceQueueCreateInfo graphicsQueueCreateInfo =
+				{
+					VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+					nullptr,
+					0,
+					graphicsQueueIndex,
+					static_cast<uint32_t> (queuePriorities.size()),
+					queuePriorities.data()
+				};
+
+				queueCreateInfo.push_back(graphicsQueueCreateInfo);
+			}
+
+			std::vector<const char*> extensions = {
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+			};
+
+			VkDeviceCreateInfo deviceCreateInfo =
+			{
+				VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+				nullptr,
+				0,
+				static_cast<uint32_t>(queueCreateInfo.size()),
+				queueCreateInfo.data(),
+				0,
+				nullptr,
+				static_cast<uint32_t>(extensions.size()),
+				extensions.data(),
+				nullptr
+			};
+
+			if (vkCreateDevice(physDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+			{
+				std::cout << "Failure during device creation" << std::endl;
+				continue;
+			}
+
+			m_physicalDevice = physDevice;
+			m_graphicsQueueIndex = graphicsQueueIndex;
+			m_presentQueueIndex = presentQueueIndex;
+			m_graphicsCommandPool = nullptr;
+
+			bool bDeviceFunctionsLoaded = true;
+			#define VK_DEVICE_FUNCTION( fun ) \
+			if (!(fun = (PFN_##fun)vkGetDeviceProcAddr(m_device, #fun))) { \
+				std::cout << "Could not load global function: " << #fun << "!" << std::endl; \
+				bDeviceFunctionsLoaded = false; \
+			}
+			#include "VulkanFunctions.inl"
+			#undef VK_DEVICE_FUNCTION
+
+			if (!bDeviceFunctionsLoaded)
+			{
+				return false;
+			}
+
+			vkGetDeviceQueue(m_device, graphicsQueueIndex, 0, &m_graphicsQueue);
+			vkGetDeviceQueue(m_device, presentQueueIndex, 0, &m_presentQueue);
+
+			// create command pools and buffers
+			VkCommandPoolCreateInfo commandPoolCreateInfo =
+			{
+				VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+				nullptr,
+				VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+				m_graphicsQueueIndex
+			};
+
+			if (vkCreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_graphicsCommandPool) != VK_SUCCESS)
+			{
+				std::cout << "Could not create graphics command pool" << std::endl;
+			}
+		}
 	}
 
 	return true;
@@ -241,7 +432,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	VkSurfaceKHR windowSurface = VK_NULL_HANDLE;
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-	auto swapchain = std::make_unique <CVulkanSwapchainWin32> (win);
+	auto swapchain = std::make_unique <CVulkanSwapchain> (win);
 #elif defined VK_USE_PLATFORM_XLIB_KHR
 	auto swapchain = std::make_unique <CVulkanSwapchainX11> (win);
 #endif
@@ -250,6 +441,42 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 
 CVulkanDevice::~CVulkanDevice()
 {
+	vkDeviceWaitIdle(m_device);
+
+	if (m_pipelineLayout)
+	{
+		vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+	}
+
+	if (m_diffusePipeline)
+	{
+		vkDestroyPipeline(m_device, m_diffusePipeline, nullptr);
+	}
+
+	if (m_descriptorSetLayout)
+	{
+		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
+	}
+
+	if (m_renderPass)
+	{
+		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
+	}
+
+	// first, delete the device if it exists
+	if (m_graphicsCommandPool)
+	{
+		vkDestroyCommandPool(m_device, m_graphicsCommandPool, nullptr);
+	}
+
+	// clear the heaps before destroying the device
+	m_memoryHeaps.clear();
+
+	if (m_device)
+	{
+		vkDestroyDevice(m_device, nullptr);
+	}
+
 	if (m_bDebugInstance)
 	{
 		vkDestroyDebugReportCallbackEXT(m_instance, m_debugHandle, nullptr);
@@ -257,12 +484,132 @@ CVulkanDevice::~CVulkanDevice()
 
 	vkDestroyInstance(m_instance, nullptr);
 
-#ifdef VK_USE_PLATFORM_WIN32_KHR
-	CloseHandle(m_librarymodule);
-#elif defined VK_USE_PLATFORM_XLIB_KHR
-	dlclose(m_librarymodule);
-#endif
+	CloseDll(m_librarymodule);
 }
+
+bool CVulkanDevice::getSwapchainCreationParameters(VkSurfaceKHR windowSurface, VkSwapchainKHR oldSwapchain, VkSwapchainCreateInfoKHR& swapchainCreateInfo)
+{
+	// first, query some capabilities for current device surface extensions
+	VkSurfaceCapabilitiesKHR surfaceCapabilities;
+	if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, windowSurface, &surfaceCapabilities) != VK_SUCCESS)
+	{
+		std::cout << "Error during surface capability enumeration!" << std::endl;
+		return false;
+	}
+
+	VkBool32 vkbSupportsSwapchainRendering = VK_FALSE;
+	if (vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_graphicsQueueIndex, windowSurface, &vkbSupportsSwapchainRendering) != VK_SUCCESS ||
+		(vkbSupportsSwapchainRendering == VK_FALSE))
+	{
+		std::cout << "Window surface not supported by device graphics queue!" << std::endl;
+		return false;
+	}
+
+	vkbSupportsSwapchainRendering = VK_FALSE;
+	if (vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_presentQueueIndex, windowSurface, &vkbSupportsSwapchainRendering) != VK_SUCCESS ||
+		(vkbSupportsSwapchainRendering == VK_FALSE))
+	{
+		std::cout << "Window surface not supported by device present queue!" << std::endl;
+		return false;
+	}
+
+	uint32_t surfaceFormatCount;
+	if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, windowSurface, &surfaceFormatCount, nullptr) != VK_SUCCESS)
+	{
+		std::cout << "Error during format enumeration!" << std::endl;
+		return false;
+	}
+
+	std::vector <VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
+
+	if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, windowSurface, &surfaceFormatCount, &surfaceFormats[0]) != VK_SUCCESS)
+	{
+		std::cout << "Error during format enumeration!" << std::endl;
+		return false;
+	}
+
+	uint32_t presentModeCount;
+	if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, windowSurface, &presentModeCount, nullptr) != VK_SUCCESS)
+	{
+		std::cout << "Error during present mode enumeration!" << std::endl;
+		return false;
+	}
+
+	std::vector <VkPresentModeKHR> presentModes(presentModeCount);
+
+	if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, windowSurface, &presentModeCount, &presentModes[0]) != VK_SUCCESS)
+	{
+		std::cout << "Error during present mode enumeration!" << std::endl;
+		return false;
+	}
+
+	// hardcoded, should be option instead
+	uint32_t finalImageCount = 2;
+	finalImageCount = std::max(std::min(surfaceCapabilities.maxImageCount, finalImageCount), surfaceCapabilities.minImageCount);
+
+	bool bFormatAllowed = false;
+
+	if (surfaceFormats.size() == 1 && surfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+	{
+		bFormatAllowed = true;
+	}
+
+	for (VkSurfaceFormatKHR surfaceFormat : surfaceFormats)
+	{
+		if (surfaceFormat.format ==VK_FORMAT_B8G8R8A8_UNORM && surfaceFormat.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR)
+		{
+			bFormatAllowed = true;
+			break;
+		}
+	}
+
+	if (!bFormatAllowed)
+	{
+		std::cout << "No suitable swapchain format found!" << std::endl;
+		return false;
+	}
+
+	VkSurfaceFormatKHR finalFormat = {VK_FORMAT_B8G8R8A8_UNORM, VK_COLORSPACE_SRGB_NONLINEAR_KHR};
+	VkExtent2D finalExtent = surfaceCapabilities.currentExtent;
+
+	// use an arbitrary extent in case of invalid values
+	if (finalExtent.width == -1 && finalExtent.height == -1)
+	{
+		finalExtent.width = 800;
+		finalExtent.width = 600;
+	}
+
+	// make sure to clamp between minimum and maximum
+	finalExtent.width = std::min(finalExtent.width, surfaceCapabilities.maxImageExtent.width);
+	finalExtent.width = std::max(finalExtent.width, surfaceCapabilities.minImageExtent.width);
+
+	finalExtent.height = std::min(finalExtent.height, surfaceCapabilities.maxImageExtent.height);;
+	finalExtent.height = std::max(finalExtent.height, surfaceCapabilities.minImageExtent.height);
+
+	swapchainCreateInfo = {
+		VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		nullptr,
+		0,
+		windowSurface,
+		finalImageCount,
+		finalFormat.format,
+		finalFormat.colorSpace,
+		finalExtent,
+		1,
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_SHARING_MODE_EXCLUSIVE,
+		0,
+		nullptr,
+		VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+		VK_PRESENT_MODE_FIFO_KHR,
+		VK_TRUE,
+		oldSwapchain
+	};
+
+	return true;
+}
+
 
 std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)
 {
