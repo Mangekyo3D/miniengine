@@ -39,10 +39,10 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 	}
 }
 
-PipelineObject* ResourceManager::loadMaterial(std::string materialName)
+PipelineObject* ResourceManager::loadPipeline(std::string pipelineName)
 {
-	auto iter = m_materials.find(materialName);
-	if (iter != m_materials.end())
+	auto iter = m_pipelines.find(pipelineName);
+	if (iter != m_pipelines.end())
 	{
 		return iter->second.get();
 	}
@@ -92,18 +92,22 @@ IAudioResource *ResourceManager::loadAudio(std::string audioName)
 
 void ResourceManager::initialize()
 {
-	std::string materialName = "generic";
-	auto material = std::make_unique <PipelineObject> (materialName, std::make_unique <IndexedInstancedDescriptorV> ());
-	m_materials[materialName] = std::move(material);
+	std::string pipelineName = "generic";
+	auto pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());
+	m_pipelines[pipelineName] = std::move(pipeline);
 
-	materialName = "genericTextured";
-	material = std::make_unique <PipelineObject> (materialName, std::make_unique <IndexedInstancedDescriptorVT> ());
-	m_materials[materialName] = std::move(material);
+	pipelineName = "genericTextured";
+	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
+	m_pipelines[pipelineName] = std::move(pipeline);
+
+	pipelineName = "toneMapping";
+	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <ArrayDescriptorV> ());
+	m_pipelines[pipelineName] = std::move(pipeline);
 }
 
 void ResourceManager::cleanup()
 {
-	m_materials.clear();
+	m_pipelines.clear();
 	m_models.clear();
 	m_textures.clear();
 }

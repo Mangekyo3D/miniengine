@@ -106,11 +106,11 @@ CIndexedInstancedBatch* SMDModel::getBatch()
 		PipelineObject* material;
 		if (m_texCoordData.size() > 0)
 		{
-			material = ResourceManager::get().loadMaterial("genericTextured");
+			material = ResourceManager::get().loadPipeline("genericTextured");
 		}
 		else
 		{
-			material = ResourceManager::get().loadMaterial("generic");
+			material = ResourceManager::get().loadPipeline("generic");
 		}
 
 		auto newBatch = std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), material, &m_textures);

@@ -22,12 +22,8 @@ Engine::~Engine()
 
 void Engine::startup(GameWindow &win, SCommandLineOptions& options)
 {
-	ResourceManager& resourceManager = ResourceManager::get();
-
 	m_gameWindow = &win;
 	IRenderer::initialize(win, options.bDebugContext, options.bWithVulkan);
-
-	resourceManager.initialize();
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
 	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);

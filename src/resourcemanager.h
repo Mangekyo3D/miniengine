@@ -15,7 +15,7 @@ class ResourceManager
 		ResourceManager(const ResourceManager&) = delete;
 
 		SMDModel* loadModel(std::string modelName);
-		PipelineObject* loadMaterial(std::string materialName);
+		PipelineObject* loadPipeline(std::string pipelineName);
 		CTexture* loadTexture(std::string textureName);
 		IAudioResource* loadAudio(std::string audioName);
 
@@ -27,7 +27,7 @@ class ResourceManager
 		ResourceManager();
 
 		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
-		std::map <std::string, std::unique_ptr<PipelineObject> > m_materials;
+		std::map <std::string, std::unique_ptr<PipelineObject> > m_pipelines;
 		std::map <std::string, std::unique_ptr<CTexture> > m_textures;
 		std::map <std::string, std::unique_ptr<IAudioResource> > m_audio;
 };

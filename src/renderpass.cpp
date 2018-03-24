@@ -3,15 +3,19 @@
 #include "render/opengl/opengldevice.h"
 #include "texture.h"
 #include "batch.h"
+#include "resourcemanager.h"
 #include "render/opengl/openglbuffer.h"
 #include <iostream>
 
 struct SFullScreenData
 {
 	SFullScreenData()
-		: m_fullScreenTriangle(3 * sizeof(VertexFormatV))
 	{
-		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(m_fullScreenTriangle))
+		auto& device = IDevice::get();
+		auto& manager = ResourceManager::get();
+		m_fullScreenTriangle = device.createGPUBuffer(3 * sizeof(VertexFormatV));
+
+		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(*m_fullScreenTriangle))
 		{
 			VertexFormatV *v = lock;
 			v[0].vertex = Vec3(-1.0, -1.0, 0.0);
@@ -19,25 +23,17 @@ struct SFullScreenData
 			v[2].vertex = Vec3(-1.0, 3.0, 0.0);
 		}
 
-		m_fullScreenTriangleDescriptor.setVertexStream(&m_fullScreenTriangle, nullptr, nullptr);
+		m_pipeline = manager.loadPipeline("toneMapping");
+		m_pipeline->getDescriptor().setVertexStream(m_fullScreenTriangle.get(), nullptr, nullptr);
 	}
 
-	ArrayDescriptorV m_fullScreenTriangleDescriptor;
-	COpenGLBuffer    m_fullScreenTriangle;
-	CProgram         m_program;
+	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
+	PipelineObject* m_pipeline;
 };
 
 CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
 {
-	CShader vertShader(shaderName, CShader::EType::eVertex);
-	CShader fragShader(shaderName, CShader::EType::eFragment);
-
 	m_data = std::make_unique <SFullScreenData> ();
-
-	m_data->m_program.attach(vertShader);
-	m_data->m_program.attach(fragShader);
-
-	m_data->m_program.link();
 
 	// create sampler for texture sampling of material
 	auto& device = COpenGLDevice::get();
@@ -69,9 +65,8 @@ void CFullScreenRenderPass::draw()
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 	device.glViewport(0, 0, m_width, m_height);
 
-	m_data->m_program.use();
-
-	m_data->m_fullScreenTriangleDescriptor.bind();
+	m_data->m_pipeline->bind();
+	m_data->m_pipeline->getDescriptor().bind();
 
 	for (int i = 0; i < m_inputs.size(); ++i)
 	{

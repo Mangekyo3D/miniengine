@@ -197,8 +197,8 @@ Bullet::Bullet()
 	if (!s_batch)
 	{
 		IRenderer& renderer = IRenderer::get();
-		PipelineObject* material = ResourceManager::get().loadMaterial("genericTextured");
-		auto batch = std::make_unique <CDynamicArrayBatch> (material);
+		PipelineObject* pipeline = ResourceManager::get().loadPipeline("genericTextured");
+		auto batch = std::make_unique <CDynamicArrayBatch> (pipeline);
 		s_batch = batch.get();
 
 		renderer.addNewBatch(std::move(batch));

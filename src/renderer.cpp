@@ -5,6 +5,7 @@
 #include "render/gpubuffer.h"
 #include "camera.h"
 #include "batch.h"
+#include "resourcemanager.h"
 
 struct SceneUniformBuffer
 {
@@ -232,6 +233,10 @@ std::unique_ptr <IDevice> IRenderer::s_device;
 void IRenderer::initialize(GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
 	s_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
+
+	ResourceManager& resourceManager = ResourceManager::get();
+	resourceManager.initialize();
+
 	s_renderer = std::make_unique <Renderer> ();
 }
 
