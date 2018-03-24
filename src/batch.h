@@ -52,9 +52,7 @@ class IndexedInstancedDescriptorVT : public IDescriptorInterface
 class PipelineObject {
 	public:
 		PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor);
-
-		IDescriptorInterface& getDescriptor() { return *m_descriptor.get();}
-		void bind();
+		IDescriptorInterface* bind();
 
 	private:
 		CProgram m_program;

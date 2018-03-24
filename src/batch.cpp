@@ -16,9 +16,12 @@ PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDes
 	m_program.link();
 }
 
-void PipelineObject::bind()
+IDescriptorInterface* PipelineObject::bind()
 {
 	m_program.use();
+	m_descriptor->bind();
+
+	return m_descriptor.get();
 }
 
 void IDescriptorInterface::bind()
@@ -234,11 +237,8 @@ void CIndexedInstancedBatch::draw()
 
 	setupInstanceBuffer();
 
-	m_pipelineState->bind();
-
-	IDescriptorInterface& desc = m_pipelineState->getDescriptor();
-	desc.bind();
-	desc.setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
+	IDescriptorInterface* desc = m_pipelineState->bind();
+	desc->setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
 
 	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
 	{

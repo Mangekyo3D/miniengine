@@ -90,7 +90,7 @@ IAudioResource *ResourceManager::loadAudio(std::string audioName)
 	}
 }
 
-void ResourceManager::initialize()
+void ResourceManager::loadDefaultPipelines()
 {
 	std::string pipelineName = "generic";
 	auto pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());

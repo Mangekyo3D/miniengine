@@ -52,8 +52,9 @@ Renderer::Renderer (GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
 	m_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
 
+	// it is important to load the default pipelines here so that compositor can be initialized properly
 	ResourceManager& resourceManager = ResourceManager::get();
-	resourceManager.initialize();
+	resourceManager.loadDefaultPipelines();
 
 	m_compositor = std::make_unique <CCompositingPipeline>();
 

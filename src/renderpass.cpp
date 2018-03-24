@@ -24,7 +24,6 @@ struct SFullScreenData
 		}
 
 		m_pipeline = manager.loadPipeline("toneMapping");
-		m_pipeline->getDescriptor().setVertexStream(m_fullScreenTriangle.get(), nullptr, nullptr);
 	}
 
 	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
@@ -65,8 +64,8 @@ void CFullScreenRenderPass::draw()
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 	device.glViewport(0, 0, m_width, m_height);
 
-	m_data->m_pipeline->bind();
-	m_data->m_pipeline->getDescriptor().bind();
+	IDescriptorInterface* desc = m_data->m_pipeline->bind();
+	desc->setVertexStream(m_data->m_fullScreenTriangle.get(), nullptr, nullptr);
 
 	for (int i = 0; i < m_inputs.size(); ++i)
 	{

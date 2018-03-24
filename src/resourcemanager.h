@@ -19,7 +19,7 @@ class ResourceManager
 		CTexture* loadTexture(std::string textureName);
 		IAudioResource* loadAudio(std::string audioName);
 
-		void initialize();
+		void loadDefaultPipelines();
 		void cleanup();
 
 	private:
