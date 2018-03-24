@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 
+class Engine;
+
 struct SUserInputState
 {
 	bool firePressed = false;
@@ -42,5 +44,5 @@ class Controller
 	public:
 		Controller() {}
 		virtual ~Controller() {}
-		virtual void update() = 0;
+		virtual void update(Engine& engine) = 0;
 };

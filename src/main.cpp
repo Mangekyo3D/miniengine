@@ -28,8 +28,7 @@ int main(int argc, char** argv)
 
 	auto gameWindow = factory.createGameWindow();
 
-	auto& engine = Engine::get();
-	engine.startup(*gameWindow.get(), options);
+	Engine engine(*gameWindow.get(), options);
 
 	float plane1color[] = {0.8f, 0.8f, 0.8f};
 	float plane2color[] = {0.0f, 0.4f, 0.4f};

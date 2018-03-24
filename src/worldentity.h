@@ -2,6 +2,8 @@
 #include "Util/vertex.h"
 #include "Util/matrix.h"
 
+class Engine;
+
 class WorldEntity
 {
 	public:
@@ -17,7 +19,7 @@ class WorldEntity
 		Matrix34& getWorldToObjectMatrix();
 		// this returns false when the entity has died
 		virtual bool getActive() { return (m_flags & eInactive) == 0; }
-		virtual void update() {}
+		virtual void update(Engine& engine) {}
 
 	protected:
 		Vec3       m_position;

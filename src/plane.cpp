@@ -95,7 +95,7 @@ Vec3 &Plane::getPosition()
 	return m_position;
 }
 
-void Plane::fire()
+void Plane::fire(Engine& engine)
 {
 	if (m_shootDelay > 0)
 	{
@@ -125,15 +125,13 @@ void Plane::fire()
 
 	audioDevice.playResourceOnce(*s_laserAudio, params);
 
-	auto& engine = Engine::get();
 	engine.addWorldEntity(std::move(b1));
 
 	m_shootDelay = 3;
 }
 
-void Plane::update()
+void Plane::update(Engine& engine)
 {
-	auto& engine = Engine::get();
 	auto& tile = engine.getWorld();
 	uint16_t resolution = tile.getResolution();
 	float ground = tile.getHeightAt(m_position.x(), m_position.y());
@@ -236,9 +234,8 @@ void Bullet::setEmitter(Plane &p)
 	m_emitter = &p;
 }
 
-void Bullet::update()
+void Bullet::update(Engine& engine)
 {
-	auto& engine = Engine::get();
 	auto& tile = engine.getWorld();
 	uint16_t resolution = tile.getResolution();
 
@@ -262,7 +259,6 @@ void Bullet::update()
 		t = t - m_position;
 		if (cross(t, m_heading).length() <= 0.05 && t.length() < 1.0f)
 		{
-			auto& engine = Engine::get();
 			m_flags |= eInactive;
 			auto effect = std::make_unique <Explosion> (entity->getPosition());
 			engine.addEffect(std::move(effect));
@@ -277,10 +273,9 @@ PlaneAIController::PlaneAIController(Plane* plane)
 {
 }
 
-void PlaneAIController::update()
+void PlaneAIController::update(Engine& engine)
 {
 	//find other plane and chase it
-	auto& engine = Engine::get();
 	auto worldMat = m_plane->getObjectToWorldMatrix();
 
 	auto& target = engine.getPlayerEntity();
@@ -293,7 +288,7 @@ void PlaneAIController::update()
 
 	if(dj >= 0.95f && l < 5.0f)
 	{
-		m_plane->fire();
+		m_plane->fire(engine);
 	}
 
 	// acceleration
@@ -337,9 +332,8 @@ PlanePlayerController::PlanePlayerController(Plane* plane)
 {
 }
 
-void PlanePlayerController::update()
+void PlanePlayerController::update(Engine& engine)
 {
-	Engine& engine = Engine::get();
 	const SUserInputState& inputState = engine.getInputState();
 
 	const float fPitchSpeed = 0.5f * m_plane->getSpeed();
@@ -347,7 +341,7 @@ void PlanePlayerController::update()
 
 	if(inputState.firePressed)
 	{
-		m_plane->fire();
+		m_plane->fire(engine);
 	}
 	if(inputState.leftPressed)
 	{

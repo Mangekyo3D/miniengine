@@ -16,13 +16,13 @@ class Plane : public WorldEntity
 
 		void stopSound();
 		void setColor(float *);
-		void fire();
+		void fire(Engine& engine);
 		void pitch(float fpitch);
 		void roll(float froll);
 		void accelerate(float throttle);
 		Vec3& getPosition(void);
 		float getSpeed() const { return m_speed; }
-		void update() override;
+		void update(Engine& engine) override;
 
 		// temporary, make a unified way for components to request class wide components
 		static CIndexedInstancedBatch* s_batch;
@@ -44,7 +44,7 @@ class PlaneAIController : public Controller
 {
 	public:
 		PlaneAIController(Plane* plane);
-		void update() override;
+		void update(Engine& engine) override;
 
 	private:
 		Plane* m_plane;
@@ -54,7 +54,7 @@ class PlanePlayerController : public Controller
 {
 	public:
 		PlanePlayerController(Plane* plane);
-		void update() override;
+		void update(Engine& engine) override;
 
 	private:
 		Plane* m_plane;
@@ -69,7 +69,7 @@ class Bullet : public WorldEntity
 		~Bullet();
 		void draw();
 		void setEmitter(Plane &);
-		virtual void update() override;
+		virtual void update(Engine& engine) override;
 
 	private:
 		Vec3 m_heading;

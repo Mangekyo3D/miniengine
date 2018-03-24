@@ -9,20 +9,10 @@
 #include "resourcemanager.h"
 #include "OS/GameWindow.h"
 
-Engine Engine::s_engine;
-
-Engine::Engine()
+Engine::Engine(GameWindow &win, SCommandLineOptions& options)
 	: m_currentWorldTile(64)
+	, m_gameWindow(&win)
 {
-}
-
-Engine::~Engine()
-{
-}
-
-void Engine::startup(GameWindow &win, SCommandLineOptions& options)
-{
-	m_gameWindow = &win;
 	IRenderer::initialize(win, options.bDebugContext, options.bWithVulkan);
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
@@ -32,6 +22,10 @@ void Engine::startup(GameWindow &win, SCommandLineOptions& options)
 	m_gameWindow->maximize();
 
 	IAudioDevice::initialize();
+}
+
+Engine::~Engine()
+{
 }
 
 void Engine::onKeyEvent(KeyEvent& event)
@@ -105,14 +99,14 @@ void Engine::enterGameLoop()
 		/* handle physics */
 		for(auto& controller : m_controllers)
 		{
-			controller->update();
+			controller->update(*this);
 		}
 
 		for(int i = static_cast<int> (m_worldEntities.size()) - 1; i >= 0; --i)
 		{
 			if (m_worldEntities[i]->getActive())
 			{
-				m_worldEntities[i]->update();
+				m_worldEntities[i]->update(*this);
 			}
 			else
 			{

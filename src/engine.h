@@ -24,10 +24,11 @@ struct SCommandLineOptions
 
 class Engine{
 public:
-	static Engine& get() { return s_engine; }
+	Engine(GameWindow& win, SCommandLineOptions& options);
+	Engine(const Engine&) = delete;
+	Engine& operator = (const Engine&) = delete;
 	~Engine();
 
-	void startup(GameWindow& win, SCommandLineOptions& options);
 	void enterGameLoop();
 
 	void addWorldEntity(std::unique_ptr<WorldEntity> entity) { m_worldEntities.push_back(std::move(entity)); }
@@ -42,9 +43,6 @@ public:
 	const SUserInputState& getInputState() {return m_inputState; }
 
 private:
-	Engine();
-	Engine(const Engine&) = delete;
-
 	void onKeyEvent(KeyEvent& event);
 	void onMouseWheelEvent(MouseWheelEvent& event);
 	void onResizeEvent(ResizeEvent& event);
@@ -61,6 +59,4 @@ private:
 	WorldEntity* m_playerEntity;
 
 	SUserInputState m_inputState;
-
-	static Engine s_engine;
 };
