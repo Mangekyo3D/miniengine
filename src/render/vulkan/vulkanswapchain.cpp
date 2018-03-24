@@ -7,6 +7,7 @@
 #include "vulkandevice.h"
 
 #include <iostream>
+#include <limits.h>
 
 CVulkanSwapchain::CVulkanSwapchain(GameWindow& w)
 	: m_swapchain(VK_NULL_HANDLE)

@@ -431,11 +431,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	// create swapchain and device now
 	VkSurfaceKHR windowSurface = VK_NULL_HANDLE;
 
-#ifdef VK_USE_PLATFORM_WIN32_KHR
 	auto swapchain = std::make_unique <CVulkanSwapchain> (win);
-#elif defined VK_USE_PLATFORM_XLIB_KHR
-	auto swapchain = std::make_unique <CVulkanSwapchainX11> (win);
-#endif
 	win.assignSwapchain(std::move(swapchain));
 }
 
