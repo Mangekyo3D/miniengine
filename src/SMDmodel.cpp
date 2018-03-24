@@ -98,27 +98,19 @@ bool SMDModel::openFromFile(const char *filename)
 	return true;
 }
 
-CIndexedInstancedBatch* SMDModel::getBatch()
+std::unique_ptr<CIndexedInstancedBatch> SMDModel::createBatch()
 {
-	if (!m_batch)
+	PipelineObject* material;
+	if (m_texCoordData.size() > 0)
 	{
-		IRenderer& renderer = IRenderer::get();
-		PipelineObject* material;
-		if (m_texCoordData.size() > 0)
-		{
-			material = ResourceManager::get().loadPipeline("genericTextured");
-		}
-		else
-		{
-			material = ResourceManager::get().loadPipeline("generic");
-		}
-
-		auto newBatch = std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), material, &m_textures);
-		m_batch = newBatch.get();
-		renderer.addNewBatch(std::move(newBatch));
+		material = ResourceManager::get().loadPipeline("genericTextured");
+	}
+	else
+	{
+		material = ResourceManager::get().loadPipeline("generic");
 	}
 
-	return m_batch;
+	return std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), material, &m_textures);
 }
 
 SMDModel::~SMDModel()

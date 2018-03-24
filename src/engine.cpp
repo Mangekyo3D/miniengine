@@ -13,7 +13,7 @@ Engine::Engine(GameWindow &win, SCommandLineOptions& options)
 	: m_currentWorldTile(64)
 	, m_gameWindow(&win)
 {
-	IRenderer::initialize(win, options.bDebugContext, options.bWithVulkan);
+	m_renderer = IRenderer::create(win, options.bDebugContext, options.bWithVulkan);
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
 	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);
@@ -63,10 +63,8 @@ void Engine::onMouseWheelEvent(MouseWheelEvent& event)
 
 void Engine::onResizeEvent(ResizeEvent& event)
 {
-	IRenderer& renderer = IRenderer::get();
-
 	m_camera.setViewport(event.width, event.height, 0.1f, 100.0f, 30.0f);
-	renderer.setViewport(event.width, event.height);
+	m_renderer->setViewport(event.width, event.height);
 }
 
 void Engine::enterGameLoop()
@@ -74,7 +72,6 @@ void Engine::enterGameLoop()
 	unsigned int time = 0;
 
 	ResourceManager& resourceManager = ResourceManager::get();
-	IRenderer& renderer = IRenderer::get();
 	IAudioDevice& audioDevice = IAudioDevice::get();
 
 	IAudioResource* bgMusic = resourceManager.loadAudio("lvl1.wav");
@@ -130,14 +127,14 @@ void Engine::enterGameLoop()
 
 		// set up camera for the frame
 		/* startup, create world */
-		m_currentWorldTile.setup_draw_operations();
+		m_currentWorldTile.setup_draw_operations(m_renderer.get());
 
 		m_camera.followFromBehind(*m_playerEntity, 1.0f, 0.2f, 30.0f);
 
 		audioDevice.updateListener(m_playerEntity->getPosition(), m_playerEntity->getObjectToWorldMatrix().getColumn(1), Vec3(0.0f, 0.0f, 0.0f));
 
-		renderer.updateFrameUniforms(m_camera);
-		renderer.drawFrame();
+		m_renderer->updateFrameUniforms(m_camera);
+		m_renderer->drawFrame();
 
 		m_gameWindow->swapBuffers();
 
@@ -151,8 +148,8 @@ void Engine::enterGameLoop()
 
 	m_effects.clear();
 	m_worldEntities.clear();
+	m_renderer.reset();
 
-	IRenderer::shutdown();
 	IAudioDevice::shutdown();
 }
 

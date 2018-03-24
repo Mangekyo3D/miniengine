@@ -17,10 +17,8 @@ WorldTile::~WorldTile()
 }
 
 
-void WorldTile::setup_draw_operations()
+void WorldTile::setup_draw_operations(IRenderer* renderer)
 {
-	IRenderer& renderer = IRenderer::get();
-
 	if (!m_batch)
 	{
 		std::vector <CTexture*> textures;
@@ -29,7 +27,7 @@ void WorldTile::setup_draw_operations()
 
 		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, material, &textures);
 		m_batch = newBatch.get();
-		renderer.addNewBatch(std::move(newBatch));
+		renderer->addNewBatch(std::move(newBatch));
 	}
 
 	MeshInstanceData data;

@@ -13,7 +13,7 @@ class SMDModel
 		SMDModel() {}
 		~SMDModel();
 		bool openFromFile(const char *);
-		CIndexedInstancedBatch* getBatch();
+		std::unique_ptr <CIndexedInstancedBatch> createBatch();
 
 	private:
 		bool prepareVertexBuffer();
@@ -27,5 +27,4 @@ class SMDModel
 
 		std::vector <CTexture*> m_textures;
 		std::unique_ptr <IMesh> m_mesh;
-		CIndexedInstancedBatch* m_batch = nullptr;
 };

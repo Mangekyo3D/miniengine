@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 	float plane1color[] = {0.8f, 0.8f, 0.8f};
 	float plane2color[] = {0.0f, 0.4f, 0.4f};
 
-	auto p1 = std::make_unique <Plane>(Vec3(32, 3, 1.0));
-	auto p2 = std::make_unique <Plane>(Vec3(32, 61, 11.0));
+	auto p1 = std::make_unique <Plane>(Vec3(32, 3, 1.0), engine);
+	auto p2 = std::make_unique <Plane>(Vec3(32, 61, 11.0), engine);
 
 	auto controller1 = std::make_unique <PlanePlayerController>(p1.get());
 	auto controller2 = std::make_unique <PlaneAIController>(p2.get());

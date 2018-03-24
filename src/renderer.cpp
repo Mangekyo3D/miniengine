@@ -24,7 +24,7 @@ struct LightUniformBuffer
 class Renderer : public IRenderer
 {
 	public:
-		Renderer();
+		Renderer(GameWindow& win, bool bDebugContext, bool bVulkanContext);
 		~Renderer();
 		Renderer(const Renderer&) = delete;
 		Renderer& operator = (const Renderer&) = delete;
@@ -44,21 +44,37 @@ class Renderer : public IRenderer
 		std::unique_ptr<IGPUBuffer> m_cameraUniform;
 		std::unique_ptr<IGPUBuffer> m_lightUniform;
 
-		CCompositingPipeline m_compositor;
+		std::unique_ptr <CCompositingPipeline> m_compositor;
+		std::unique_ptr <IDevice> m_device;
 };
 
-Renderer::Renderer ()
+Renderer::Renderer (GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
-	m_cameraUniform = s_device->createGPUBuffer(sizeof(SceneUniformBuffer));
-	m_lightUniform = s_device->createGPUBuffer(sizeof(LightUniformBuffer));
+	m_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
+
+	ResourceManager& resourceManager = ResourceManager::get();
+	resourceManager.initialize();
+
+	m_compositor = std::make_unique <CCompositingPipeline>();
+
+	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer));
+	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer));
 }
 
 Renderer::~Renderer()
 {
+	// custom destructor. ORDER IS IMPORTANT!
+
 	// make sure all render data are released before the device is
 	m_batches.clear();
 	m_cameraUniform.reset();
 	m_lightUniform.reset();
+
+	// delete the compositing pipeline
+	m_compositor.reset();
+
+	// finally, cleanup the device
+	m_device.reset();
 }
 
 void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
@@ -112,7 +128,7 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 void Renderer::drawFrame()
 {
-	m_compositor.draw(m_batches, *m_cameraUniform, *m_lightUniform);
+	m_compositor->draw(m_batches, *m_cameraUniform, *m_lightUniform);
 	/*
 	// light position
 	float sunHeight = sin(0.01*gtime);
@@ -223,26 +239,12 @@ void Renderer::drawFrame()
 
 void Renderer::setViewport(uint32_t width, uint32_t height)
 {
-	m_compositor.resize(width, height);
+	m_compositor->resize(width, height);
 }
 
 
-std::unique_ptr <IRenderer> IRenderer::s_renderer;
-std::unique_ptr <IDevice> IRenderer::s_device;
-
-void IRenderer::initialize(GameWindow& win, bool bDebugContext, bool bVulkanContext)
+std::unique_ptr<IRenderer> IRenderer::create(GameWindow& win, bool bDebugContext, bool bVulkanContext)
 {
-	s_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
-
-	ResourceManager& resourceManager = ResourceManager::get();
-	resourceManager.initialize();
-
-	s_renderer = std::make_unique <Renderer> ();
-}
-
-void IRenderer::shutdown()
-{
-	s_renderer.reset();
-	s_device.reset();
+	return std::make_unique <Renderer> (win, bDebugContext, bVulkanContext);
 }
 

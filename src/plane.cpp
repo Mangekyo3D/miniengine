@@ -12,7 +12,7 @@ CIndexedInstancedBatch* Plane::s_batch = nullptr;
 IAudioResource* Plane::s_engineAudio = nullptr;
 IAudioResource* Plane::s_laserAudio = nullptr;
 
-Plane::Plane(Vec3 initPos)
+Plane::Plane(Vec3 initPos, Engine& engine)
 {
 	m_position = initPos;
 
@@ -30,7 +30,10 @@ Plane::Plane(Vec3 initPos)
 		SMDModel* model = ResourceManager::get().loadModel("plane2.smd");
 		if (model)
 		{
-			s_batch = model->getBatch();
+			auto newBatch = model->createBatch();
+			s_batch = newBatch.get();
+			IRenderer* renderer = engine.getRenderer();
+			renderer->addNewBatch(std::move(newBatch));
 		}
 	}
 
@@ -190,16 +193,16 @@ void Plane::pitch(float fpitch)
 
 CDynamicArrayBatch* Bullet::s_batch = nullptr;
 
-Bullet::Bullet()
+Bullet::Bullet(Engine& engine)
 {
 	if (!s_batch)
 	{
-		IRenderer& renderer = IRenderer::get();
+		IRenderer* renderer = engine.getRenderer();
 		PipelineObject* pipeline = ResourceManager::get().loadPipeline("genericTextured");
 		auto batch = std::make_unique <CDynamicArrayBatch> (pipeline);
 		s_batch = batch.get();
 
-		renderer.addNewBatch(std::move(batch));
+		renderer->addNewBatch(std::move(batch));
 	}
 }
 

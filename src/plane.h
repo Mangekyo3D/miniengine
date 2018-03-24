@@ -11,7 +11,7 @@ class IAudioInstance;
 class Plane : public WorldEntity
 {
 	public:
-		Plane(Vec3);
+		Plane(Vec3, Engine& engine);
 		~Plane();
 
 		void stopSound();
@@ -64,7 +64,7 @@ class PlanePlayerController : public Controller
 class Bullet : public WorldEntity
 {
 	public:
-		Bullet();
+		Bullet(Engine& engine);
 		Bullet(Vec3, Vec3);
 		~Bullet();
 		void draw();
