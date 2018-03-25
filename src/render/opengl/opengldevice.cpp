@@ -12,7 +12,7 @@
 #include "openglswapchainx11.h"
 #endif
 
-IDevice* IDevice::s_device = nullptr;
+COpenGLDevice* COpenGLDevice::s_device = nullptr;
 
 static void debugCallback(GLenum source,GLenum type,GLuint id,GLenum severity, GLsizei length,const GLchar *message,const void *userParam)
 {
@@ -149,6 +149,34 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 	}
 
 #undef INITFUNCTION
+}
+
+class COpenGLCommandBuffer :public ICommandBuffer
+{
+	public:
+		COpenGLCommandBuffer(COpenGLDevice* device)
+			: m_device(device)
+		{
+		}
+
+		virtual void copyBufferToTex(IGPUBuffer* buf, ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override
+		{
+			COpenGLBuffer* glBuf = static_cast<COpenGLBuffer*>(buf);
+			COpenGLTexture* glTex = static_cast<COpenGLTexture*> (tex);
+
+			m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glBuf->getID());
+			m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
+			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		}
+
+	private:
+		COpenGLDevice* m_device;
+};
+
+std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame()
+{
+	return std::make_unique <COpenGLCommandBuffer> (this);
 }
 
 std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)

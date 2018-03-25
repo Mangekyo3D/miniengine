@@ -32,9 +32,16 @@ static VkBool32 vulkanDebugCallback(
 	return VK_TRUE;
 }
 
+CVulkanDevice* CVulkanDevice::s_device = nullptr;
+
 CVulkanDevice& CVulkanDevice::get()
 {
-	return static_cast<CVulkanDevice&> (*s_device);
+	return *s_device;
+}
+
+std::unique_ptr<ICommandBuffer> CVulkanDevice::beginFrame()
+{
+	return nullptr;
 }
 
 VkDevice CVulkanDevice::getDevice()

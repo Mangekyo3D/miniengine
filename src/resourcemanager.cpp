@@ -63,6 +63,8 @@ ITexture* ResourceManager::loadTexture(std::string textureName)
 		{
 			auto texture = m_device->createTexture(ITexture::EFormat::eSRGB8, reader.getWidth(), reader.getHeight(), true);
 			ITexture* result = texture.get();
+			TextureStreamRequest req(result, finalFileName.data());
+			m_device->addTextureStreamRequest(req);
 			m_textures[textureName] = std::move(texture);
 			return result;
 		}

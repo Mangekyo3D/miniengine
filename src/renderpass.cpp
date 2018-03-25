@@ -133,7 +133,7 @@ void CRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, IText
 				++attachmentType;
 			}
 
-			m_bDepthOutput = numOutputs;
+			m_numOutputs = numOutputs;
 
 			// ideally we must check if dimensions match
 			m_width = outputs[0]->getWidth();

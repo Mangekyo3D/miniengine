@@ -56,6 +56,7 @@ public:
 	~CVulkanDevice();
 	static CVulkanDevice& get();
 
+	virtual std::unique_ptr<ICommandBuffer> beginFrame();
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped) override;
@@ -139,4 +140,6 @@ private:
 
 	// memory allocator specific
 	std::map <int, SMemoryHeap::Ptr> m_memoryHeaps;
+
+	static CVulkanDevice* s_device;
 };

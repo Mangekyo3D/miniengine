@@ -17,6 +17,7 @@ class ITexture
 		ITexture(EFormat format, uint32_t width, uint32_t height, bool bMipmapped);
 		virtual ~ITexture() {}
 		virtual void bind(uint8_t unit) = 0;
+		uint8_t getNumMipmaps() const { return m_mipLevels; }
 		EFormat getFormat() const { return m_format; }
 		uint16_t getWidth() const { return m_width; }
 		uint16_t getHeight() const { return m_height; }
