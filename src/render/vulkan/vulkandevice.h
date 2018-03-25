@@ -2,7 +2,7 @@
 
 #define NOMINMAX
 
-#include "../device.h"
+#include "../idevice.h"
 #include "vulkan/vulkan.h"
 #include <memory>
 #include <map>
@@ -57,6 +57,8 @@ public:
 	static CVulkanDevice& get();
 
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
+	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&) override;
+	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped) override;
 
 	VkDevice getDevice();
 	VkPhysicalDevice getPhysicalDevice();

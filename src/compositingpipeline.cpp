@@ -1,8 +1,10 @@
 #include "compositingpipeline.h"
-#include "texture.h"
+#include "render/idevice.h"
+#include "resourcemanager.h"
 
-CCompositingPipeline::CCompositingPipeline()
-	: m_toneMappingPass("toneMapping")
+CCompositingPipeline::CCompositingPipeline(ResourceManager* resourceManager, IDevice* device)
+	: m_toneMappingPass(resourceManager->loadPipeline("toneMapping"), device)
+	, m_device(device)
 {
 }
 
@@ -18,10 +20,10 @@ void CCompositingPipeline::draw(std::vector <std::unique_ptr<IBatch> > & batches
 
 void CCompositingPipeline::resize(uint32_t width, uint32_t height)
 {
-	m_sceneHDRTex = std::make_unique <CTexture> (CTexture::eRGB16f, width, height);
-	m_DepthTex = std::make_unique <CTexture> (CTexture::eDepth32f, width, height);
+	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, width, height);
+	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, width, height);
 
-	CTexture* sceneTex = m_sceneHDRTex.get();
+	ITexture* sceneTex = m_sceneHDRTex.get();
 	m_sceneDrawPass.setupRenderPass(&sceneTex, 1, m_DepthTex.get());
 	m_toneMappingPass.setupRenderPass(&sceneTex, 1, width, height);
 }

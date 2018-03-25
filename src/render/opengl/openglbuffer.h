@@ -1,5 +1,5 @@
 #pragma once
-#include "../gpubuffer.h"
+#include "../igpubuffer.h"
 #include <stdint.h>
 
 class COpenGLBuffer : public IGPUBuffer

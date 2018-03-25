@@ -1,13 +1,15 @@
 #pragma once
 #include "renderpass.h"
-class CTexture;
+class ITexture;
 class IBatch;
 class IGPUBuffer;
+class IDevice;
+class ResourceManager;
 
 class CCompositingPipeline
 {
 	public:
-		CCompositingPipeline();
+		CCompositingPipeline(ResourceManager* resourceManager, IDevice* device);
 		~CCompositingPipeline();
 
 		void draw(std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
@@ -17,6 +19,8 @@ class CCompositingPipeline
 		CSceneRenderPass m_sceneDrawPass;
 		CFullScreenRenderPass m_toneMappingPass;
 
-		std::unique_ptr <CTexture> m_sceneHDRTex;
-		std::unique_ptr <CTexture> m_DepthTex;
+		std::unique_ptr <ITexture> m_sceneHDRTex;
+		std::unique_ptr <ITexture> m_DepthTex;
+
+		IDevice* m_device;
 };

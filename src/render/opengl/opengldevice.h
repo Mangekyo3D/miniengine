@@ -1,5 +1,5 @@
 #pragma once
-#include "../device.h"
+#include "../idevice.h"
 #define GL_GLEXT_PROTOTYPES
 #define NOMINMAX
 #include "glcorearb.h"
@@ -11,6 +11,8 @@ public:
 
 	static COpenGLDevice& get() { return static_cast<COpenGLDevice&> (*s_device); }
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size);
+	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&);
+	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped);
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;
 	PFNGLCLEARNAMEDFRAMEBUFFERFIPROC glClearNamedFramebufferfi;

@@ -35,7 +35,7 @@ typedef struct tagBITMAPINFOHEADER{
 #endif
 
 
-bool Bitmap::openFromFile(const char *fileName)
+bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 {
 	BITMAPFILEHEADER fileHeader;
 	BITMAPINFOHEADER infoHeader;
@@ -74,6 +74,11 @@ bool Bitmap::openFromFile(const char *fileName)
 	m_height = infoHeader.biHeight;
 	size_t length = m_width * m_height * 3;
 
+	if (bOnlySize)
+	{
+		return true;
+	}
+
 	if(length == 0)
 	{
 		cout << "Empty image. Length read: " << length << endl;
@@ -95,6 +100,5 @@ bool Bitmap::openFromFile(const char *fileName)
 	//fill the bitmap in the memory
 	file.read(reinterpret_cast<char*> (m_data.get()), length);
 
-	file.close();
 	return true;
 }

@@ -1,14 +1,16 @@
 #include "resourcemanager.h"
 #include "SMDmodel.h"
 #include "batch.h"
-#include "texture.h"
+#include "render/itexture.h"
 #include "OS/OSFactory.h"
 #include "audiointerface.h"
+#include "render/idevice.h"
+#include "bitmap.h"
 
-ResourceManager ResourceManager::s_manager;
-
-ResourceManager::ResourceManager()
+ResourceManager::ResourceManager(IDevice* device)
+	: m_device(device)
 {
+	loadDefaultPipelines();
 }
 
 ResourceManager::~ResourceManager()
@@ -29,7 +31,7 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 
 		auto model = std::make_unique <SMDModel> ();
 
-		if (model->openFromFile(finalFilename.c_str()))
+		if (model->openFromFile(this, finalFilename.c_str()))
 		{
 			SMDModel* result = model.get();
 			m_models[modelName] = std::move(model);
@@ -52,7 +54,7 @@ PipelineObject* ResourceManager::loadPipeline(std::string pipelineName)
 	}
 }
 
-CTexture* ResourceManager::loadTexture(std::string textureName)
+ITexture* ResourceManager::loadTexture(std::string textureName)
 {
 	auto iter = m_textures.find(textureName);
 	if (iter != m_textures.end())
@@ -64,10 +66,18 @@ CTexture* ResourceManager::loadTexture(std::string textureName)
 		auto& utils =  OSUtils::get();
 		std::string finalFileName = utils.getTexturePath() + textureName;
 
-		auto texture = std::make_unique <CTexture> (finalFileName, true);
-		CTexture* result = texture.get();
-		m_textures[textureName] = std::move(texture);
-		return result;
+		BmpReader reader;
+		if (reader.openFromFile(finalFileName.data(), true))
+		{
+			auto texture = m_device->createTexture(ITexture::EFormat::eSRGB8, reader.getWidth(), reader.getHeight(), true);
+			ITexture* result = texture.get();
+			m_textures[textureName] = std::move(texture);
+			return result;
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 }
 
@@ -103,11 +113,4 @@ void ResourceManager::loadDefaultPipelines()
 	pipelineName = "toneMapping";
 	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <ArrayDescriptorV> ());
 	m_pipelines[pipelineName] = std::move(pipeline);
-}
-
-void ResourceManager::cleanup()
-{
-	m_pipelines.clear();
-	m_models.clear();
-	m_textures.clear();
 }

@@ -8,22 +8,31 @@ class GameWindow;
 class IDevice;
 class Camera;
 class IBatch;
+class CCompositingPipeline;
+class ResourceManager;
 
-class IRenderer
+class Renderer
 {
 	public:
-		IRenderer() {}
-		virtual ~IRenderer() {}
+		Renderer(ResourceManager* resourceManager, std::unique_ptr<IDevice> device);
+		~Renderer();
+		Renderer(const Renderer&) = delete;
+		Renderer& operator = (const Renderer&) = delete;
 
-		IRenderer(const IRenderer&) = delete;
-		IRenderer& operator = (const IRenderer&) = delete;
+		void addNewBatch(std::unique_ptr<IBatch> batch);
 
-		static std::unique_ptr<IRenderer> create(GameWindow&, bool bDebugContext, bool bVulkanContext);
+		void updateFrameUniforms(Camera& camera);
+		void drawFrame();
 
-		virtual void addNewBatch(std::unique_ptr<IBatch> batch) = 0;
+		void setViewport(uint32_t width, uint32_t height);
 
-		virtual void updateFrameUniforms(Camera& camera) = 0;
-		virtual void drawFrame() = 0;
+	private:
+		/* batches that will be sent to GPU for rendering */
+		std::vector <std::unique_ptr<IBatch> > m_batches;
 
-		virtual void setViewport(uint32_t width, uint32_t height) = 0;
+		std::unique_ptr<IGPUBuffer> m_cameraUniform;
+		std::unique_ptr<IGPUBuffer> m_lightUniform;
+
+		std::unique_ptr <CCompositingPipeline> m_compositor;
+		std::unique_ptr <IDevice> m_device;
 };

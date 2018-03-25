@@ -8,7 +8,7 @@
 
 using namespace std;
 
-bool SMDModel::openFromFile(const char *filename)
+bool SMDModel::openFromFile(ResourceManager* resourceManager, const char *filename)
 {
 	std::ifstream inputFile(filename, std::ifstream::binary);
 	if (!inputFile)
@@ -46,7 +46,7 @@ bool SMDModel::openFromFile(const char *filename)
 		inputFile.read(reinterpret_cast<char *> (buffer.get()), pathLength*sizeof(char));
 		buffer.get()[pathLength] = '\0';
 
-		m_textures.push_back(ResourceManager::get().loadTexture(buffer.get()));
+		m_textures.push_back(resourceManager->loadTexture(buffer.get()));
 	}
 
 	uint32_t numOfVertices;
@@ -93,31 +93,29 @@ bool SMDModel::openFromFile(const char *filename)
 
 	inputFile.close();
 
-	prepareVertexBuffer();
+	m_mesh = createMesh();
+	if (m_texCoordData.size() > 0)
+	{
+		m_pipeline = resourceManager->loadPipeline("genericTextured");
+	}
+	else
+	{
+		m_pipeline = resourceManager->loadPipeline("generic");
+	}
 
 	return true;
 }
 
 std::unique_ptr<CIndexedInstancedBatch> SMDModel::createBatch()
 {
-	PipelineObject* material;
-	if (m_texCoordData.size() > 0)
-	{
-		material = ResourceManager::get().loadPipeline("genericTextured");
-	}
-	else
-	{
-		material = ResourceManager::get().loadPipeline("generic");
-	}
-
-	return std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), material, &m_textures);
+	return std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), m_pipeline, &m_textures);
 }
 
 SMDModel::~SMDModel()
 {
 }
 
-bool SMDModel::prepareVertexBuffer()
+std::unique_ptr<IMesh> SMDModel::createMesh()
 {
 	if (m_texCoordData.size() > 0)
 	{
@@ -133,8 +131,7 @@ bool SMDModel::prepareVertexBuffer()
 		}
 
 		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
-
-		m_mesh = std::move(mesh);
+		return mesh;
 	}
 	else
 	{
@@ -150,8 +147,6 @@ bool SMDModel::prepareVertexBuffer()
 
 		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
 
-		m_mesh = std::move(mesh);
+		return mesh;
 	}
-
-	return true;
 }

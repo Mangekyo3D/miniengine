@@ -2,13 +2,14 @@
 
 #include "batch.h"
 
-class IRenderer;
+class Renderer;
+class ResourceManager;
 
 class WorldTile {
 	public:
 		WorldTile(uint16_t resolution);
 		virtual ~WorldTile();
-		void setup_draw_operations(IRenderer* renderer);
+		void setup_draw_operations(Renderer* renderer, ResourceManager* resourceManager);
 		void generateProcedural();
 		float getHeightAt(float x, float y);
 		float getHeightAtGrid(uint16_t x, uint16_t y);

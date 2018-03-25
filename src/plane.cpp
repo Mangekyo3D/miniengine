@@ -8,9 +8,14 @@
 #include "engine.h"
 #include "resourcemanager.h"
 
-CIndexedInstancedBatch* Plane::s_batch = nullptr;
-IAudioResource* Plane::s_engineAudio = nullptr;
-IAudioResource* Plane::s_laserAudio = nullptr;
+struct SAssets {
+	CIndexedInstancedBatch* batch;
+	IAudioResource* engineAudio;
+	IAudioResource* laserAudio;
+	bool bInitialized;
+};
+
+SAssets Plane::s_assets = {0};
 
 Plane::Plane(Vec3 initPos, Engine& engine)
 {
@@ -25,31 +30,21 @@ Plane::Plane(Vec3 initPos, Engine& engine)
 	m_shootDelay = 0;
 	m_gun = true;
 
-	if (!s_batch)
+	if (!s_assets.bInitialized)
 	{
-		SMDModel* model = ResourceManager::get().loadModel("plane2.smd");
+		ResourceManager* resourceManager = engine.getResourceManager();
+		SMDModel* model = resourceManager->loadModel("plane2.smd");
 		if (model)
 		{
 			auto newBatch = model->createBatch();
-			s_batch = newBatch.get();
-			IRenderer* renderer = engine.getRenderer();
+			s_assets.batch = newBatch.get();
+			Renderer* renderer = engine.getRenderer();
 			renderer->addNewBatch(std::move(newBatch));
 		}
-	}
+		s_assets.engineAudio = resourceManager->loadAudio("engine.wav");
+		s_assets.laserAudio = resourceManager->loadAudio("laser.wav");
 
-	if (!s_engineAudio)
-	{
-		s_engineAudio = ResourceManager::get().loadAudio("engine.wav");
-
-		if (s_engineAudio)
-		{
-
-		}
-	}
-
-	if (!s_laserAudio)
-	{
-		s_laserAudio = ResourceManager::get().loadAudio("laser.wav");
+		s_assets.bInitialized = true;
 	}
 
 	setScale(0.01f);
@@ -60,7 +55,7 @@ Plane::Plane(Vec3 initPos, Engine& engine)
 	params.position = m_position;
 	params.gain = 0.3f;
 
-	m_engineAudio = audioDevice.loopResource(*s_engineAudio, params);
+	m_engineAudio = audioDevice.loopResource(*s_assets.engineAudio, params);
 }
 
 Plane::~Plane()
@@ -126,7 +121,7 @@ void Plane::fire(Engine& engine)
 	params.decayDistance = 0.5f;
 	params.gain = 0.3f;
 
-	audioDevice.playResourceOnce(*s_laserAudio, params);
+	audioDevice.playResourceOnce(*s_assets.laserAudio, params);
 
 	engine.addWorldEntity(std::move(b1));
 
@@ -168,12 +163,12 @@ void Plane::update(Engine& engine)
 	m_engineAudio->setPosition(m_position);
 	m_engineAudio->setVelocity(thead);
 
-	if (s_batch)
+	if (s_assets.batch)
 	{
 		MeshInstanceData data;
 		Matrix44 modelMatrix = getObjectToWorldMatrix();
 		modelMatrix.getData(data.modelMatrix);
-		s_batch->addMeshInstance(data);
+		s_assets.batch->addMeshInstance(data);
 	}
 }
 
@@ -197,8 +192,9 @@ Bullet::Bullet(Engine& engine)
 {
 	if (!s_batch)
 	{
-		IRenderer* renderer = engine.getRenderer();
-		PipelineObject* pipeline = ResourceManager::get().loadPipeline("genericTextured");
+		Renderer* renderer = engine.getRenderer();
+		ResourceManager* resourceManager = engine.getResourceManager();
+		PipelineObject* pipeline = resourceManager->loadPipeline("genericTextured");
 		auto batch = std::make_unique <CDynamicArrayBatch> (pipeline);
 		s_batch = batch.get();
 

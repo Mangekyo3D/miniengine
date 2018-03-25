@@ -7,6 +7,7 @@ class CIndexedInstancedBatch;
 class CDynamicArrayBatch;
 class IAudioResource;
 class IAudioInstance;
+struct SAssets;
 
 class Plane : public WorldEntity
 {
@@ -25,9 +26,7 @@ class Plane : public WorldEntity
 		void update(Engine& engine) override;
 
 		// temporary, make a unified way for components to request class wide components
-		static CIndexedInstancedBatch* s_batch;
-		static IAudioResource* s_engineAudio;
-		static IAudioResource* s_laserAudio;
+		static SAssets s_assets;
 
 	private:
 		bool  m_gun;

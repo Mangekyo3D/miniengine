@@ -1,8 +1,8 @@
 #include "renderer.h"
 #include "OS/GameWindow.h"
 #include <iostream>
-#include "render/device.h"
-#include "render/gpubuffer.h"
+#include "render/idevice.h"
+#include "render/igpubuffer.h"
 #include "camera.h"
 #include "batch.h"
 #include "resourcemanager.h"
@@ -21,42 +21,10 @@ struct LightUniformBuffer
 };
 
 
-class Renderer : public IRenderer
+Renderer::Renderer (ResourceManager* resourceManager, std::unique_ptr <IDevice> device)
+	: m_device(std::move(device))
 {
-	public:
-		Renderer(GameWindow& win, bool bDebugContext, bool bVulkanContext);
-		~Renderer();
-		Renderer(const Renderer&) = delete;
-		Renderer& operator = (const Renderer&) = delete;
-
-		virtual void addNewBatch(std::unique_ptr<IBatch> batch) override;
-
-		virtual void updateFrameUniforms(Camera& camera);
-		virtual void drawFrame();
-
-		virtual void setViewport(uint32_t width, uint32_t height);
-		static void shutdown();
-
-	private:
-		/* batches that will be sent to GPU for rendering */
-		std::vector <std::unique_ptr<IBatch> > m_batches;
-
-		std::unique_ptr<IGPUBuffer> m_cameraUniform;
-		std::unique_ptr<IGPUBuffer> m_lightUniform;
-
-		std::unique_ptr <CCompositingPipeline> m_compositor;
-		std::unique_ptr <IDevice> m_device;
-};
-
-Renderer::Renderer (GameWindow& win, bool bDebugContext, bool bVulkanContext)
-{
-	m_device = IDevice::createDevice(win, bDebugContext, bVulkanContext);
-
-	// it is important to load the default pipelines here so that compositor can be initialized properly
-	ResourceManager& resourceManager = ResourceManager::get();
-	resourceManager.loadDefaultPipelines();
-
-	m_compositor = std::make_unique <CCompositingPipeline>();
+	m_compositor = std::make_unique <CCompositingPipeline>(resourceManager, m_device.get());
 
 	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer));
 	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer));
@@ -243,9 +211,4 @@ void Renderer::setViewport(uint32_t width, uint32_t height)
 	m_compositor->resize(width, height);
 }
 
-
-std::unique_ptr<IRenderer> IRenderer::create(GameWindow& win, bool bDebugContext, bool bVulkanContext)
-{
-	return std::make_unique <Renderer> (win, bDebugContext, bVulkanContext);
-}
 

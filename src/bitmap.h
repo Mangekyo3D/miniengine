@@ -2,15 +2,15 @@
 #include <stdint.h>
 #include <memory>
 
-class Bitmap
+class BmpReader
 {
 	public:
-		Bitmap() 
+		BmpReader()
 			: m_data(0)
 			, m_width(0)
 			, m_height(0)
 		{}
-		bool openFromFile(const char *);
+		bool openFromFile(const char *, bool bOnlySize);
 		const uint8_t* getData() {return m_data.get();}
 		uint32_t getWidth() { return m_width; }
 		uint32_t getHeight() { return m_height; }

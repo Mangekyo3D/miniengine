@@ -8,12 +8,15 @@
 #include "audiointerface.h"
 #include "resourcemanager.h"
 #include "OS/GameWindow.h"
+#include "render/idevice.h"
 
 Engine::Engine(GameWindow &win, SCommandLineOptions& options)
 	: m_currentWorldTile(64)
 	, m_gameWindow(&win)
 {
-	m_renderer = IRenderer::create(win, options.bDebugContext, options.bWithVulkan);
+	auto device = IDevice::createDevice(win, options.bDebugContext, options.bWithVulkan);
+	m_resourceManager = std::make_unique<ResourceManager> (device.get());
+	m_renderer =  std::make_unique<Renderer>(m_resourceManager.get(), std::move(device));
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
 	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);
@@ -71,10 +74,9 @@ void Engine::enterGameLoop()
 {
 	unsigned int time = 0;
 
-	ResourceManager& resourceManager = ResourceManager::get();
 	IAudioDevice& audioDevice = IAudioDevice::get();
 
-	IAudioResource* bgMusic = resourceManager.loadAudio("lvl1.wav");
+	IAudioResource* bgMusic = m_resourceManager->loadAudio("lvl1.wav");
 	SAudioInitParams params;
 	audioDevice.loopResource(*bgMusic, params);
 
@@ -127,7 +129,7 @@ void Engine::enterGameLoop()
 
 		// set up camera for the frame
 		/* startup, create world */
-		m_currentWorldTile.setup_draw_operations(m_renderer.get());
+		m_currentWorldTile.setup_draw_operations(m_renderer.get(), m_resourceManager.get());
 
 		m_camera.followFromBehind(*m_playerEntity, 1.0f, 0.2f, 30.0f);
 
@@ -144,10 +146,9 @@ void Engine::enterGameLoop()
 		}
 	}
 
-	resourceManager.cleanup();
-
 	m_effects.clear();
 	m_worldEntities.clear();
+	m_resourceManager.reset();
 	m_renderer.reset();
 
 	IAudioDevice::shutdown();

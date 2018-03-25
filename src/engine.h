@@ -11,6 +11,7 @@ class IAudioDevice;
 class WorldEntity;
 class Effect;
 class Controller;
+class ResourceManager;
 
 struct KeyEvent;
 struct ResizeEvent;
@@ -41,7 +42,8 @@ public:
 	WorldTile& getWorld() { return m_currentWorldTile; }
 	std::vector <std::unique_ptr<WorldEntity> >& getEnities() { return m_worldEntities; }
 	const SUserInputState& getInputState() {return m_inputState; }
-	IRenderer* getRenderer() { return m_renderer.get(); }
+	Renderer* getRenderer() { return m_renderer.get(); }
+	ResourceManager* getResourceManager() { return m_resourceManager.get(); }
 
 private:
 	void onKeyEvent(KeyEvent& event);
@@ -55,7 +57,8 @@ private:
 	std::vector <std::unique_ptr<Effect> >      m_effects;
 	std::vector <std::unique_ptr<WorldEntity> > m_worldEntities;
 	std::vector <std::unique_ptr<Controller> > m_controllers;
-	std::unique_ptr<IRenderer>                 m_renderer;
+	std::unique_ptr<Renderer>                 m_renderer;
+	std::unique_ptr<ResourceManager>           m_resourceManager;
 
 	Camera m_camera;
 	WorldEntity* m_playerEntity;

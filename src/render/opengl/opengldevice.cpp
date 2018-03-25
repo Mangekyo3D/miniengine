@@ -2,6 +2,8 @@
 #include "../../OS/GameWindow.h"
 #include "opengldevice.h"
 #include "openglbuffer.h"
+#include "opengltexture.h"
+#include "../ipipeline.h"
 #ifdef WIN32
 #include "openglswapchainwin32.h"
 #include "wglext.h"
@@ -152,4 +154,14 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
 {
 	return std::make_unique <COpenGLBuffer>(size);
+}
+
+std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams&)
+{
+	return nullptr;
+}
+
+std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
+{
+	return std::make_unique <COpenGLTexture>(format, width, height, bMipmapped);
 }

@@ -3,9 +3,11 @@
 #include <string>
 #include <memory>
 
-class CTexture;
+class ITexture;
 class IBatch;
 class IGPUBuffer;
+class IDevice;
+class PipelineObject;
 
 class CRenderPass
 {
@@ -14,7 +16,7 @@ class CRenderPass
 		virtual ~CRenderPass();
 
 		// setup the renderpass with inputs and outputs.
-		void setupRenderPass(CTexture** outputs, uint32_t numOutputs, CTexture* depthOut);
+		void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
 
 	protected:
 		uint32_t m_numOutputs;
@@ -33,16 +35,16 @@ struct SFullScreenData;
 class CFullScreenRenderPass : public CRenderPass
 {
 	public:
-		CFullScreenRenderPass(std::string shaderName);
+		CFullScreenRenderPass(PipelineObject* pipeline, IDevice* device);
 		~CFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
-		void setupRenderPass(CTexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height);
+		void setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height);
 
 		void draw();
 
 	private:
 		std::unique_ptr <SFullScreenData> m_data;
-		std::vector <CTexture*> m_inputs;
+		std::vector <ITexture*> m_inputs;
 
 		uint32_t m_sampler;
 };

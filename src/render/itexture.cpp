@@ -1,39 +1,11 @@
-#include "texture.h"
-#include "render/opengl/opengldevice.h"
-#include "bitmap.h"
-#include "Util/colorutils.h"
+#include "itexture.h"
+#include "../bitmap.h"
+#include "../Util/colorutils.h"
 
 #include <algorithm>
 #include <cassert>
 
-CTexture::CTexture(EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
-	: m_width(width)
-	, m_height(height)
-	, m_format(format)
-{
-	auto& device = COpenGLDevice::get();
-
-	if (bMipmapped)
-	{
-		uint16_t minDim = std::min(m_width, m_height);
-
-		m_mipLevels = 0;
-
-		while (minDim > 0)
-		{
-			minDim >>= 1;
-			++m_mipLevels;
-		}
-	}
-	else
-	{
-		m_mipLevels = 1;
-	}
-
-	device.glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
-	device.glTextureStorage2D(m_id, m_mipLevels, formatToGLFormat(), m_width, m_height);
-}
-
+/*
 CTexture::CTexture(std::string filename, bool bMipmapped)
 {
 	Bitmap imageFile;
@@ -194,35 +166,27 @@ CTexture::CTexture(std::string filename, bool bMipmapped)
 		assert(currentMipmap == m_mipLevels);
 	}
 }
+*/
 
-CTexture::~CTexture()
+ITexture::ITexture(EFormat format, uint32_t width, uint32_t height, bool bMipmapped)
+	: m_width(width)
+	, m_height(height)
+	, m_format(format)
 {
-	auto& device = COpenGLDevice::get();
-
-	device.glDeleteTextures(1, &m_id);
-}
-
-void CTexture::bind(uint8_t unit)
-{
-	auto& device = COpenGLDevice::get();
-
-	device.glBindTextureUnit(unit, m_id);
-}
-
-uint32_t CTexture::formatToGLFormat()
-{
-	switch (m_format)
+	if (bMipmapped)
 	{
-		case eRGB8:
-			return GL_RGB8;
-		case eRGB16f:
-			return GL_RGB16F;
-		case eDepth32f:
-			return GL_DEPTH_COMPONENT32F;
-		case eSRGB8:
-			return GL_SRGB8;
+		uint16_t minDim = std::min(m_width, m_height);
 
-		default:
-			return GL_RGB8;
+		m_mipLevels = 0;
+
+		while (minDim > 0)
+		{
+			minDim >>= 1;
+			++m_mipLevels;
+		}
+	}
+	else
+	{
+		m_mipLevels = 1;
 	}
 }

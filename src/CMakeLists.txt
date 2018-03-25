@@ -16,11 +16,12 @@ set (SRC
 	shader.cpp
 	program.cpp
 	resourcemanager.cpp
-	texture.cpp
 	compositingpipeline.cpp
 	renderpass.cpp
 
-	render/device.cpp
+	render/itexture.cpp
+	render/ipipeline.cpp
+	render/idevice.cpp
 	)
 
 set (INC
@@ -39,13 +40,14 @@ set (INC
 	worldtile.h
 	resourcemanager.h
 	controller.h
-	texture.h
 	compositingpipeline.h
 	renderpass.h
 
-	render/device.h
-	render/gpubuffer.h
+	render/itexture.h
+	render/idevice.h
+	render/igpubuffer.h
 	render/iswapchain.h
+	render/ipipeline.h
 	)
 
 set (SHADERS

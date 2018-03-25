@@ -1,5 +1,7 @@
 #include "vulkandevice.h"
-#include "../gpubuffer.h"
+#include "../igpubuffer.h"
+#include "../itexture.h"
+#include "../ipipeline.h"
 #include "../../OS/GameWindow.h"
 #include <iostream>
 #include <cstring>
@@ -608,6 +610,16 @@ bool CVulkanDevice::getSwapchainCreationParameters(VkSurfaceKHR windowSurface, V
 
 
 std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)
+{
+	return nullptr;
+}
+
+std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams&)
+{
+	return nullptr;
+}
+
+std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
 {
 	return nullptr;
 }

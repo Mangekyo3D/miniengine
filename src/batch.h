@@ -7,7 +7,7 @@
 
 
 class IGPUBuffer;
-class CTexture;
+class ITexture;
 
 // material descriptor wraps and sets up all data needed for a shader
 class IDescriptorInterface
@@ -139,7 +139,7 @@ class IBatch
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IMesh *, PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IMesh *, PipelineObject *, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
 		void draw() override;
@@ -150,7 +150,7 @@ class CIndexedInstancedBatch : public IBatch
 		void setupInstanceBuffer();
 
 		std::vector <MeshInstanceData> m_instanceData;
-		std::vector <CTexture*> m_textures;
+		std::vector <ITexture*> m_textures;
 		bool m_bEnablePrimRestart;
 		size_t m_numIndices;
 		bool   m_bShortIndices;
@@ -169,7 +169,7 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(PipelineObject *, const std::vector<CTexture*> *textures = nullptr);
+		CDynamicArrayBatch(PipelineObject *, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
 		void draw() override;
@@ -177,7 +177,7 @@ class CDynamicArrayBatch : public IBatch
 		void addMeshData();
 
 	private:
-		std::vector <CTexture*> m_textures;
+		std::vector <ITexture*> m_textures;
 		IMesh::EPrimitiveType m_primType;
 		PipelineObject* m_material;
 

@@ -1,6 +1,6 @@
 #include "batch.h"
 #include "render/opengl/opengldevice.h"
-#include "texture.h"
+#include "render/itexture.h"
 #include "render/opengl/openglbuffer.h"
 #include <cstring>
 
@@ -179,7 +179,7 @@ void IndexedInstancedDescriptorVT::setVertexStream(IGPUBuffer* vertexBuf, IGPUBu
 	device.glBindSampler(0, m_sampler);
 }
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, const std::vector<CTexture *> *textures)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, const std::vector<ITexture *> *textures)
 	: m_pipelineState(ma)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
@@ -295,7 +295,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vector<CTexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vector<ITexture *> *textures)
 	: m_material(material)
 {
 	if (textures)

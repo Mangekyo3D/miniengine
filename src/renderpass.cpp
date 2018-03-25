@@ -1,19 +1,18 @@
 #include "renderpass.h"
 #include "program.h"
 #include "render/opengl/opengldevice.h"
-#include "texture.h"
+#include "render/itexture.h"
 #include "batch.h"
 #include "resourcemanager.h"
 #include "render/opengl/openglbuffer.h"
+#include "render/opengl/opengltexture.h"
 #include <iostream>
 
 struct SFullScreenData
 {
-	SFullScreenData()
+	SFullScreenData(PipelineObject* pipeline, IDevice* device)
 	{
-		auto& device = IDevice::get();
-		auto& manager = ResourceManager::get();
-		m_fullScreenTriangle = device.createGPUBuffer(3 * sizeof(VertexFormatV));
+		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV));
 
 		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(*m_fullScreenTriangle))
 		{
@@ -23,24 +22,24 @@ struct SFullScreenData
 			v[2].vertex = Vec3(-1.0, 3.0, 0.0);
 		}
 
-		m_pipeline = manager.loadPipeline("toneMapping");
+		m_pipeline = pipeline;
 	}
 
 	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
 	PipelineObject* m_pipeline;
 };
 
-CFullScreenRenderPass::CFullScreenRenderPass(std::string shaderName)
+CFullScreenRenderPass::CFullScreenRenderPass(PipelineObject* pipeline, IDevice* device)
 {
-	m_data = std::make_unique <SFullScreenData> ();
+	m_data = std::make_unique <SFullScreenData> (pipeline, device);
 
 	// create sampler for texture sampling of material
-	auto& device = COpenGLDevice::get();
-	device.glCreateSamplers(1, &m_sampler);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	auto& gldevice = COpenGLDevice::get();
+	gldevice.glCreateSamplers(1, &m_sampler);
+	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 CFullScreenRenderPass::~CFullScreenRenderPass()
@@ -51,7 +50,7 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 	m_sampler = 0;
 }
 
-void CFullScreenRenderPass::setupRenderPass(CTexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
+void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
 {
 	m_width = width;
 	m_height = height;
@@ -103,7 +102,7 @@ CRenderPass::~CRenderPass()
 	}
 }
 
-void CRenderPass::setupRenderPass(CTexture** outputs, uint32_t numOutputs, CTexture* depthOut)
+void CRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
 {
 	if (outputs && numOutputs > 4)
 	{
@@ -129,7 +128,8 @@ void CRenderPass::setupRenderPass(CTexture** outputs, uint32_t numOutputs, CText
 			uint32_t attachmentType = GL_COLOR_ATTACHMENT0;
 			for (uint32_t i = 0; i < numOutputs; ++i)
 			{
-				device.glNamedFramebufferTexture(m_framebufferObject, attachmentType, outputs[i]->getID(), 0);
+				COpenGLTexture* tex = static_cast <COpenGLTexture*> (outputs[i]);
+				device.glNamedFramebufferTexture(m_framebufferObject, attachmentType, tex->getID(), 0);
 				++attachmentType;
 			}
 
@@ -142,7 +142,8 @@ void CRenderPass::setupRenderPass(CTexture** outputs, uint32_t numOutputs, CText
 
 		if (depthOut)
 		{
-			device.glNamedFramebufferTexture(m_framebufferObject, GL_DEPTH_ATTACHMENT, depthOut->getID(), 0);
+			COpenGLTexture* tex = static_cast <COpenGLTexture*> (depthOut);
+			device.glNamedFramebufferTexture(m_framebufferObject, GL_DEPTH_ATTACHMENT, tex->getID(), 0);
 
 			// ideally we must check if dimensions match
 			m_width = depthOut->getWidth();
@@ -151,7 +152,6 @@ void CRenderPass::setupRenderPass(CTexture** outputs, uint32_t numOutputs, CText
 			m_bDepthOutput = true;
 		}
 	}
-
 }
 
 void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
