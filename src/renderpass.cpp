@@ -47,15 +47,24 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 {
 	auto& device = COpenGLDevice::get();
 
-	if (m_framebufferObject)
-	{
-		device.glDeleteFramebuffers(1, &m_framebufferObject);
-		m_framebufferObject = 0;
-	}
-
 	device.glDeleteSamplers(1, &m_sampler);
 	m_sampler = 0;
 }
+
+void CFullScreenRenderPass::setupRenderPass(CTexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
+{
+	m_width = width;
+	m_height = height;
+
+	m_inputs.clear();
+	m_inputs.reserve(numInputs);
+
+	for (uint32_t i = 0; i < numInputs; ++i)
+	{
+		m_inputs.push_back(inputs[i]);
+	}
+}
+
 
 void CFullScreenRenderPass::draw()
 {
@@ -76,61 +85,73 @@ void CFullScreenRenderPass::draw()
 	device.glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-void CRenderPass::addColorOutput(CTexture* tex)
+CRenderPass::CRenderPass()
+	: m_framebufferObject(0)
+	, m_width(0)
+	, m_height(0)
+	, m_numOutputs(0)
+	, m_bDepthOutput(false)
 {
-	m_colorOutputs.push_back(tex);
-	m_width = tex->getWidth();
-	m_height = tex->getHeight();
 }
 
-void CRenderPass::addDepthOutput(CTexture* tex)
-{
-	m_depthOutput = tex;
-	m_width = tex->getWidth();
-	m_height = tex->getHeight();
-}
-
-void CRenderPass::resetOutputs()
+CRenderPass::~CRenderPass()
 {
 	auto& device = COpenGLDevice::get();
-
 	if (m_framebufferObject)
 	{
 		device.glDeleteFramebuffers(1, &m_framebufferObject);
-		m_framebufferObject = 0;
 	}
-
-	m_colorOutputs.clear();
-	m_depthOutput = nullptr;
-
-	m_width = m_height = 0;
 }
 
-void CRenderPass::finalize()
+void CRenderPass::setupRenderPass(CTexture** outputs, uint32_t numOutputs, CTexture* depthOut)
 {
-	auto& device = COpenGLDevice::get();
-
-	if (m_colorOutputs.size() > 4)
+	if (outputs && numOutputs > 4)
 	{
 		std::cout << "Too many attachments!" << std::endl;
 	}
 
-	if (m_colorOutputs.size() > 0)
+	m_numOutputs = 0;
+	m_bDepthOutput = false;
+	if ((outputs && numOutputs > 0) || depthOut)
 	{
+		auto& device = COpenGLDevice::get();
+
+		if (m_framebufferObject != 0)
+		{
+			device.glDeleteFramebuffers(1, &m_framebufferObject);
+			m_framebufferObject = 0;
+		}
+
 		device.glCreateFramebuffers(1, &m_framebufferObject);
 
-		uint32_t attachmentType = GL_COLOR_ATTACHMENT0;
-		for (auto tex : m_colorOutputs)
+		if (outputs && numOutputs > 0)
 		{
-			device.glNamedFramebufferTexture(m_framebufferObject, attachmentType, tex->getID(), 0);
-			++attachmentType;
+			uint32_t attachmentType = GL_COLOR_ATTACHMENT0;
+			for (uint32_t i = 0; i < numOutputs; ++i)
+			{
+				device.glNamedFramebufferTexture(m_framebufferObject, attachmentType, outputs[i]->getID(), 0);
+				++attachmentType;
+			}
+
+			m_bDepthOutput = numOutputs;
+
+			// ideally we must check if dimensions match
+			m_width = outputs[0]->getWidth();
+			m_height = outputs[0]->getHeight();
 		}
 
-		if (m_depthOutput)
+		if (depthOut)
 		{
-			device.glNamedFramebufferTexture(m_framebufferObject, GL_DEPTH_ATTACHMENT, m_depthOutput->getID(), 0);
+			device.glNamedFramebufferTexture(m_framebufferObject, GL_DEPTH_ATTACHMENT, depthOut->getID(), 0);
+
+			// ideally we must check if dimensions match
+			m_width = depthOut->getWidth();
+			m_height = depthOut->getHeight();
+
+			m_bDepthOutput = true;
 		}
 	}
+
 }
 
 void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
@@ -143,12 +164,12 @@ void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IG
 
 	device.glViewport(0, 0, m_width, m_height);
 
-	for (int i = 0; i < m_colorOutputs.size(); ++i)
+	for (uint32_t i = 0; i < m_numOutputs; ++i)
 	{
 		device.glClearNamedFramebufferfv(m_framebufferObject, GL_COLOR, i, vClearColor);
 	}
 
-	if (m_depthOutput)
+	if (m_bDepthOutput)
 	{
 		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 0.0f, 0);
 	}
