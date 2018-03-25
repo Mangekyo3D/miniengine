@@ -3,7 +3,7 @@
 #include "resourcemanager.h"
 
 CCompositingPipeline::CCompositingPipeline(ResourceManager* resourceManager, IDevice* device)
-	: m_toneMappingPass(resourceManager->loadPipeline("toneMapping"), device)
+	: m_toneMappingPass(resourceManager->loadPipeline(eToneMapping), device)
 	, m_device(device)
 {
 }

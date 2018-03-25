@@ -96,11 +96,11 @@ bool SMDModel::openFromFile(ResourceManager* resourceManager, const char *filena
 	m_mesh = createMesh();
 	if (m_texCoordData.size() > 0)
 	{
-		m_pipeline = resourceManager->loadPipeline("genericTextured");
+		m_pipeline = resourceManager->loadPipeline(eDiffuseTextured);
 	}
 	else
 	{
-		m_pipeline = resourceManager->loadPipeline("generic");
+		m_pipeline = resourceManager->loadPipeline(eDiffuse);
 	}
 
 	return true;

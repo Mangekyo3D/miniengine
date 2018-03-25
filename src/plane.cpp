@@ -194,7 +194,7 @@ Bullet::Bullet(Engine& engine)
 	{
 		Renderer* renderer = engine.getRenderer();
 		ResourceManager* resourceManager = engine.getResourceManager();
-		PipelineObject* pipeline = resourceManager->loadPipeline("genericTextured");
+		PipelineObject* pipeline = resourceManager->loadPipeline(eDiffuseTextured);
 		auto batch = std::make_unique <CDynamicArrayBatch> (pipeline);
 		s_batch = batch.get();
 

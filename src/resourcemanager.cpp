@@ -41,17 +41,9 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 	}
 }
 
-PipelineObject* ResourceManager::loadPipeline(std::string pipelineName)
+PipelineObject* ResourceManager::loadPipeline(EPipelines pipelineName)
 {
-	auto iter = m_pipelines.find(pipelineName);
-	if (iter != m_pipelines.end())
-	{
-		return iter->second.get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return m_pipelines[pipelineName].get();
 }
 
 ITexture* ResourceManager::loadTexture(std::string textureName)
@@ -104,13 +96,13 @@ void ResourceManager::loadDefaultPipelines()
 {
 	std::string pipelineName = "generic";
 	auto pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());
-	m_pipelines[pipelineName] = std::move(pipeline);
+	m_pipelines[eDiffuse] = std::move(pipeline);
 
 	pipelineName = "genericTextured";
 	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
-	m_pipelines[pipelineName] = std::move(pipeline);
+	m_pipelines[eDiffuseTextured] = std::move(pipeline);
 
 	pipelineName = "toneMapping";
 	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <ArrayDescriptorV> ());
-	m_pipelines[pipelineName] = std::move(pipeline);
+	m_pipelines[eToneMapping] = std::move(pipeline);
 }
