@@ -7,7 +7,7 @@ class ITexture;
 class IBatch;
 class IGPUBuffer;
 class IDevice;
-class PipelineObject;
+class COpenGLPipeline;
 
 class CRenderPass
 {
@@ -35,7 +35,7 @@ struct SFullScreenData;
 class CFullScreenRenderPass : public CRenderPass
 {
 	public:
-		CFullScreenRenderPass(PipelineObject* pipeline, IDevice* device);
+		CFullScreenRenderPass(COpenGLPipeline* pipeline, IDevice* device);
 		~CFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
 		void setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height);

@@ -4,7 +4,7 @@
 #include <array>
 
 class SMDModel;
-class PipelineObject;
+class COpenGLPipeline;
 class ITexture;
 class IAudioResource;
 class IDevice;
@@ -26,7 +26,7 @@ class ResourceManager
 		ResourceManager(const ResourceManager&) = delete;
 
 		SMDModel* loadModel(std::string modelName);
-		PipelineObject* loadPipeline(EPipelines pipeline);
+		COpenGLPipeline* loadPipeline(EPipelines pipeline);
 		ITexture* loadTexture(std::string textureName);
 		IAudioResource* loadAudio(std::string audioName);
 
@@ -34,7 +34,7 @@ class ResourceManager
 		void loadDefaultPipelines();
 
 		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
-		std::array <std::unique_ptr<PipelineObject>, eMaxPipelines > m_pipelines;
+		std::array <std::unique_ptr<COpenGLPipeline>, eMaxPipelines > m_pipelines;
 		std::map <std::string, std::unique_ptr<ITexture> > m_textures;
 		std::map <std::string, std::unique_ptr<IAudioResource> > m_audio;
 

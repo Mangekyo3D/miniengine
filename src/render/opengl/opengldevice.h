@@ -12,7 +12,7 @@ public:
 	static COpenGLDevice& get() { return *s_device; }
 	virtual std::unique_ptr<ICommandBuffer> beginFrame();
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size);
-	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&);
+	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&params, const char* shaderName);
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped);
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;

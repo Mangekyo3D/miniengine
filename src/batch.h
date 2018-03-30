@@ -49,9 +49,9 @@ class IndexedInstancedDescriptorVT : public IDescriptorInterface
 		uint32_t m_sampler;
 };
 
-class PipelineObject {
+class COpenGLPipeline {
 	public:
-		PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor);
+		COpenGLPipeline(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor);
 		IDescriptorInterface* bind();
 
 	private:
@@ -139,7 +139,7 @@ class IBatch
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IMesh *, PipelineObject *, const std::vector<ITexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IMesh *, COpenGLPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
 		void draw() override;
@@ -155,7 +155,7 @@ class CIndexedInstancedBatch : public IBatch
 		size_t m_numIndices;
 		bool   m_bShortIndices;
 		IMesh::EPrimitiveType m_primType;
-		PipelineObject* m_pipelineState;
+		COpenGLPipeline* m_pipelineState;
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		std::unique_ptr<IGPUBuffer> m_indexBuffer;
 		// attributes that are specific to a certain instance
@@ -169,7 +169,7 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(PipelineObject *, const std::vector<ITexture*> *textures = nullptr);
+		CDynamicArrayBatch(COpenGLPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
 		void draw() override;
@@ -179,7 +179,7 @@ class CDynamicArrayBatch : public IBatch
 	private:
 		std::vector <ITexture*> m_textures;
 		IMesh::EPrimitiveType m_primType;
-		PipelineObject* m_material;
+		COpenGLPipeline* m_material;
 
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;

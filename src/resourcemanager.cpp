@@ -41,7 +41,7 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 	}
 }
 
-PipelineObject* ResourceManager::loadPipeline(EPipelines pipelineName)
+COpenGLPipeline* ResourceManager::loadPipeline(EPipelines pipelineName)
 {
 	return m_pipelines[pipelineName].get();
 }
@@ -97,14 +97,14 @@ IAudioResource *ResourceManager::loadAudio(std::string audioName)
 void ResourceManager::loadDefaultPipelines()
 {
 	std::string pipelineName = "generic";
-	auto pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());
+	auto pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());
 	m_pipelines[eDiffuse] = std::move(pipeline);
 
 	pipelineName = "genericTextured";
-	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
+	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
 	m_pipelines[eDiffuseTextured] = std::move(pipeline);
 
 	pipelineName = "toneMapping";
-	pipeline = std::make_unique <PipelineObject> (pipelineName, std::make_unique <ArrayDescriptorV> ());
+	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <ArrayDescriptorV> ());
 	m_pipelines[eToneMapping] = std::move(pipeline);
 }

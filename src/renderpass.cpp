@@ -10,7 +10,7 @@
 
 struct SFullScreenData
 {
-	SFullScreenData(PipelineObject* pipeline, IDevice* device)
+	SFullScreenData(COpenGLPipeline* pipeline, IDevice* device)
 	{
 		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV));
 
@@ -26,10 +26,10 @@ struct SFullScreenData
 	}
 
 	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
-	PipelineObject* m_pipeline;
+	COpenGLPipeline* m_pipeline;
 };
 
-CFullScreenRenderPass::CFullScreenRenderPass(PipelineObject* pipeline, IDevice* device)
+CFullScreenRenderPass::CFullScreenRenderPass(COpenGLPipeline* pipeline, IDevice* device)
 {
 	m_data = std::make_unique <SFullScreenData> (pipeline, device);
 

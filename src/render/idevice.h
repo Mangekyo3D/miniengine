@@ -11,7 +11,9 @@ class IPipeline;
 
 enum EPipelineFlags
 {
-	eDepthFuncGreater = 1
+	eDepthFuncGreater = 1L,
+	eCullBackFace     = (1L << 1),
+	ePrimitiveRestart = (1L << 2)
 };
 
 struct SPipelineParams
@@ -48,6 +50,7 @@ class ICommandBuffer
 
 		virtual void copyBufferToTex(IGPUBuffer* buf, ITexture* tex, size_t offset,
 									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
+		virtual void bindPipeline(IPipeline* pipeline) = 0;
 };
 
 class IDevice
@@ -60,7 +63,7 @@ public:
 	virtual ~IDevice() {}
 	virtual std::unique_ptr<ICommandBuffer> beginFrame() = 0;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) = 0;
-	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams&) = 0;
+	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, const char* shaderName) = 0;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped = false) = 0;
 
 	void addTextureStreamRequest(TextureStreamRequest req);

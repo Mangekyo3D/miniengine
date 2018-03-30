@@ -170,6 +170,12 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		}
 
+		virtual void bindPipeline(IPipeline* pipeline) override
+		{
+
+		}
+
+
 	private:
 		COpenGLDevice* m_device;
 };
@@ -184,7 +190,7 @@ std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
 	return std::make_unique <COpenGLBuffer>(size);
 }
 
-std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams&)
+std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, const char* shaderName)
 {
 	return nullptr;
 }

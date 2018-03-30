@@ -4,7 +4,7 @@
 #include "render/opengl/openglbuffer.h"
 #include <cstring>
 
-PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)
+COpenGLPipeline::COpenGLPipeline(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)
 	: m_descriptor(std::move(descriptor))
 {
 	CShader fragment_shader(shaderFileName, CShader::EType::eFragment);
@@ -16,7 +16,7 @@ PipelineObject::PipelineObject(std::string shaderFileName, std::unique_ptr <IDes
 	m_program.link();
 }
 
-IDescriptorInterface* PipelineObject::bind()
+IDescriptorInterface* COpenGLPipeline::bind()
 {
 	m_program.use();
 	m_descriptor->bind();
@@ -179,7 +179,7 @@ void IndexedInstancedDescriptorVT::setVertexStream(IGPUBuffer* vertexBuf, IGPUBu
 	device.glBindSampler(0, m_sampler);
 }
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, PipelineObject *ma, const std::vector<ITexture *> *textures)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, COpenGLPipeline *ma, const std::vector<ITexture *> *textures)
 	: m_pipelineState(ma)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
@@ -295,7 +295,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(PipelineObject *material, const std::vector<ITexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(COpenGLPipeline *material, const std::vector<ITexture *> *textures)
 	: m_material(material)
 {
 	if (textures)

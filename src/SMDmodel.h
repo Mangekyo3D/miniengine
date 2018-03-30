@@ -6,7 +6,7 @@
 class CIndexedInstancedBatch;
 class ITexture;
 struct IMesh;
-class PipelineObject;
+class COpenGLPipeline;
 class ResourceManager;
 
 class SMDModel
@@ -24,7 +24,7 @@ class SMDModel
 		std::vector <Vec2>     m_texCoordData;
 		std::vector <uint16_t> m_indexData;
 		std::unique_ptr<IMesh> m_mesh;
-		PipelineObject*        m_pipeline;
+		COpenGLPipeline*        m_pipeline;
 
 		bool m_bUseTexture;
 
