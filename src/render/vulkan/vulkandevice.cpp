@@ -17,7 +17,7 @@
 #define CloseDll dlclose
 #endif
 
-static VkBool32 vulkanDebugCallback(
+static VkBool32 VKAPI_PTR vulkanDebugCallback(
 	VkDebugReportFlagsEXT flags,
 	VkDebugReportObjectTypeEXT objectType,
 	uint64_t object,
@@ -223,7 +223,7 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 			m_physicalDevice = physDevice;
 			m_graphicsQueueIndex = graphicsQueueIndex;
 			m_presentQueueIndex = presentQueueIndex;
-			m_graphicsCommandPool = nullptr;
+			m_graphicsCommandPool = VK_NULL_HANDLE;
 
 			bool bDeviceFunctionsLoaded = true;
 			#define VK_DEVICE_FUNCTION( fun ) \

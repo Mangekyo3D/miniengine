@@ -75,7 +75,7 @@ void CFullScreenRenderPass::draw()
 	IDescriptorInterface* desc = m_data->m_pipeline->bind();
 	desc->setVertexStream(m_data->m_fullScreenTriangle.get(), nullptr, nullptr);
 
-	for (int i = 0; i < m_inputs.size(); ++i)
+	for (uint32_t i = 0; i < m_inputs.size(); ++i)
 	{
 		m_inputs[i]->bind(i);
 		device.glBindSampler(i, m_sampler);

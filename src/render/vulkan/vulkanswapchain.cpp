@@ -66,7 +66,7 @@ CVulkanSwapchain::~CVulkanSwapchain()
 	if (m_surface)
 	{
 		device.vkDestroySurfaceKHR(device, m_surface, nullptr);
-		m_surface = nullptr;
+		m_surface = VK_NULL_HANDLE;
 	}
 }
 
@@ -102,7 +102,7 @@ void CVulkanSwapchain::cleanup()
 	if (m_swapchain)
 	{
 		device.vkDestroySwapchainKHR(device, m_swapchain, nullptr);
-		m_swapchain = nullptr;
+		m_swapchain = VK_NULL_HANDLE;
 	}
 }
 
@@ -117,7 +117,7 @@ void CVulkanSwapchain::swapBuffers()
 		imageAvailableSemaphore  = m_frameAcquireSemaphores[--m_availableSemaphores];
 	}
 
-	VkResult result = device.vkAcquireNextImageKHR(device, m_swapchain, UINT64_MAX, imageAvailableSemaphore, nullptr, &m_currentSwapchainImage);
+	VkResult result = device.vkAcquireNextImageKHR(device, m_swapchain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &m_currentSwapchainImage);
 
 	switch (result)
 	{
