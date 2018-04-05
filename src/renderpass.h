@@ -7,7 +7,8 @@ class ITexture;
 class IBatch;
 class IGPUBuffer;
 class IDevice;
-class COpenGLPipeline;
+class IPipeline;
+class ICommandBuffer;
 
 class CRenderPass
 {
@@ -35,12 +36,12 @@ struct SFullScreenData;
 class CFullScreenRenderPass : public CRenderPass
 {
 	public:
-		CFullScreenRenderPass(COpenGLPipeline* pipeline, IDevice* device);
+		CFullScreenRenderPass(IPipeline* pipeline, IDevice* device);
 		~CFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
 		void setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height);
 
-		void draw();
+		void draw(ICommandBuffer&);
 
 	private:
 		std::unique_ptr <SFullScreenData> m_data;
@@ -52,5 +53,5 @@ class CFullScreenRenderPass : public CRenderPass
 class CSceneRenderPass : public CRenderPass
 {
 	public:
-		void draw(std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
+		void draw(ICommandBuffer&, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
 };

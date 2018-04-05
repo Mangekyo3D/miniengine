@@ -5,6 +5,7 @@ class IBatch;
 class IGPUBuffer;
 class IDevice;
 class ResourceManager;
+class ICommandBuffer;
 
 class CCompositingPipeline
 {
@@ -12,7 +13,7 @@ class CCompositingPipeline
 		CCompositingPipeline(ResourceManager* resourceManager, IDevice* device);
 		~CCompositingPipeline();
 
-		void draw(std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
+		void draw(ICommandBuffer& cmd, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
 		void resize(uint32_t width, uint32_t height);
 
 	private:

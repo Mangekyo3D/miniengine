@@ -3,61 +3,11 @@
 #include <string>
 #include <memory>
 #include "Util/vertex.h"
-#include "program.h"
 
-
+class ICommandBuffer;
 class IGPUBuffer;
 class ITexture;
-
-// material descriptor wraps and sets up all data needed for a shader
-class IDescriptorInterface
-{
-	public:
-		IDescriptorInterface() 	: m_vertexArrayObject(0) {}
-		virtual ~IDescriptorInterface() {}
-		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) = 0;
-		void bind();
-
-	protected:
-		uint32_t m_vertexArrayObject;
-};
-
-class ArrayDescriptorV : public IDescriptorInterface
-{
-	public:
-		ArrayDescriptorV();
-		virtual ~ArrayDescriptorV();
-		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
-};
-
-class IndexedInstancedDescriptorV : public IDescriptorInterface
-{
-	public:
-		IndexedInstancedDescriptorV();
-		virtual ~IndexedInstancedDescriptorV();
-		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
-};
-
-class IndexedInstancedDescriptorVT : public IDescriptorInterface
-{
-	public:
-		IndexedInstancedDescriptorVT();
-		virtual ~IndexedInstancedDescriptorVT();
-		virtual void setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf = nullptr, IGPUBuffer* instanceBuf = nullptr) override;
-
-	private:
-		uint32_t m_sampler;
-};
-
-class COpenGLPipeline {
-	public:
-		COpenGLPipeline(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor);
-		IDescriptorInterface* bind();
-
-	private:
-		CProgram m_program;
-		std::unique_ptr <IDescriptorInterface> m_descriptor;
-};
+class IPipeline;
 
 /* Mesh - one material per vertex buffer */
 struct VertexFormatVN
@@ -133,16 +83,16 @@ class IBatch
 {
 	public:
 		virtual ~IBatch() {}
-		virtual void draw() = 0;
+		virtual void draw(ICommandBuffer&) = 0;
 };
 
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IMesh *, COpenGLPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IMesh *, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
-		void draw() override;
+		void draw(ICommandBuffer&) override;
 
 		void addMeshInstance(MeshInstanceData& instance);
 
@@ -155,7 +105,7 @@ class CIndexedInstancedBatch : public IBatch
 		size_t m_numIndices;
 		bool   m_bShortIndices;
 		IMesh::EPrimitiveType m_primType;
-		COpenGLPipeline* m_pipelineState;
+		IPipeline* m_pipeline;
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		std::unique_ptr<IGPUBuffer> m_indexBuffer;
 		// attributes that are specific to a certain instance
@@ -169,17 +119,17 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(COpenGLPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CDynamicArrayBatch(IPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
-		void draw() override;
+		void draw(ICommandBuffer&) override;
 
 		void addMeshData();
 
 	private:
 		std::vector <ITexture*> m_textures;
 		IMesh::EPrimitiveType m_primType;
-		COpenGLPipeline* m_material;
+		IPipeline* m_material;
 
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;

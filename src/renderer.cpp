@@ -98,8 +98,8 @@ void Renderer::updateFrameUniforms(Camera& camera)
 void Renderer::drawFrame()
 {
 	auto cmd = m_device->beginFrame();
-	m_device->flushPendingStreamRequests(cmd.get());
-	m_compositor->draw(m_batches, *m_cameraUniform, *m_lightUniform);
+	m_device->flushPendingStreamRequests(*cmd);
+	m_compositor->draw(*cmd, m_batches, *m_cameraUniform, *m_lightUniform);
 	/*
 	// light position
 	float sunHeight = sin(0.01*gtime);

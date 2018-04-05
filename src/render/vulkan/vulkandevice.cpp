@@ -621,7 +621,7 @@ std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)
 	return nullptr;
 }
 
-std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params, const char* shaderName)
+std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
 {
 	return nullptr;
 }

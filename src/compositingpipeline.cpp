@@ -12,10 +12,10 @@ CCompositingPipeline::~CCompositingPipeline()
 {
 }
 
-void CCompositingPipeline::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
+void CCompositingPipeline::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
 {
-	m_sceneDrawPass.draw(batches, cameraData, lightData);
-	m_toneMappingPass.draw();
+	m_sceneDrawPass.draw(cmd, batches, cameraData, lightData);
+	m_toneMappingPass.draw(cmd);
 }
 
 void CCompositingPipeline::resize(uint32_t width, uint32_t height)

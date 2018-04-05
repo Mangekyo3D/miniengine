@@ -12,7 +12,7 @@ void IDevice::addTextureStreamRequest(TextureStreamRequest req)
 	 m_texStreamBufferSize += req.calculateSize();
 }
 
-void IDevice::flushPendingStreamRequests(ICommandBuffer* cmd)
+void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 {
 	struct FlushRequest
 	{
@@ -247,9 +247,10 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer* cmd)
 			}
 		}
 
+		cmd.setStreamingBuffer(streamBuffer.get());
 		for (auto flReq : requests)
 		{
-			cmd->copyBufferToTex(streamBuffer.get(), flReq.tex, flReq.offset, flReq.width, flReq.height, flReq.mipmap);
+			cmd.copyBufferToTex(flReq.tex, flReq.offset, flReq.width, flReq.height, flReq.mipmap);
 		}
 
 		m_textureRequests.clear();

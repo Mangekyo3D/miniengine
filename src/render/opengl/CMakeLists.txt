@@ -2,12 +2,14 @@ set (SRC
 	openglbuffer.cpp
 	opengldevice.cpp
 	opengltexture.cpp
+	openglpipeline.cpp
 )
 
 set (INC
 	opengldevice.h
 	openglbuffer.h
 	opengltexture.h
+	openglpipeline.h
 	)
 
 if (WIN32)

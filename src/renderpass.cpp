@@ -10,7 +10,7 @@
 
 struct SFullScreenData
 {
-	SFullScreenData(COpenGLPipeline* pipeline, IDevice* device)
+	SFullScreenData(IPipeline* pipeline, IDevice* device)
 	{
 		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV));
 
@@ -26,28 +26,28 @@ struct SFullScreenData
 	}
 
 	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
-	COpenGLPipeline* m_pipeline;
+	IPipeline* m_pipeline;
 };
 
-CFullScreenRenderPass::CFullScreenRenderPass(COpenGLPipeline* pipeline, IDevice* device)
+CFullScreenRenderPass::CFullScreenRenderPass(IPipeline* pipeline, IDevice* device)
 {
 	m_data = std::make_unique <SFullScreenData> (pipeline, device);
 
 	// create sampler for texture sampling of material
-	auto& gldevice = COpenGLDevice::get();
-	gldevice.glCreateSamplers(1, &m_sampler);
-	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	auto& gldevice = COpenGLDevice::get();
+//	gldevice.glCreateSamplers(1, &m_sampler);
+//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 CFullScreenRenderPass::~CFullScreenRenderPass()
 {
-	auto& device = COpenGLDevice::get();
+//	auto& device = COpenGLDevice::get();
 
-	device.glDeleteSamplers(1, &m_sampler);
-	m_sampler = 0;
+//	device.glDeleteSamplers(1, &m_sampler);
+//	m_sampler = 0;
 }
 
 void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
@@ -65,23 +65,24 @@ void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInput
 }
 
 
-void CFullScreenRenderPass::draw()
+void CFullScreenRenderPass::draw(ICommandBuffer& cmd)
 {
 	auto& device = COpenGLDevice::get();
 
 	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 	device.glViewport(0, 0, m_width, m_height);
 
-	IDescriptorInterface* desc = m_data->m_pipeline->bind();
-	desc->setVertexStream(m_data->m_fullScreenTriangle.get(), nullptr, nullptr);
+	cmd.bindPipeline(m_data->m_pipeline);
+	cmd.setVertexStream(m_data->m_fullScreenTriangle.get(), nullptr, nullptr);
 
-	for (uint32_t i = 0; i < m_inputs.size(); ++i)
-	{
-		m_inputs[i]->bind(i);
-		device.glBindSampler(i, m_sampler);
-	}
+//	for (uint32_t i = 0; i < m_inputs.size(); ++i)
+//	{
+//		m_inputs[i]->bind(i);
+//		device.glBindSampler(i, m_sampler);
+//	}
 
-	device.glDrawArrays(GL_TRIANGLES, 0, 3);
+//	device.glDrawArrays(GL_TRIANGLES, 0, 3);
+	cmd.drawArrays();
 }
 
 CRenderPass::CRenderPass()
@@ -154,43 +155,43 @@ void CRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, IText
 	}
 }
 
-void CSceneRenderPass::draw(std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
+void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
 {
-	auto& device = COpenGLDevice::get();
+//	auto& device = COpenGLDevice::get();
 
-	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+//	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
 
-	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
+//	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
 
-	device.glViewport(0, 0, m_width, m_height);
+//	device.glViewport(0, 0, m_width, m_height);
 
-	for (uint32_t i = 0; i < m_numOutputs; ++i)
-	{
-		device.glClearNamedFramebufferfv(m_framebufferObject, GL_COLOR, i, vClearColor);
-	}
+//	for (uint32_t i = 0; i < m_numOutputs; ++i)
+//	{
+//		device.glClearNamedFramebufferfv(m_framebufferObject, GL_COLOR, i, vClearColor);
+//	}
 
-	if (m_bDepthOutput)
-	{
-		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 0.0f, 0);
-	}
+//	if (m_bDepthOutput)
+//	{
+//		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 0.0f, 0);
+//	}
 
-	device.glEnable(GL_DEPTH_TEST);
+//	device.glEnable(GL_DEPTH_TEST);
 
-	device.glDepthFunc(GL_GEQUAL);
-	// inverse depth trick
-	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-	device.glDepthRangef(1.0f, 0.0f);
+//	device.glDepthFunc(GL_GEQUAL);
+//	// inverse depth trick
+//	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+//	device.glDepthRangef(1.0f, 0.0f);
 
-	COpenGLBuffer& bglCameraData = static_cast<COpenGLBuffer&>(cameraData);
-	COpenGLBuffer& bglLightData = static_cast<COpenGLBuffer&>(lightData);
+//	COpenGLBuffer& bglCameraData = static_cast<COpenGLBuffer&>(cameraData);
+//	COpenGLBuffer& bglLightData = static_cast<COpenGLBuffer&>(lightData);
 
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, bglCameraData.getID());
-	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, bglLightData.getID());
+//	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, bglCameraData.getID());
+//	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, bglLightData.getID());
 
-	for (auto& batch : batches)
-	{
-		batch->draw();
-	}
+//	for (auto& batch : batches)
+//	{
+//		batch->draw();
+//	}
 
-	device.glDisable(GL_DEPTH_TEST);
+//	device.glDisable(GL_DEPTH_TEST);
 }

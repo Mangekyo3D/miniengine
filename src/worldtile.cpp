@@ -23,9 +23,9 @@ void WorldTile::setup_draw_operations(Renderer* renderer, ResourceManager* resou
 	{
 		std::vector <ITexture*> textures;
 		textures.push_back(resourceManager->loadTexture("grass.bmp"));
-		COpenGLPipeline* material = resourceManager->loadPipeline(eDiffuseTextured);
+		IPipeline* pipeline = resourceManager->loadPipeline(eDiffuseTextured);
 
-		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, material, &textures);
+		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, pipeline, &textures);
 		m_batch = newBatch.get();
 		renderer->addNewBatch(std::move(newBatch));
 	}

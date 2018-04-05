@@ -4,183 +4,8 @@
 #include "render/opengl/openglbuffer.h"
 #include <cstring>
 
-COpenGLPipeline::COpenGLPipeline(std::string shaderFileName, std::unique_ptr <IDescriptorInterface> descriptor)
-	: m_descriptor(std::move(descriptor))
-{
-	CShader fragment_shader(shaderFileName, CShader::EType::eFragment);
-	CShader vertex_shader(shaderFileName, CShader::EType::eVertex);
-
-	m_program.attach(vertex_shader);
-	m_program.attach(fragment_shader);
-
-	m_program.link();
-}
-
-IDescriptorInterface* COpenGLPipeline::bind()
-{
-	m_program.use();
-	m_descriptor->bind();
-
-	return m_descriptor.get();
-}
-
-void IDescriptorInterface::bind()
-{
-	auto& device = COpenGLDevice::get();
-	device.glBindVertexArray(m_vertexArrayObject);
-}
-
-ArrayDescriptorV::ArrayDescriptorV()
-{
-	auto& device = COpenGLDevice::get();
-	device.glCreateVertexArrays(1, &m_vertexArrayObject);
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexFormatV, vertex));
-}
-
-ArrayDescriptorV::~ArrayDescriptorV()
-{
-	auto& device = COpenGLDevice::get();
-	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
-}
-
-void ArrayDescriptorV::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
-{
-	auto& device = COpenGLDevice::get();
-	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
-
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatV));
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
-}
-
-IndexedInstancedDescriptorV::IndexedInstancedDescriptorV()
-{
-	auto& device = COpenGLDevice::get();
-	device.glCreateVertexArrays(1, &m_vertexArrayObject);
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexFormatVN, vertex));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 1, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 1, 4, GL_INT_2_10_10_10_REV, GL_TRUE, offsetof(VertexFormatVN, normal));
-
-	// instance modelview matrix passed through vertex attributes and divisor
-	int instanceMatrixLocation = 2;
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation, 4, GL_FLOAT, GL_FALSE, 0);
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 1, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 2, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 3, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 3, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(float));
-
-	device.glVertexArrayBindingDivisor(m_vertexArrayObject, 1, 1);
-}
-
-IndexedInstancedDescriptorV::~IndexedInstancedDescriptorV()
-{
-	auto& device = COpenGLDevice::get();
-	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
-}
-
-void IndexedInstancedDescriptorV::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
-{
-	auto& device = COpenGLDevice::get();
-	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
-	COpenGLBuffer* ib = static_cast<COpenGLBuffer*> (indexBuf);
-	COpenGLBuffer* instb = static_cast<COpenGLBuffer*> (instanceBuf);
-
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatVN));
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instb->getID(), 0, sizeof(MeshInstanceData));
-	device.glVertexArrayElementBuffer(m_vertexArrayObject, ib->getID());
-
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
-
-	int instanceMatrixLocation = 2;
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 1);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 2);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 3);
-}
-
-IndexedInstancedDescriptorVT::IndexedInstancedDescriptorVT()
-{
-	auto& device = COpenGLDevice::get();
-	device.glCreateVertexArrays(1, &m_vertexArrayObject);
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 0, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(VertexFormatVNT, vertex));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 1, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 1, 4, GL_INT_2_10_10_10_REV, GL_TRUE, offsetof(VertexFormatVNT, normal));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, 2, 0);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, 2, 2, GL_FLOAT, GL_FALSE, offsetof(VertexFormatVNT, texCoord));
-
-	// instance modelview matrix passed through vertex attributes and divisor
-	int instanceMatrixLocation = 3;
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation, 4, GL_FLOAT, GL_FALSE, 0);
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 1, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 2, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float));
-
-	device.glVertexArrayAttribBinding(m_vertexArrayObject, instanceMatrixLocation + 3, 1);
-	device.glVertexArrayAttribFormat(m_vertexArrayObject, instanceMatrixLocation + 3, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(float));
-
-	device.glVertexArrayBindingDivisor(m_vertexArrayObject, 1, 1);
-
-	// create sampler for texture sampling of material
-	device.glCreateSamplers(1, &m_sampler);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	device.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-}
-
-IndexedInstancedDescriptorVT::~IndexedInstancedDescriptorVT()
-{
-	auto& device = COpenGLDevice::get();
-	device.glDeleteVertexArrays(1, &m_vertexArrayObject);
-	device.glDeleteSamplers(1, &m_sampler);
-}
-
-void IndexedInstancedDescriptorVT::setVertexStream(IGPUBuffer* vertexBuf, IGPUBuffer* indexBuf, IGPUBuffer* instanceBuf)
-{
-	auto& device = COpenGLDevice::get();
-	COpenGLBuffer* vb = static_cast<COpenGLBuffer*> (vertexBuf);
-	COpenGLBuffer* ib = static_cast<COpenGLBuffer*> (indexBuf);
-	COpenGLBuffer* instb = static_cast<COpenGLBuffer*> (instanceBuf);
-
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, sizeof(VertexFormatVNT));
-	device.glVertexArrayVertexBuffer(m_vertexArrayObject, 1, instb->getID(), 0, sizeof(MeshInstanceData));
-	device.glVertexArrayElementBuffer(m_vertexArrayObject, ib->getID());
-
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 0);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 1);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, 2);
-
-	int instanceMatrixLocation = 3;
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 1);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 2);
-	device.glEnableVertexArrayAttrib(m_vertexArrayObject, instanceMatrixLocation + 3);
-
-	// bind sampler to duffuse texture unit
-	device.glBindSampler(0, m_sampler);
-}
-
-CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, COpenGLPipeline *ma, const std::vector<ITexture *> *textures)
-	: m_pipelineState(ma)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, IPipeline* ma, const std::vector<ITexture *> *textures)
+	: m_pipeline(ma)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
 	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
@@ -228,7 +53,7 @@ static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
 	return GL_TRIANGLES;
 }
 
-void CIndexedInstancedBatch::draw()
+void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 {
 	if (m_instanceData.size() == 0)
 	{
@@ -237,32 +62,33 @@ void CIndexedInstancedBatch::draw()
 
 	setupInstanceBuffer();
 
-	IDescriptorInterface* desc = m_pipelineState->bind();
-	desc->setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
+	cmd.bindPipeline(m_pipeline);
+	cmd.setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
 
-	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
-	{
-		m_textures[i]->bind(static_cast<uint8_t>(i));
-	}
+//	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
+//	{
+//		m_textures[i]->bind(static_cast<uint8_t>(i));
+//	}
 
-	auto& device = COpenGLDevice::get();
-	device.glEnable(GL_CULL_FACE);
+//	auto& device = COpenGLDevice::get();
+//	device.glEnable(GL_CULL_FACE);
 
-	if (m_bEnablePrimRestart)
-	{
-		device.glEnable(GL_PRIMITIVE_RESTART);
-		device.glPrimitiveRestartIndex(0xFFFF);
-	}
+//	if (m_bEnablePrimRestart)
+//	{
+//		device.glEnable(GL_PRIMITIVE_RESTART);
+//		device.glPrimitiveRestartIndex(0xFFFF);
+//	}
 
-	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
-								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
-								   static_cast <GLint> (m_instanceData.size()));
+	cmd.drawIndexedInstanced();
+//	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
+//								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
+//								   static_cast <GLint> (m_instanceData.size()));
 
-	device.glDisable(GL_CULL_FACE);
-	if (m_bEnablePrimRestart)
-	{
-		device.glDisable(GL_PRIMITIVE_RESTART);
-	}
+//	device.glDisable(GL_CULL_FACE);
+//	if (m_bEnablePrimRestart)
+//	{
+//		device.glDisable(GL_PRIMITIVE_RESTART);
+//	}
 
 	m_instanceData.clear();
 }
@@ -295,7 +121,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(COpenGLPipeline *material, const std::vector<ITexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(IPipeline* material, const std::vector<ITexture *> *textures)
 	: m_material(material)
 {
 	if (textures)
@@ -308,7 +134,7 @@ CDynamicArrayBatch::~CDynamicArrayBatch()
 {
 }
 
-void CDynamicArrayBatch::draw()
+void CDynamicArrayBatch::draw(ICommandBuffer&)
 {
 
 }

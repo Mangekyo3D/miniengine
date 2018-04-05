@@ -5,6 +5,7 @@
 #include "OS/OSFactory.h"
 #include "audiointerface.h"
 #include "render/idevice.h"
+#include "render/ipipeline.h"
 #include "bitmap.h"
 
 ResourceManager::ResourceManager(IDevice* device)
@@ -41,7 +42,7 @@ SMDModel* ResourceManager::loadModel(std::string modelName)
 	}
 }
 
-COpenGLPipeline* ResourceManager::loadPipeline(EPipelines pipelineName)
+IPipeline* ResourceManager::loadPipeline(EPipelines pipelineName)
 {
 	return m_pipelines[pipelineName].get();
 }
@@ -96,15 +97,18 @@ IAudioResource *ResourceManager::loadAudio(std::string audioName)
 
 void ResourceManager::loadDefaultPipelines()
 {
-	std::string pipelineName = "generic";
-	auto pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorV> ());
+	SPipelineParams params;
+	const char* pipelineName = "generic";
+	auto pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
 	m_pipelines[eDiffuse] = std::move(pipeline);
 
 	pipelineName = "genericTextured";
-	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
+//	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
+	pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
 	m_pipelines[eDiffuseTextured] = std::move(pipeline);
 
 	pipelineName = "toneMapping";
-	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <ArrayDescriptorV> ());
+//	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <ArrayDescriptorV> ());
+	pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
 	m_pipelines[eToneMapping] = std::move(pipeline);
 }

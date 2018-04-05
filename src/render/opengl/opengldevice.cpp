@@ -3,6 +3,7 @@
 #include "opengldevice.h"
 #include "openglbuffer.h"
 #include "opengltexture.h"
+#include "openglpipeline.h"
 #include "../ipipeline.h"
 #ifdef WIN32
 #include "openglswapchainwin32.h"
@@ -156,28 +157,60 @@ class COpenGLCommandBuffer :public ICommandBuffer
 	public:
 		COpenGLCommandBuffer(COpenGLDevice* device)
 			: m_device(device)
+			, m_currentPipeline(nullptr)
+			, m_currentVertexDescriptor(nullptr)
 		{
 		}
 
-		virtual void copyBufferToTex(IGPUBuffer* buf, ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override
+		virtual void setStreamingBuffer(IGPUBuffer* buf)
 		{
 			COpenGLBuffer* glBuf = static_cast<COpenGLBuffer*>(buf);
+
+			if (glBuf == nullptr)
+			{
+				m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+			}
+			else
+			{
+				m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+				m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glBuf->getID());
+			}
+		}
+
+		virtual void copyBufferToTex(ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override
+		{
 			COpenGLTexture* glTex = static_cast<COpenGLTexture*> (tex);
 
-			m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glBuf->getID());
 			m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
-			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		}
 
 		virtual void bindPipeline(IPipeline* pipeline) override
 		{
+			COpenGLPipeline* pline = static_cast<COpenGLPipeline*> (pipeline);
 
+			if (m_currentPipeline)
+			{
+				m_currentVertexDescriptor = nullptr;
+			}
+
+			m_currentPipeline = pline;
+
+			if (pline)
+			{
+				m_currentVertexDescriptor = pline->bind();
+			}
+		}
+
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer, IGPUBuffer* instanceBuffer)
+		{
+			m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
 		}
 
 
 	private:
 		COpenGLDevice* m_device;
+		COpenGLPipeline* m_currentPipeline;
+		COpenGLVertexDescriptorInterface* m_currentVertexDescriptor;
 };
 
 std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame()
@@ -190,9 +223,10 @@ std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
 	return std::make_unique <COpenGLBuffer>(size);
 }
 
-std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, const char* shaderName)
+std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
 {
-	return nullptr;
+	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (perVertBinding, perInstanceBinding);
+	return std::make_unique <COpenGLPipeline> (shaderName, nullptr);
 }
 
 std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
