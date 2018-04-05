@@ -91,8 +91,9 @@ uint32_t COpenGLVertexDescriptorInterface::formatToGLFormat(EVertexFormat format
 	return GL_FLOAT;
 }
 
-COpenGLPipeline::COpenGLPipeline(std::string shaderFileName, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor)
-	: m_descriptor(std::move(descriptor))
+COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::string shaderFileName, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor)
+	: m_params(params)
+	, m_descriptor(std::move(descriptor))
 {
 	CShader fragment_shader(shaderFileName, CShader::EType::eFragment);
 	CShader vertex_shader(shaderFileName, CShader::EType::eVertex);
@@ -105,6 +106,39 @@ COpenGLPipeline::COpenGLPipeline(std::string shaderFileName, std::unique_ptr<COp
 
 COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 {
+	// set up pipeline state for this pipeline
+	auto& device = COpenGLDevice::get();
+
+	if (m_params.m_flags & eDepthFuncGreater)
+	{
+		device.glEnable(GL_DEPTH_TEST);
+		device.glDepthFunc(GL_GEQUAL);
+	}
+	else
+	{
+		device.glDisable(GL_DEPTH_TEST);
+	}
+
+	if (m_params.m_flags & eCullBackFace)
+	{
+		device.glEnable(GL_CULL_FACE);
+		device.glCullFace(GL_BACK);
+	}
+	else
+	{
+		device.glDisable(GL_CULL_FACE);
+	}
+
+	if (m_params.m_flags & ePrimitiveRestart)
+	{
+		device.glEnable(GL_PRIMITIVE_RESTART);
+		device.glPrimitiveRestartIndex(~0x0);
+	}
+	else
+	{
+		device.glDisable(GL_PRIMITIVE_RESTART);
+	}
+
 	m_program.use();
 	m_descriptor->bind();
 	return m_descriptor.get();
