@@ -226,7 +226,7 @@ std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
 std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
 {
 	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (perVertBinding, perInstanceBinding);
-	return std::make_unique <COpenGLPipeline> (shaderName, nullptr);
+	return std::make_unique <COpenGLPipeline> (shaderName, std::move(vertexDescriptor));
 }
 
 std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
