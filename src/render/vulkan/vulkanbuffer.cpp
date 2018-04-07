@@ -3,9 +3,9 @@
 #include "vulkanswapchain.h"
 #include <iostream>
 
-CGPUBuffer::CGPUBuffer(size_t size, Usage usage)
-	: m_lastUser(nullptr)
-	, m_size(size)
+CVulkanBuffer::CVulkanBuffer(size_t size, Usage usage)
+	: IGPUBuffer(size)
+	, m_lastUser(nullptr)
 	, m_usage(usage)
 	, m_frame(0)
 	, m_buffer(VK_NULL_HANDLE)
@@ -27,7 +27,7 @@ CGPUBuffer::CGPUBuffer(size_t size, Usage usage)
 	create();
 }
 
-void CGPUBuffer::create()
+void CVulkanBuffer::create()
 {
 	auto& device = CVulkanDevice::get();
 
@@ -71,7 +71,7 @@ void CGPUBuffer::create()
 	}
 }
 
-CGPUBuffer::~CGPUBuffer()
+CVulkanBuffer::~CVulkanBuffer()
 {
 	auto& device = CVulkanDevice::get();
 
@@ -83,27 +83,29 @@ CGPUBuffer::~CGPUBuffer()
 	m_memoryChunk->freeBlock(m_offset);
 }
 
-VkDescriptorBufferInfo CGPUBuffer::getDescriptorBufferInfo() const
+VkDescriptorBufferInfo CVulkanBuffer::getDescriptorBufferInfo() const
 {
 	return {m_buffer, 0, m_size};
 }
 
-VkBufferUsageFlags CGPUBuffer::toVulkanUsageFlags(CGPUBuffer::Usage usage)
+VkBufferUsageFlags CVulkanBuffer::toVulkanUsageFlags(IGPUBuffer::Usage usage)
 {
 	switch(usage)
 	{
-		case CGPUBuffer::Usage::eConstantVertex:
+		case CVulkanBuffer::Usage::eConstantVertex:
 			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		case CGPUBuffer::Usage::eIndex:
+		case CVulkanBuffer::Usage::eIndex:
 			return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		case CGPUBuffer::Usage::eAnimatedUniform:
+		case CVulkanBuffer::Usage::eAnimatedUniform:
 			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+		case IGPUBuffer::Usage::eStreamSource:
+			return VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	}
 
 	return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 }
 
-void* CGPUBuffer::map()
+void* CVulkanBuffer::lock()
 {
 	auto& device = CVulkanDevice::get();
 
@@ -122,7 +124,7 @@ void* CGPUBuffer::map()
 }
 
 
-void CGPUBuffer::unmap()
+void CVulkanBuffer::unlock()
 {
 	auto& device = CVulkanDevice::get();
 
@@ -138,7 +140,7 @@ void CGPUBuffer::unmap()
 	device.vkUnmapMemory(device, m_memoryChunk->m_memory);
 }
 
-void CGPUBuffer::bindAsVertexBuffer(SFrame& frame)
+void CVulkanBuffer::bindAsVertexBuffer(SFrame& frame)
 {
 	auto& device = CVulkanDevice::get();
 	const VkDeviceSize offset = m_frame * m_size;

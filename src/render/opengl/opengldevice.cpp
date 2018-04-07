@@ -157,10 +157,10 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 class COpenGLCommandBuffer :public ICommandBuffer
 {
 	public:
-		COpenGLCommandBuffer(COpenGLDevice* device, uint32_t swapchainWidth, uint32_t swapchainHeight)
+		COpenGLCommandBuffer(uint32_t swapchainWidth, uint32_t swapchainHeight)
 			: m_swapchainWidth(swapchainWidth)
 			, m_swapchainHeight(swapchainHeight)
-			, m_device(device)
+			, m_device(&COpenGLDevice::get())
 			, m_currentPipeline(nullptr)
 			, m_currentVertexDescriptor(nullptr)
 		{
@@ -305,10 +305,10 @@ std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame(ISwapchain& currentSwa
 {
 	uint32_t width, height;
 	currentSwapchain.getSize(width, height);
-	return std::make_unique <COpenGLCommandBuffer> (this, width, height);
+	return std::make_unique <COpenGLCommandBuffer> (width, height);
 }
 
-std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
+std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size, IGPUBuffer::Usage usage)
 {
 	return std::make_unique <COpenGLBuffer>(size);
 }

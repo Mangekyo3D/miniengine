@@ -1,73 +1,15 @@
 #pragma once
+#include "../igpubuffer.h"
 #include <vulkan/vulkan.h>
 
 struct SMemoryChunk;
 struct SFrame;
 
-class CGPUBuffer
+class CVulkanBuffer : public IGPUBuffer
 {
 public:
-
-	// Helper class that wraps a buffer memory mapping operation
-	template <class T> class CAutoMapper
-	{
-	public:
-		CAutoMapper(CGPUBuffer& buffer)
-			: m_buffer(buffer)
-			, m_mappedPointer(nullptr)
-		{
-			m_mappedPointer = static_cast<T*> (buffer.map());
-		}
-
-		~CAutoMapper()
-		{
-			if (m_mappedPointer)
-			{
-				m_buffer.unmap();
-			}
-		}
-
-		CAutoMapper(CAutoMapper&& other)
-			: m_buffer(other.m_buffer)
-		{
-			m_mappedPointer = other.m_mappedPointer;
-			other.m_mappedPointer = nullptr;
-		}
-
-		explicit operator bool() const
-		{
-			return m_mappedPointer != nullptr;
-		}
-
-		operator T* ()
-		{
-			return m_mappedPointer;
-		}
-
-		T* operator ->()
-		{
-			return m_mappedPointer;
-		}
-
-		T& operator [](size_t index)
-		{
-			return m_mappedPointer[index];
-		}
-
-
-	private:
-		CGPUBuffer& m_buffer;
-		T* m_mappedPointer;
-	};
-
-	enum class Usage {
-		eConstantVertex, // Vertex buffer that never changes
-		eIndex,
-		eAnimatedUniform, // Uniform that changes potentially every frame
-	};
-
-	CGPUBuffer(size_t size, Usage usage);
-	~CGPUBuffer();
+	CVulkanBuffer(size_t size, Usage usage);
+	~CVulkanBuffer();
 
 	uint32_t getAnimatedOffset() { return static_cast <uint32_t>(m_frame * m_size); }
 	VkDescriptorBufferInfo getDescriptorBufferInfo() const;
@@ -76,10 +18,10 @@ public:
 
 private:
 	void create();
-	void *map();
-	void unmap();
+	virtual void *lock() override;
+	virtual void unlock() override;
 
-	VkBufferUsageFlags toVulkanUsageFlags(Usage usage);
+	VkBufferUsageFlags toVulkanUsageFlags(IGPUBuffer::Usage usage);
 	// memory block - includes information about memory object, size and offset within this object
 
 	VkBuffer m_buffer;

@@ -19,14 +19,14 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, IPipel
 		 m_textures = *textures;
 	}
 
-	m_vertexBuffer = device.createGPUBuffer(m->getVertexSize() * m->getNumVertices());
+	m_vertexBuffer = device.createGPUBuffer(m->getVertexSize() * m->getNumVertices(), IGPUBuffer::Usage::eConstantVertex);
 	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_vertexBuffer))
 	{
 		uint8_t* ptr = lock;
 		memcpy(ptr, m->getVertices(), m->getVertexSize() * m->getNumVertices());
 	}
 
-	m_indexBuffer = device.createGPUBuffer(m->getIndexSize() * m->getNumIndices());
+	m_indexBuffer = device.createGPUBuffer(m->getIndexSize() * m->getNumIndices(), IGPUBuffer::Usage::eIndex);
 	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_indexBuffer))
 	{
 		uint8_t* ptr = lock;
@@ -75,7 +75,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 
 	if (!m_instanceBuffer)
 	{
-		m_instanceBuffer = device.createGPUBuffer(sizeof(MeshInstanceData) * m_instanceData.size());
+		m_instanceBuffer = device.createGPUBuffer(sizeof(MeshInstanceData) * m_instanceData.size(), IGPUBuffer::Usage::eConstantVertex);
 		m_numInstances = static_cast <uint32_t> (m_instanceData.size());
 	}
 

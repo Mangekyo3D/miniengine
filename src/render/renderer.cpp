@@ -28,8 +28,8 @@ Renderer::Renderer (ResourceManager* resourceManager, std::unique_ptr <IDevice> 
 {
 	m_compositor = std::make_unique <CCompositingPipeline>(resourceManager, m_device.get());
 
-	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer));
-	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer));
+	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);
+	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);
 }
 
 Renderer::~Renderer()
@@ -78,16 +78,14 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 	if (auto lock = IGPUBuffer::CAutoLock <LightUniformBuffer> (*m_lightUniform))
 	{
-		LightUniformBuffer* pBuffer = lock;
 		Vec3 lightDir = normalMat * Vec3(-1.0, -1.0, 1.0);
 		lightDir.normalize();
 
-		pBuffer->color[0] = 1.0f;
-		pBuffer->color[1] = 1.0f;
-		pBuffer->color[2] = 1.0f;
-		pBuffer->color[3] = 1.0f;
-
-		pBuffer->lightDir = lightDir;
+		lock->color[0] = 1.0f;
+		lock->color[1] = 1.0f;
+		lock->color[2] = 1.0f;
+		lock->color[3] = 1.0f;
+		lock->lightDir = lightDir;
 	}
 }
 

@@ -11,14 +11,13 @@ struct SFullScreenData
 {
 	SFullScreenData(IPipeline* pipeline, IDevice* device)
 	{
-		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV));
+		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV), IGPUBuffer::Usage::eConstantVertex);
 
 		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(*m_fullScreenTriangle))
 		{
-			VertexFormatV *v = lock;
-			v[0].vertex = Vec3(-1.0, -1.0, 0.0);
-			v[1].vertex = Vec3(3.0, -1.0, 0.0);
-			v[2].vertex = Vec3(-1.0, 3.0, 0.0);
+			lock[0].vertex = Vec3(-1.0, -1.0, 0.0);
+			lock[1].vertex = Vec3(3.0, -1.0, 0.0);
+			lock[2].vertex = Vec3(-1.0, 3.0, 0.0);
 		}
 
 		m_pipeline = pipeline;

@@ -11,7 +11,7 @@ public:
 
 	static COpenGLDevice& get() { return *s_device; }
 	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain) override;
-	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
+	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, IGPUBuffer::Usage usage) override;
 	virtual std::unique_ptr<IRenderPass> createRenderPass() override;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
 													  const char* shaderName) override;

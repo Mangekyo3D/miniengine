@@ -1,5 +1,5 @@
 #include "vulkandevice.h"
-#include "../igpubuffer.h"
+#include "vulkanbuffer.h"
 #include "../itexture.h"
 #include "../ipipeline.h"
 #include "../irenderpass.h"
@@ -34,6 +34,64 @@ static VkBool32 VKAPI_PTR vulkanDebugCallback(
 	return VK_TRUE;
 }
 
+class CVulkanCommandBuffer : public ICommandBuffer
+{
+	public:
+		CVulkanCommandBuffer(ISwapchain& swapchain)
+			: m_device(&CVulkanDevice::get())
+		{
+		}
+
+		virtual void setStreamingBuffer(IGPUBuffer* buf) override
+		{
+
+		}
+
+		virtual void copyBufferToTex(ITexture* tex, size_t offset,
+									 uint16_t width, uint16_t height, uint8_t miplevel) override
+		{
+
+		}
+
+		virtual void bindPipeline(IPipeline* pipeline) override
+		{
+
+		}
+
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer = nullptr, IGPUBuffer* instanceBuffer = nullptr) override
+		{
+
+		}
+
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) override
+		{
+
+		}
+
+		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end) override
+		{
+
+		}
+
+		virtual IDevice& getDevice() override
+		{
+			return *m_device;
+		}
+
+	protected:
+		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override
+		{
+
+		}
+
+		virtual void endRenderPass() override
+		{
+
+		}
+
+		CVulkanDevice* m_device;
+};
+
 CVulkanDevice* CVulkanDevice::s_device = nullptr;
 
 CVulkanDevice& CVulkanDevice::get()
@@ -43,7 +101,7 @@ CVulkanDevice& CVulkanDevice::get()
 
 std::unique_ptr<ICommandBuffer> CVulkanDevice::beginFrame(ISwapchain& currentSwapchain)
 {
-	return nullptr;
+	return std::make_unique <CVulkanCommandBuffer> (currentSwapchain);
 }
 
 VkPhysicalDevice CVulkanDevice::getPhysicalDevice()
@@ -612,10 +670,94 @@ bool CVulkanDevice::getSwapchainCreationParameters(VkSurfaceKHR windowSurface, V
 	return true;
 }
 
-
-std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size)
+bool CVulkanDevice::allocateMemory(SMemoryChunk** chunk, size_t& offset, VkMemoryRequirements& requirements, bool bMappable)
 {
-	return nullptr;
+	VkPhysicalDeviceMemoryProperties memoryProperties;
+
+	vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+
+	VkMemoryPropertyFlags memoryFlags = 0;
+
+	if (bMappable)
+	{
+		memoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+	}
+
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+	{
+		uint32_t bitValue = (1 << i);
+		if (((requirements.memoryTypeBits & bitValue) != 0) &&
+			((memoryProperties.memoryTypes[i].propertyFlags & memoryFlags) == memoryFlags))
+		{
+			// first, check if we have already allocated a memory chunk from this pool
+			if (m_memoryHeaps.find(i) != m_memoryHeaps.end())
+			{
+				SMemoryHeap* memoryHeap = m_memoryHeaps[i].get();
+
+				for (SMemoryChunk::Ptr& memoryChunk : memoryHeap->m_chunks)
+				{
+					if (memoryChunk->allocateBlock(requirements.size, requirements.alignment, offset))
+					{
+						*chunk = memoryChunk.get();
+						return true;
+					}
+				}
+			}
+
+			// chunks are allocations of 128 MB each
+			const size_t chunkSize = std::max(static_cast <VkDeviceSize> (128 * 1024 * 1024), requirements.size);
+
+			// we failed to find an empty block, proceed to allocate a new chunk of appropriate size
+			VkDeviceMemory memory;
+			VkMemoryAllocateInfo allocateInfo =
+			{
+				VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+				nullptr,
+				chunkSize,
+				i
+			};
+
+			VkResult result = vkAllocateMemory(m_device, &allocateInfo, nullptr, &memory);
+			if (result != VK_SUCCESS)
+			{
+				if (result == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+				{
+					// continue, it may be possible to find another kind of memory to accomodate the request
+					continue;
+				}
+
+				std::cout << "Failed to allocate memory" << std::endl;
+				return false;
+			}
+
+			if (m_memoryHeaps.find(i) == m_memoryHeaps.end())
+			{
+				SMemoryHeap::Ptr newInfo = std::make_unique <SMemoryHeap> ();
+				m_memoryHeaps.insert(std::make_pair(i, std::move(newInfo)));
+			}
+
+			// create and append a new chunk in the memory type array
+			std::vector <SMemoryChunk::Ptr>& container = m_memoryHeaps[i]->m_chunks;
+
+			// finally, move the new chunk in the container for this type of memory
+			container.push_back(std::make_unique <SMemoryChunk> (memory, chunkSize));
+			SMemoryChunk::Ptr& newChunk = container.back();
+
+			//container.push_back(std::move(newChunk));
+			if (newChunk->allocateBlock(requirements.size, requirements.alignment, offset))
+			{
+				*chunk = newChunk.get();
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size, IGPUBuffer::Usage usage)
+{
+	return std::make_unique <CVulkanBuffer> (size, usage);
 }
 
 std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)

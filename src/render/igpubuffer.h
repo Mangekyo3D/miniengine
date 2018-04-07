@@ -5,6 +5,13 @@
 class IGPUBuffer
 {
 public:
+	enum class Usage {
+		eConstantVertex, // Vertex buffer that never changes
+		eIndex,
+		eAnimatedUniform, // Uniform that changes potentially every frame
+		eStreamSource     // Source for streaming requests
+	};
+
 	IGPUBuffer(size_t size) : m_size(size) {}
 	virtual ~IGPUBuffer() {}
 
@@ -43,6 +50,16 @@ public:
 		operator T* ()
 		{
 			return m_mapPtr;
+		}
+
+		T* operator ->()
+		{
+			return m_mapPtr;
+		}
+
+		T& operator [](size_t index)
+		{
+			return m_mapPtr[index];
 		}
 
 	private:
