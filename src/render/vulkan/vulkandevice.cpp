@@ -3,6 +3,7 @@
 #include "../itexture.h"
 #include "../ipipeline.h"
 #include "../irenderpass.h"
+#include "../icommandbuffer.h"
 #include "../../OS/GameWindow.h"
 #include <iostream>
 #include <cstring>

@@ -1,11 +1,13 @@
 #include "renderer.h"
-#include "OS/GameWindow.h"
-#include <iostream>
-#include "render/idevice.h"
-#include "render/igpubuffer.h"
-#include "camera.h"
+#include "idevice.h"
+#include "igpubuffer.h"
 #include "batch.h"
-#include "resourcemanager.h"
+
+#include "../camera.h"
+#include "../resourcemanager.h"
+#include "../OS/GameWindow.h"
+
+#include <iostream>
 
 struct SceneUniformBuffer
 {
@@ -44,11 +46,6 @@ Renderer::~Renderer()
 
 	// finally, cleanup the device
 	m_device.reset();
-}
-
-void Renderer::addNewBatch(std::unique_ptr<IBatch> batch)
-{
-	m_batches.push_back(std::move (batch));
 }
 
 void Renderer::updateFrameUniforms(Camera& camera)

@@ -1,6 +1,6 @@
 #include "resourcemanager.h"
 #include "SMDmodel.h"
-#include "batch.h"
+#include "render/batch.h"
 #include "render/itexture.h"
 #include "OS/OSFactory.h"
 #include "audiointerface.h"
@@ -98,17 +98,40 @@ IAudioResource *ResourceManager::loadAudio(std::string audioName)
 void ResourceManager::loadDefaultPipelines()
 {
 	SPipelineParams params;
+	params.m_flags = eReverseDepth | eCullBackFace;
+
 	const char* pipelineName = "generic";
-	auto pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
-	m_pipelines[eDiffuse] = std::move(pipeline);
 
-	pipelineName = "genericTextured";
-//	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <IndexedInstancedDescriptorVT> ());
-	pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
-	m_pipelines[eDiffuseTextured] = std::move(pipeline);
+	{
+		SVertexBinding vertBinding(sizeof(VertexFormatVN));
+		vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), eFloat, 3);
+		vertBinding.addAttribute(offsetof(VertexFormatVN, normal), e1010102int, 4);
 
-	pipelineName = "toneMapping";
-//	pipeline = std::make_unique <COpenGLPipeline> (pipelineName, std::make_unique <ArrayDescriptorV> ());
-	pipeline = m_device->createPipeline(params, nullptr, nullptr, pipelineName);
-	m_pipelines[eToneMapping] = std::move(pipeline);
+		auto pipeline = m_device->createPipeline(params, &vertBinding, nullptr, pipelineName);
+		m_pipelines[eDiffuse] = std::move(pipeline);
+	}
+
+	{
+		SVertexBinding vertBinding(sizeof(VertexFormatVNT));
+		vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
+		vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), e1010102int, 4);
+		vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), eFloat, 2);
+
+		pipelineName = "genericTextured";
+		auto pipeline = m_device->createPipeline(params, &vertBinding, nullptr, pipelineName);
+		m_pipelines[eDiffuseTextured] = std::move(pipeline);
+
+		params.m_flags |= ePrimitiveRestart;
+		pipeline = m_device->createPipeline(params, &vertBinding, nullptr, pipelineName);
+		m_pipelines[eDiffuseTexturedPrimRestart] = std::move(pipeline);
+	}
+
+	{
+		SVertexBinding vertBinding(sizeof(VertexFormatV));
+		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
+		params.m_flags = 0;
+		pipelineName = "toneMapping";
+		auto pipeline = m_device->createPipeline(params, &vertBinding, nullptr, pipelineName);
+		m_pipelines[eToneMapping] = std::move(pipeline);
+	}
 }

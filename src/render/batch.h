@@ -2,12 +2,14 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "Util/vertex.h"
+#include "icommandbuffer.h"
+#include "../Util/vertex.h"
 
 class ICommandBuffer;
 class IGPUBuffer;
 class ITexture;
 class IPipeline;
+class IDevice;
 
 /* Mesh - one material per vertex buffer */
 struct VertexFormatVN
@@ -31,14 +33,8 @@ struct VertexFormatV
 
 struct IMesh
 {
-	enum class EPrimitiveType
-	{
-		eTriangles,
-		eTriangleStrip
-	};
-
 	IMesh()
-		: m_primType(EPrimitiveType::eTriangles)
+		: m_primType(ICommandBuffer::EPrimitiveType::eTriangles)
 		, m_bEnablePrimRestart(false)
 	{
 	}
@@ -50,7 +46,7 @@ struct IMesh
 	virtual void* getIndices() = 0;
 	virtual size_t getIndexSize() = 0;
 
-	EPrimitiveType m_primType;
+	ICommandBuffer::EPrimitiveType m_primType;
 	bool m_bEnablePrimRestart;
 };
 
@@ -89,7 +85,7 @@ class IBatch
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IMesh *, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IDevice& device, IMesh *, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
 		void draw(ICommandBuffer&) override;
@@ -97,14 +93,14 @@ class CIndexedInstancedBatch : public IBatch
 		void addMeshInstance(MeshInstanceData& instance);
 
 	private:
-		void setupInstanceBuffer();
+		void setupInstanceBuffer(IDevice& device);
 
 		std::vector <MeshInstanceData> m_instanceData;
 		std::vector <ITexture*> m_textures;
 		bool m_bEnablePrimRestart;
 		size_t m_numIndices;
 		bool   m_bShortIndices;
-		IMesh::EPrimitiveType m_primType;
+		ICommandBuffer::EPrimitiveType m_primType;
 		IPipeline* m_pipeline;
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		std::unique_ptr<IGPUBuffer> m_indexBuffer;
@@ -119,7 +115,7 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(IPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CDynamicArrayBatch(IDevice& device, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
 		void draw(ICommandBuffer&) override;
@@ -128,7 +124,7 @@ class CDynamicArrayBatch : public IBatch
 
 	private:
 		std::vector <ITexture*> m_textures;
-		IMesh::EPrimitiveType m_primType;
+		ICommandBuffer::EPrimitiveType m_primType;
 		IPipeline* m_material;
 
 		// current buffer

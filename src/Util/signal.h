@@ -66,7 +66,7 @@ template <typename ...Args> class CSignal
 			// wants to disconnect during the signal, can do so
 			for (int i = static_cast<int> (m_observers.size()) - 1; i >=0; --i)
 			{
-				m_observers[i].func(args...);
+				m_observers[i].func(std::forward<Args>(args)...);
 			}
 		}
 

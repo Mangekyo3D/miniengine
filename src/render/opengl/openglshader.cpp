@@ -1,11 +1,10 @@
-#include "shader.h"
-#include "renderer.h"
 #include <fstream>
 #include <streambuf>
 #include <iostream>
 #include <memory>
-#include "render/opengl/opengldevice.h"
-#include "OS/OSFactory.h"
+#include "openglshader.h"
+#include "opengldevice.h"
+#include "../../OS/OSFactory.h"
 
 int CShader::shaderTypeToGLType(EType type)
 {

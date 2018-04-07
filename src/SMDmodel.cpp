@@ -2,9 +2,9 @@
 #include <memory>
 #include "SMDmodel.h"
 #include "bitmap.h"
-#include "renderer.h"
+#include "render/renderer.h"
+#include "render/batch.h"
 #include "resourcemanager.h"
-#include "batch.h"
 
 using namespace std;
 
@@ -106,9 +106,9 @@ bool SMDModel::openFromFile(ResourceManager* resourceManager, const char *filena
 	return true;
 }
 
-std::unique_ptr<CIndexedInstancedBatch> SMDModel::createBatch()
+CIndexedInstancedBatch* SMDModel::createBatch(Renderer& renderer)
 {
-	return std::make_unique <CIndexedInstancedBatch> (m_mesh.get(), m_pipeline, &m_textures);
+	return renderer.addNewBatch <CIndexedInstancedBatch> (m_mesh.get(), m_pipeline, &m_textures);
 }
 
 SMDModel::~SMDModel()

@@ -2,54 +2,50 @@ find_package(Vulkan REQUIRED)
 
 set (SRC
 	openalaudio.cpp
-	batch.cpp
 	bitmap.cpp
 	camera.cpp
 	engine.cpp
 	explosion.cpp
 	main.cpp
 	plane.cpp
-	renderer.cpp
 	SMDmodel.cpp
 	worldentity.cpp
 	worldtile.cpp
-	shader.cpp
-	program.cpp
 	resourcemanager.cpp
-	compositingpipeline.cpp
-	renderpass.cpp
 
+	render/batch.cpp
+	render/icommandbuffer.cpp
 	render/irenderpass.cpp
 	render/itexture.cpp
 	render/ipipeline.cpp
 	render/idevice.cpp
+	render/compositingpipeline.cpp
+	render/renderer.cpp
 	)
 
 set (INC
 	audiointerface.h
-	batch.h
 	bitmap.h
 	camera.h
 	engine.h
 	effect.h
 	plane.h
-	program.h
-	renderer.h
-	shader.h
 	SMDmodel.h
 	worldentity.h
 	worldtile.h
 	resourcemanager.h
 	controller.h
-	compositingpipeline.h
-	renderpass.h
 
+	render/batch.h
+	render/icommandbuffer.h
 	render/irenderpass.h
 	render/itexture.h
 	render/idevice.h
 	render/igpubuffer.h
 	render/iswapchain.h
 	render/ipipeline.h
+	render/compositingpipeline.h
+	render/renderer.h
 	)
 
 set (SHADERS

@@ -5,7 +5,7 @@
 #include "opengltexture.h"
 #include "openglpipeline.h"
 #include "openglrenderpass.h"
-#include "../ipipeline.h"
+#include "../icommandbuffer.h"
 #ifdef WIN32
 #include "openglswapchainwin32.h"
 #include "wglext.h"
@@ -208,6 +208,17 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
 		}
 
+		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end)
+		{
+			m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), start, end);
+		}
+
+		IDevice& getDevice() override
+		{
+			return *m_device;
+		}
+
+
 	protected:
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override
 		{
@@ -252,6 +263,20 @@ class COpenGLCommandBuffer :public ICommandBuffer
 
 		}
 
+		GLenum meshPrimitiveToGLPrimitive(EPrimitiveType type)
+		{
+			switch (type)
+			{
+				case EPrimitiveType::eTriangles:
+					return GL_TRIANGLES;
+				case EPrimitiveType::eTriangleStrip:
+					return GL_TRIANGLE_STRIP;
+				default:
+					break;
+			}
+
+			return GL_TRIANGLES;
+		}
 
 	private:
 		COpenGLDevice* m_device;

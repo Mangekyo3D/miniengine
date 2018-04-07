@@ -7,6 +7,7 @@ class CIndexedInstancedBatch;
 class ITexture;
 struct IMesh;
 class IPipeline;
+class Renderer;
 class ResourceManager;
 
 class SMDModel
@@ -15,7 +16,7 @@ class SMDModel
 		SMDModel() {}
 		~SMDModel();
 		bool openFromFile(ResourceManager* resourceManager, const char *);
-		std::unique_ptr <CIndexedInstancedBatch> createBatch();
+		CIndexedInstancedBatch* createBatch(Renderer& renderer);
 		std::unique_ptr<IMesh> createMesh();
 
 	private:

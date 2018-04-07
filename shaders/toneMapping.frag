@@ -21,4 +21,5 @@ void main()
 	vec4 sceneCol = texture(sceneTex, vs_in.vTexCoord);
 	vec2 vDiff = vs_in.vTexCoord - vec2(0.5);
 	cColor = (1.0 - dot(vDiff, vDiff)) * linearToSrgb(sceneCol);
+	cColor = vec4(1.0);
 }

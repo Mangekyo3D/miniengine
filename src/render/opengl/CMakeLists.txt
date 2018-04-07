@@ -4,6 +4,8 @@ set (SRC
 	opengltexture.cpp
 	openglpipeline.cpp
 	openglrenderpass.cpp
+	openglprogram.cpp
+	openglshader.cpp
 )
 
 set (INC
@@ -12,6 +14,8 @@ set (INC
 	opengltexture.h
 	openglpipeline.h
 	openglrenderpass.h
+	openglprogram.h
+	openglshader.h
 	)
 
 if (WIN32)

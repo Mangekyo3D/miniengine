@@ -19,7 +19,13 @@ class Renderer
 		Renderer(const Renderer&) = delete;
 		Renderer& operator = (const Renderer&) = delete;
 
-		void addNewBatch(std::unique_ptr<IBatch> batch);
+		template <typename T, typename ...Args> T* addNewBatch(Args... args)
+		{
+			auto newBatch = std::make_unique<T> (*m_device, std::forward<Args>(args)...);
+			T* retVal = newBatch.get();
+			m_batches.push_back(std::move(newBatch));
+			return retVal;
+		}
 
 		void updateFrameUniforms(Camera& camera);
 		void drawFrame();

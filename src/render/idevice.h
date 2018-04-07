@@ -4,15 +4,15 @@
 #include <vector>
 #include "itexture.h"
 
-class IBatch;
 class GameWindow;
 class IGPUBuffer;
 class IPipeline;
 class IRenderPass;
+class ICommandBuffer;
 
 enum EPipelineFlags
 {
-	eDepthFuncGreater = 1L,
+	eReverseDepth = 1L,
 	eCullBackFace     = (1L << 1),
 	ePrimitiveRestart = (1L << 2)
 };
@@ -21,13 +21,10 @@ struct SPipelineParams
 {
 	SPipelineParams()
 	{
-		m_minDepth = 0.0f;
-		m_maxDepth = 1.0f;
 		m_flags = 0;
 	}
 
 	uint64_t m_flags;
-	float m_minDepth, m_maxDepth;
 };
 
 enum EVertexFormat
@@ -82,48 +79,6 @@ struct TextureStreamRequest
 
 	ITexture* m_texture;
 	std::string m_filename;
-};
-
-class ICommandBuffer
-{
-	public:
-
-		class CScopedRenderPass
-		{
-			public:
-				CScopedRenderPass(ICommandBuffer& cmd, IRenderPass& renderpass, const float* vClearColor = nullptr, const float* clearDepth = nullptr)
-					: m_renderpass(&renderpass)
-					, m_cmd(&cmd)
-				{
-					m_cmd->beginRenderPass(renderpass, vClearColor, clearDepth);
-				}
-
-				~CScopedRenderPass()
-				{
-					m_cmd->endRenderPass();
-				}
-
-			private:
-				IRenderPass* m_renderpass;
-				ICommandBuffer* m_cmd;
-		};
-
-		virtual ~ICommandBuffer() {}
-
-		virtual void setStreamingBuffer(IGPUBuffer* buf) = 0;
-		virtual void copyBufferToTex(ITexture* tex, size_t offset,
-									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
-		virtual void bindPipeline(IPipeline* pipeline) = 0;
-		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer = nullptr, IGPUBuffer* instanceBuffer = nullptr) = 0;
-		virtual void drawIndexedInstanced() {}
-		virtual void drawArrays() {}
-	//	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
-	//								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
-	//								   static_cast <GLint> (m_instanceData.size()));
-
-	protected:
-		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) = 0;
-		virtual void endRenderPass() = 0;
 };
 
 class IDevice

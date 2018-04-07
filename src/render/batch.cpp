@@ -1,10 +1,12 @@
 #include "batch.h"
-#include "render/opengl/opengldevice.h"
-#include "render/itexture.h"
-#include "render/opengl/openglbuffer.h"
+#include "idevice.h"
+#include "itexture.h"
+#include "igpubuffer.h"
+#include "icommandbuffer.h"
+
 #include <cstring>
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, IPipeline* ma, const std::vector<ITexture *> *textures)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, IPipeline* ma, const std::vector<ITexture *> *textures)
 	: m_pipeline(ma)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
@@ -16,8 +18,6 @@ CIndexedInstancedBatch::CIndexedInstancedBatch(IMesh *m, IPipeline* ma, const st
 	{
 		 m_textures = *textures;
 	}
-
-	auto& device = COpenGLDevice::get();
 
 	m_vertexBuffer = device.createGPUBuffer(m->getVertexSize() * m->getNumVertices());
 	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_vertexBuffer))
@@ -38,21 +38,6 @@ CIndexedInstancedBatch::~CIndexedInstancedBatch()
 {
 }
 
-static GLenum meshPrimitiveToGLPrimitive(IMesh::EPrimitiveType type)
-{
-	switch (type)
-	{
-		case IMesh::EPrimitiveType::eTriangles:
-			return GL_TRIANGLES;
-		case IMesh::EPrimitiveType::eTriangleStrip:
-			return GL_TRIANGLE_STRIP;
-		default:
-			break;
-	}
-
-	return GL_TRIANGLES;
-}
-
 void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 {
 	if (m_instanceData.size() == 0)
@@ -60,7 +45,7 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 		return;
 	}
 
-	setupInstanceBuffer();
+	setupInstanceBuffer(cmd.getDevice());
 
 	cmd.bindPipeline(m_pipeline);
 	cmd.setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
@@ -70,25 +55,10 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 //		m_textures[i]->bind(static_cast<uint8_t>(i));
 //	}
 
-//	auto& device = COpenGLDevice::get();
-//	device.glEnable(GL_CULL_FACE);
-
-//	if (m_bEnablePrimRestart)
-//	{
-//		device.glEnable(GL_PRIMITIVE_RESTART);
-//		device.glPrimitiveRestartIndex(0xFFFF);
-//	}
-
 	cmd.drawIndexedInstanced();
 //	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
 //								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
 //								   static_cast <GLint> (m_instanceData.size()));
-
-//	device.glDisable(GL_CULL_FACE);
-//	if (m_bEnablePrimRestart)
-//	{
-//		device.glDisable(GL_PRIMITIVE_RESTART);
-//	}
 
 	m_instanceData.clear();
 }
@@ -98,10 +68,8 @@ void CIndexedInstancedBatch::addMeshInstance(MeshInstanceData& instance)
 	m_instanceData.push_back(instance);
 }
 
-void CIndexedInstancedBatch::setupInstanceBuffer()
+void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 {
-	auto& device = COpenGLDevice::get();
-
 	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
 	{
@@ -121,7 +89,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer()
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(IPipeline* material, const std::vector<ITexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(IDevice& device, IPipeline* material, const std::vector<ITexture *> *textures)
 	: m_material(material)
 {
 	if (textures)

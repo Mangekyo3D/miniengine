@@ -36,10 +36,8 @@ Plane::Plane(Vec3 initPos, Engine& engine)
 		SMDModel* model = resourceManager->loadModel("plane2.smd");
 		if (model)
 		{
-			auto newBatch = model->createBatch();
-			s_assets.batch = newBatch.get();
 			Renderer* renderer = engine.getRenderer();
-			renderer->addNewBatch(std::move(newBatch));
+			s_assets.batch = model->createBatch(*renderer);
 		}
 		s_assets.engineAudio = resourceManager->loadAudio("engine.wav");
 		s_assets.laserAudio = resourceManager->loadAudio("laser.wav");
@@ -195,10 +193,7 @@ Bullet::Bullet(Engine& engine)
 		Renderer* renderer = engine.getRenderer();
 		ResourceManager* resourceManager = engine.getResourceManager();
 		IPipeline* pipeline = resourceManager->loadPipeline(eDiffuseTextured);
-		auto batch = std::make_unique <CDynamicArrayBatch> (pipeline);
-		s_batch = batch.get();
-
-		renderer->addNewBatch(std::move(batch));
+		s_batch = renderer->addNewBatch <CDynamicArrayBatch>(pipeline);
 	}
 }
 

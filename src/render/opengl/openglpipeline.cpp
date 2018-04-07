@@ -26,6 +26,7 @@ COpenGLVertexDescriptorInterface::COpenGLVertexDescriptorInterface(SVertexBindin
 	if (perInstanceBinding)
 	{
 		m_perInstanceDataSize = perInstanceBinding->m_dataSize;
+		device.glVertexArrayBindingDivisor(m_vertexArrayObject, 1, 1);
 		for (const auto& attribute : perInstanceBinding->m_attributeParams)
 		{
 			device.glEnableVertexArrayAttrib(m_vertexArrayObject, currentLocation);
@@ -108,14 +109,21 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	// set up pipeline state for this pipeline
 	auto& device = COpenGLDevice::get();
 
-	if (m_params.m_flags & eDepthFuncGreater)
+	//	// inverse depth trick. Some of these settings might be separated in the future
+	if (m_params.m_flags & eReverseDepth)
 	{
 		device.glEnable(GL_DEPTH_TEST);
 		device.glDepthFunc(GL_GEQUAL);
+
+		device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+		device.glDepthRangef(1.0f, 0.0f);
 	}
 	else
 	{
 		device.glDisable(GL_DEPTH_TEST);
+		device.glDepthFunc(GL_ALWAYS);
+		device.glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
+		device.glDepthRangef(0.0f, 1.0f);
 	}
 
 	if (m_params.m_flags & eCullBackFace)

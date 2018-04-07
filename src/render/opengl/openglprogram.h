@@ -1,5 +1,5 @@
 #pragma once
-#include "shader.h"
+#include "openglshader.h"
 #include <map>
 
 class CProgram

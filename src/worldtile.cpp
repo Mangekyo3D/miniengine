@@ -2,7 +2,7 @@
 #include "Util/perlin.h"
 #include "Util/vertex.h"
 #include "Util/matrix.h"
-#include "renderer.h"
+#include "render/renderer.h"
 #include "resourcemanager.h"
 
 WorldTile::WorldTile(uint16_t resolution)
@@ -23,11 +23,8 @@ void WorldTile::setup_draw_operations(Renderer* renderer, ResourceManager* resou
 	{
 		std::vector <ITexture*> textures;
 		textures.push_back(resourceManager->loadTexture("grass.bmp"));
-		IPipeline* pipeline = resourceManager->loadPipeline(eDiffuseTextured);
-
-		auto newBatch = std::make_unique <CIndexedInstancedBatch> (&m_mesh, pipeline, &textures);
-		m_batch = newBatch.get();
-		renderer->addNewBatch(std::move(newBatch));
+		IPipeline* pipeline = resourceManager->loadPipeline(eDiffuseTexturedPrimRestart);
+		m_batch = renderer->addNewBatch <CIndexedInstancedBatch>(&m_mesh, pipeline, &textures);
 	}
 
 	MeshInstanceData data;
@@ -41,7 +38,7 @@ void WorldTile::setup_draw_operations(Renderer* renderer, ResourceManager* resou
 
 void WorldTile::generateProcedural()
 {
-	m_mesh.m_primType = IMesh::EPrimitiveType::eTriangleStrip;
+	m_mesh.m_primType = ICommandBuffer::EPrimitiveType::eTriangleStrip;
 	m_mesh.m_bEnablePrimRestart = true;
 
 	for (int i = 0; i < m_resolution; ++i)

@@ -1,8 +1,11 @@
 #pragma once
+#pragma once
 #include <vector>
 #include <string>
 #include <memory>
 
+
+class ResourceManager;
 class ITexture;
 class IBatch;
 class IGPUBuffer;
@@ -42,4 +45,23 @@ class CSceneRenderPass
 
 	private:
 		std::unique_ptr <IRenderPass>     m_renderpass;
+};
+
+class CCompositingPipeline
+{
+	public:
+		CCompositingPipeline(ResourceManager* resourceManager, IDevice* device);
+		~CCompositingPipeline();
+
+		void draw(ICommandBuffer& cmd, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
+		void resize(uint32_t width, uint32_t height);
+
+	private:
+		CSceneRenderPass m_sceneDrawPass;
+		CFullScreenRenderPass m_toneMappingPass;
+
+		std::unique_ptr <ITexture> m_sceneHDRTex;
+		std::unique_ptr <ITexture> m_DepthTex;
+
+		IDevice* m_device;
 };

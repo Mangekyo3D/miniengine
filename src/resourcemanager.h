@@ -12,6 +12,7 @@ class IDevice;
 enum EPipelines {
 	eDiffuse = 0,
 	eDiffuseTextured,
+	eDiffuseTexturedPrimRestart,
 
 	// post processing pipelines
 	eToneMapping,

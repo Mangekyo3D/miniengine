@@ -1,11 +1,10 @@
-#include "renderpass.h"
-#include "program.h"
+#include "compositingpipeline.h"
+#include "../resourcemanager.h"
 #include "batch.h"
-#include "resourcemanager.h"
-#include "render/irenderpass.h"
-#include "render/itexture.h"
-#include "render/idevice.h"
-#include "render/igpubuffer.h"
+#include "irenderpass.h"
+#include "itexture.h"
+#include "idevice.h"
+#include "igpubuffer.h"
 #include <iostream>
 
 struct SFullScreenData
@@ -82,8 +81,7 @@ void CFullScreenRenderPass::draw(ICommandBuffer& cmd)
 //		device.glBindSampler(i, m_sampler);
 //	}
 
-//	device.glDrawArrays(GL_TRIANGLES, 0, 3);
-	cmd.drawArrays();
+	cmd.drawArrays(ICommandBuffer::EPrimitiveType::eTriangles, 0, 3);
 }
 
 CSceneRenderPass::CSceneRenderPass(IDevice* device)
@@ -101,12 +99,6 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 	static const float vClearDepth = 0.0;
 
 	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor, &vClearDepth);
-//	device.glEnable(GL_DEPTH_TEST);
-
-//	device.glDepthFunc(GL_GEQUAL);
-//	// inverse depth trick
-//	device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-//	device.glDepthRangef(1.0f, 0.0f);
 
 //	COpenGLBuffer& bglCameraData = static_cast<COpenGLBuffer&>(cameraData);
 //	COpenGLBuffer& bglLightData = static_cast<COpenGLBuffer&>(lightData);
@@ -118,11 +110,37 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 	{
 		batch->draw(cmd);
 	}
-
-	//	device.glDisable(GL_DEPTH_TEST);
 }
 
 void CSceneRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
 {
 	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
+}
+
+
+CCompositingPipeline::CCompositingPipeline(ResourceManager* resourceManager, IDevice* device)
+	: m_sceneDrawPass(device)
+	, m_toneMappingPass(resourceManager->loadPipeline(eToneMapping), device)
+	, m_device(device)
+{
+}
+
+CCompositingPipeline::~CCompositingPipeline()
+{
+}
+
+void CCompositingPipeline::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
+{
+	m_sceneDrawPass.draw(cmd, batches, cameraData, lightData);
+	m_toneMappingPass.draw(cmd);
+}
+
+void CCompositingPipeline::resize(uint32_t width, uint32_t height)
+{
+	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, width, height);
+	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, width, height);
+
+	ITexture* sceneTex = m_sceneHDRTex.get();
+	m_sceneDrawPass.setupRenderPass(&sceneTex, 1, m_DepthTex.get());
+	m_toneMappingPass.setupRenderPass(&sceneTex, 1, width, height);
 }

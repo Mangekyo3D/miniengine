@@ -5,6 +5,7 @@
 #include "../Util/colorutils.h"
 #include <algorithm>
 #include <cassert>
+#include "icommandbuffer.h"
 
 void IDevice::addTextureStreamRequest(TextureStreamRequest req)
 {
