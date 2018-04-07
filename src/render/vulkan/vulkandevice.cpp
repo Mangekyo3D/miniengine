@@ -2,6 +2,7 @@
 #include "../igpubuffer.h"
 #include "../itexture.h"
 #include "../ipipeline.h"
+#include "../irenderpass.h"
 #include "../../OS/GameWindow.h"
 #include <iostream>
 #include <cstring>
@@ -631,6 +632,10 @@ std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format,
 	return nullptr;
 }
 
+std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass()
+{
+	return nullptr;
+}
 
 SMemoryChunk::SMemoryChunk(VkDeviceMemory memory, const size_t size)
 	: m_memory(memory)

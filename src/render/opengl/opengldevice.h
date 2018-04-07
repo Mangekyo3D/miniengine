@@ -12,6 +12,7 @@ public:
 	static COpenGLDevice& get() { return *s_device; }
 	virtual std::unique_ptr<ICommandBuffer> beginFrame() override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) override;
+	virtual std::unique_ptr<IRenderPass> createRenderPass() override;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
 													  const char* shaderName) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped) override;

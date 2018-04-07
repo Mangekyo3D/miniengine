@@ -9,31 +9,11 @@ class IGPUBuffer;
 class IDevice;
 class IPipeline;
 class ICommandBuffer;
-
-class CRenderPass
-{
-	public:
-		CRenderPass();
-		virtual ~CRenderPass();
-
-		// setup the renderpass with inputs and outputs.
-		void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
-
-	protected:
-		uint32_t m_numOutputs;
-		bool     m_bDepthOutput;
-
-		// width and height, used when we render to default framebuffer
-		uint32_t                m_width;
-		uint32_t                m_height;
-
-		// framebuffer object of this renderpass
-		uint32_t m_framebufferObject;
-};
+class IRenderPass;
 
 struct SFullScreenData;
 
-class CFullScreenRenderPass : public CRenderPass
+class CFullScreenRenderPass
 {
 	public:
 		CFullScreenRenderPass(IPipeline* pipeline, IDevice* device);
@@ -44,14 +24,22 @@ class CFullScreenRenderPass : public CRenderPass
 		void draw(ICommandBuffer&);
 
 	private:
+		std::unique_ptr <IRenderPass>     m_renderpass;
 		std::unique_ptr <SFullScreenData> m_data;
 		std::vector <ITexture*> m_inputs;
 
 		uint32_t m_sampler;
 };
 
-class CSceneRenderPass : public CRenderPass
+class CSceneRenderPass
 {
 	public:
+		CSceneRenderPass(IDevice* device);
+		~CSceneRenderPass();
+
 		void draw(ICommandBuffer&, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
+		void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
+
+	private:
+		std::unique_ptr <IRenderPass>     m_renderpass;
 };

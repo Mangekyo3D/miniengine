@@ -1,11 +1,11 @@
 #include "renderpass.h"
 #include "program.h"
-#include "render/opengl/opengldevice.h"
-#include "render/itexture.h"
 #include "batch.h"
 #include "resourcemanager.h"
-#include "render/opengl/openglbuffer.h"
-#include "render/opengl/opengltexture.h"
+#include "render/irenderpass.h"
+#include "render/itexture.h"
+#include "render/idevice.h"
+#include "render/igpubuffer.h"
 #include <iostream>
 
 struct SFullScreenData
@@ -32,6 +32,7 @@ struct SFullScreenData
 CFullScreenRenderPass::CFullScreenRenderPass(IPipeline* pipeline, IDevice* device)
 {
 	m_data = std::make_unique <SFullScreenData> (pipeline, device);
+	m_renderpass = device->createRenderPass();
 
 	// create sampler for texture sampling of material
 //	auto& gldevice = COpenGLDevice::get();
@@ -52,9 +53,6 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 
 void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
 {
-	m_width = width;
-	m_height = height;
-
 	m_inputs.clear();
 	m_inputs.reserve(numInputs);
 
@@ -62,18 +60,21 @@ void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInput
 	{
 		m_inputs.push_back(inputs[i]);
 	}
+
+	// temporary, these should be arguments in the function
+	m_renderpass->setupRenderPass(nullptr, 0, nullptr);
 }
 
 
 void CFullScreenRenderPass::draw(ICommandBuffer& cmd)
 {
-	auto& device = COpenGLDevice::get();
+	// test clear color
+	static const float vClearColor[] = {1.0f, 0.0f, 0.0f, 0.0f};
 
-	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
-	device.glViewport(0, 0, m_width, m_height);
+	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor);
 
 	cmd.bindPipeline(m_data->m_pipeline);
-	cmd.setVertexStream(m_data->m_fullScreenTriangle.get(), nullptr, nullptr);
+	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
 
 //	for (uint32_t i = 0; i < m_inputs.size(); ++i)
 //	{
@@ -85,96 +86,21 @@ void CFullScreenRenderPass::draw(ICommandBuffer& cmd)
 	cmd.drawArrays();
 }
 
-CRenderPass::CRenderPass()
-	: m_framebufferObject(0)
-	, m_width(0)
-	, m_height(0)
-	, m_numOutputs(0)
-	, m_bDepthOutput(false)
+CSceneRenderPass::CSceneRenderPass(IDevice* device)
 {
+	m_renderpass = device->createRenderPass();
 }
 
-CRenderPass::~CRenderPass()
+CSceneRenderPass::~CSceneRenderPass()
 {
-	auto& device = COpenGLDevice::get();
-	if (m_framebufferObject)
-	{
-		device.glDeleteFramebuffers(1, &m_framebufferObject);
-	}
-}
-
-void CRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
-{
-	if (outputs && numOutputs > 4)
-	{
-		std::cout << "Too many attachments!" << std::endl;
-	}
-
-	m_numOutputs = 0;
-	m_bDepthOutput = false;
-	if ((outputs && numOutputs > 0) || depthOut)
-	{
-		auto& device = COpenGLDevice::get();
-
-		if (m_framebufferObject != 0)
-		{
-			device.glDeleteFramebuffers(1, &m_framebufferObject);
-			m_framebufferObject = 0;
-		}
-
-		device.glCreateFramebuffers(1, &m_framebufferObject);
-
-		if (outputs && numOutputs > 0)
-		{
-			uint32_t attachmentType = GL_COLOR_ATTACHMENT0;
-			for (uint32_t i = 0; i < numOutputs; ++i)
-			{
-				COpenGLTexture* tex = static_cast <COpenGLTexture*> (outputs[i]);
-				device.glNamedFramebufferTexture(m_framebufferObject, attachmentType, tex->getID(), 0);
-				++attachmentType;
-			}
-
-			m_numOutputs = numOutputs;
-
-			// ideally we must check if dimensions match
-			m_width = outputs[0]->getWidth();
-			m_height = outputs[0]->getHeight();
-		}
-
-		if (depthOut)
-		{
-			COpenGLTexture* tex = static_cast <COpenGLTexture*> (depthOut);
-			device.glNamedFramebufferTexture(m_framebufferObject, GL_DEPTH_ATTACHMENT, tex->getID(), 0);
-
-			// ideally we must check if dimensions match
-			m_width = depthOut->getWidth();
-			m_height = depthOut->getHeight();
-
-			m_bDepthOutput = true;
-		}
-	}
 }
 
 void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IBatch> > & batches, IGPUBuffer& cameraData, IGPUBuffer& lightData)
 {
-//	auto& device = COpenGLDevice::get();
+	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+	static const float vClearDepth = 0.0;
 
-//	static const float vClearColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-//	device.glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferObject);
-
-//	device.glViewport(0, 0, m_width, m_height);
-
-//	for (uint32_t i = 0; i < m_numOutputs; ++i)
-//	{
-//		device.glClearNamedFramebufferfv(m_framebufferObject, GL_COLOR, i, vClearColor);
-//	}
-
-//	if (m_bDepthOutput)
-//	{
-//		device.glClearNamedFramebufferfi(m_framebufferObject, GL_DEPTH_STENCIL, 0, 0.0f, 0);
-//	}
-
+	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor, &vClearDepth);
 //	device.glEnable(GL_DEPTH_TEST);
 
 //	device.glDepthFunc(GL_GEQUAL);
@@ -188,10 +114,15 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 //	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, bglCameraData.getID());
 //	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, bglLightData.getID());
 
-//	for (auto& batch : batches)
-//	{
-//		batch->draw();
-//	}
+	for (auto& batch : batches)
+	{
+		batch->draw(cmd);
+	}
 
-//	device.glDisable(GL_DEPTH_TEST);
+	//	device.glDisable(GL_DEPTH_TEST);
+}
+
+void CSceneRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
+{
+	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
 }

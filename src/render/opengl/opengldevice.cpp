@@ -4,6 +4,7 @@
 #include "openglbuffer.h"
 #include "opengltexture.h"
 #include "openglpipeline.h"
+#include "openglrenderpass.h"
 #include "../ipipeline.h"
 #ifdef WIN32
 #include "openglswapchainwin32.h"
@@ -163,7 +164,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		{
 		}
 
-		virtual void setStreamingBuffer(IGPUBuffer* buf)
+		virtual void setStreamingBuffer(IGPUBuffer* buf) override
 		{
 			COpenGLBuffer* glBuf = static_cast<COpenGLBuffer*>(buf);
 
@@ -202,9 +203,53 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			}
 		}
 
-		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer, IGPUBuffer* instanceBuffer)
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer, IGPUBuffer* instanceBuffer) override
 		{
 			m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
+		}
+
+	protected:
+		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override
+		{
+			COpenGLRenderPass& glpass = static_cast<COpenGLRenderPass&> (renderpass);
+			uint32_t fbobjID = glpass.getID();
+			m_device->glBindFramebuffer(GL_FRAMEBUFFER, fbobjID);
+
+			m_device->glViewport(0, 0, glpass.getWidth(), glpass.getHeight());
+
+			if (vClearColor)
+			{
+				// exception for zero framebuffer, it will have no outputs attached in OpenGL
+				if (fbobjID == 0)
+				{
+					m_device->glClearNamedFramebufferfv(0, GL_COLOR, 0, vClearColor);
+				}
+				else
+				{
+					for (uint32_t i = 0; i < glpass.getNumOutputs(); ++i)
+					{
+						m_device->glClearNamedFramebufferfv(fbobjID, GL_COLOR, i, vClearColor);
+					}
+				}
+			}
+
+			if (clearDepth)
+			{
+				// exception for zero framebuffer, it will have no outputs attached in OpenGL
+				if (fbobjID == 0)
+				{
+					m_device->glClearNamedFramebufferfi(0, GL_DEPTH_STENCIL, 0, *clearDepth, 0);
+				}
+				else if (glpass.hasDepthOutput())
+				{
+					m_device->glClearNamedFramebufferfi(fbobjID, GL_DEPTH_STENCIL, 0, *clearDepth, 0);
+				}
+			}
+		}
+
+		virtual void endRenderPass() override
+		{
+
 		}
 
 
@@ -222,6 +267,11 @@ std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame()
 std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)
 {
 	return std::make_unique <COpenGLBuffer>(size);
+}
+
+std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass()
+{
+	return std::make_unique <COpenGLRenderPass>();
 }
 
 std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)

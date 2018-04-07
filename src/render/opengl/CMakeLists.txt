@@ -3,6 +3,7 @@ set (SRC
 	opengldevice.cpp
 	opengltexture.cpp
 	openglpipeline.cpp
+	openglrenderpass.cpp
 )
 
 set (INC
@@ -10,6 +11,7 @@ set (INC
 	openglbuffer.h
 	opengltexture.h
 	openglpipeline.h
+	openglrenderpass.h
 	)
 
 if (WIN32)

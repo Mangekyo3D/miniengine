@@ -8,9 +8,6 @@ public:
 	IGPUBuffer(size_t size) : m_size(size) {}
 	virtual ~IGPUBuffer() {}
 
-	virtual void* lock() = 0;
-	virtual void  unlock() = 0;
-
 	// convenience template class that locks a buffer and can be dereferenced to the constant buffer type
 	// it has been instantiated from
 	template <typename T> class CAutoLock
@@ -54,5 +51,8 @@ public:
 	};
 
 protected:
+	virtual void* lock() = 0;
+	virtual void  unlock() = 0;
+
 	size_t m_size;
 };

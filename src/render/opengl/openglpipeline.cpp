@@ -14,7 +14,6 @@ COpenGLVertexDescriptorInterface::COpenGLVertexDescriptorInterface(SVertexBindin
 	if (perVertBinding)
 	{
 		m_perVertDataSize = perVertBinding->m_dataSize;
-		//device.glVertexArrayVertexBuffer(m_vertexArrayObject, 0, vb->getID(), 0, perVertBinding->m_dataSize);
 		for (const auto& attribute : perVertBinding->m_attributeParams)
 		{
 			device.glEnableVertexArrayAttrib(m_vertexArrayObject, currentLocation);

@@ -19,6 +19,7 @@ set (SRC
 	compositingpipeline.cpp
 	renderpass.cpp
 
+	render/irenderpass.cpp
 	render/itexture.cpp
 	render/ipipeline.cpp
 	render/idevice.cpp
@@ -43,6 +44,7 @@ set (INC
 	compositingpipeline.h
 	renderpass.h
 
+	render/irenderpass.h
 	render/itexture.h
 	render/idevice.h
 	render/igpubuffer.h
