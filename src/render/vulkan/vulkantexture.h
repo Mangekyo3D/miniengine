@@ -1,24 +1,13 @@
 #pragma once
+#include "../itexture.h"
 #include "vulkan/vulkan.h"
 
 struct SMemoryChunk;
 
-class CVulkanTexture
+class CVulkanTexture : public ITexture
 {
 public:
-	enum class EType
-	{
-		eColor,
-		eDepth
-	};
-
-	enum EUsage
-	{
-		eAttachement = (1),
-		eSampled     = (1 << 1)
-	};
-
-	CVulkanTexture(EType type, EUsage usage, uint32_t width, uint32_t height);
+	CVulkanTexture(EFormat type, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped);
 	~CVulkanTexture();
 
 	VkFormat typeToFormat();
@@ -32,10 +21,4 @@ private:
 
 	VkImage        m_image;
 	VkImageView    m_view;
-
-	EType m_type;
-	EUsage m_usage;
-
-	uint32_t m_width;
-	uint32_t m_height;
 };

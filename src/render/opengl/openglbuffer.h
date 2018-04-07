@@ -5,7 +5,7 @@
 class COpenGLBuffer : public IGPUBuffer
 {
 public:
-	COpenGLBuffer(size_t size);
+	COpenGLBuffer(size_t size, uint32_t usage);
 	~COpenGLBuffer();
 
 	virtual void* lock();

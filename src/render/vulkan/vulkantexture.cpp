@@ -2,20 +2,19 @@
 #include "vulkandevice.h"
 #include <iostream>
 
-CVulkanTexture::CVulkanTexture(EType type, EUsage usage, uint32_t width, uint32_t height)
-	: m_type(type)
-	, m_usage(usage)
-	, m_width(width)
-	, m_height(height)
+CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped)
+	: ITexture(format, usage, width, height, bMipmapped)
 {
 	VkExtent3D extent = {width, height, 1};
 	VkImageLayout layout;
 
 	auto& device = CVulkanDevice::get();
 
-	switch(m_type)
+	switch(m_format)
 	{
-		case EType::eColor:
+		case EFormat::eSRGB8:
+		case EFormat::eRGB8:
+		case EFormat::eRGB16f:
 			// if the image is sampled then we should initialize it unless it's an attachment, in which case
 			// it will be drawn into later and won't need to be initialized
 			if ((m_usage & EUsage::eSampled) && !(m_usage & EUsage::eAttachement))
@@ -27,7 +26,7 @@ CVulkanTexture::CVulkanTexture(EType type, EUsage usage, uint32_t width, uint32_
 				layout = VK_IMAGE_LAYOUT_UNDEFINED;
 			}
 			break;
-		case EType::eDepth:
+		case EFormat::eDepth32f:
 			// depth textures rarely need preinitialization
 			layout = VK_IMAGE_LAYOUT_UNDEFINED;
 			break;
@@ -66,9 +65,7 @@ CVulkanTexture::CVulkanTexture(EType type, EUsage usage, uint32_t width, uint32_
 		VkMemoryRequirements memoryRequirements;
 		device.vkGetImageMemoryRequirements(device, m_image, &memoryRequirements);
 
-		bool bMappable = (m_type == EType::eDepth) ? false : true;
-
-		if (!device.allocateMemory(&m_memoryChunk, m_offset, memoryRequirements, bMappable))
+		if (!device.allocateMemory(&m_memoryChunk, m_offset, memoryRequirements, false))
 		{
 			std::cout << "Could not allocate texture memory" << std::endl;
 		}
@@ -77,7 +74,7 @@ CVulkanTexture::CVulkanTexture(EType type, EUsage usage, uint32_t width, uint32_
 
 		// finally, create a view for this image
 		VkImageSubresourceRange subresourceRange = {
-			static_cast<VkImageAspectFlags> ((m_type == EType::eColor) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
+			static_cast<VkImageAspectFlags> ((m_format != EFormat::eDepth32f) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
 			0,
 			1,
 			0,
@@ -128,12 +125,16 @@ CVulkanTexture::~CVulkanTexture()
 
 VkFormat CVulkanTexture::typeToFormat()
 {
-	switch(m_type)
+	switch(m_format)
 	{
-		case EType::eColor:
+		case EFormat::eRGB8:
 			return VK_FORMAT_R8G8B8A8_UNORM;
-		case EType::eDepth:
-			return VK_FORMAT_D24_UNORM_S8_UINT;
+		case EFormat::eSRGB8:
+			return VK_FORMAT_R8G8B8A8_SRGB;
+		case EFormat::eRGB16f:
+			return VK_FORMAT_R16G16B16A16_SFLOAT;
+		case EFormat::eDepth32f:
+			return VK_FORMAT_D32_SFLOAT;
 	}
 
 	return VK_FORMAT_R8G8B8A8_UNORM;
@@ -149,7 +150,7 @@ VkImageUsageFlags CVulkanTexture::usageFlags()
 	}
 	if (m_usage & EUsage::eAttachement)
 	{
-		if (m_type == EType::eDepth)
+		if (m_format == EFormat::eDepth32f)
 		{
 			usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		}

@@ -1,6 +1,6 @@
 #include "vulkandevice.h"
 #include "vulkanbuffer.h"
-#include "../itexture.h"
+#include "vulkantexture.h"
 #include "../ipipeline.h"
 #include "../irenderpass.h"
 #include "../icommandbuffer.h"
@@ -755,7 +755,27 @@ bool CVulkanDevice::allocateMemory(SMemoryChunk** chunk, size_t& offset, VkMemor
 	return false;
 }
 
-std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size, IGPUBuffer::Usage usage)
+bool CVulkanDevice::getSupportsImage(VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags)
+{
+	VkImageFormatProperties imageFormatProperties;
+	VkResult result = vkGetPhysicalDeviceImageFormatProperties(m_physicalDevice, format, type, tiling, usage, flags, &imageFormatProperties);
+
+	if (result == VK_SUCCESS)
+	{
+		return true;
+	}
+	else if (result == VK_ERROR_FORMAT_NOT_SUPPORTED)
+	{
+		std::cout << "Error, Image format not supported" << std::endl;
+	}
+	else {
+		std::cout << "Error during image format support query" << std::endl;
+	}
+
+	return false;
+}
+
+std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size, uint32_t usage)
 {
 	return std::make_unique <CVulkanBuffer> (size, usage);
 }
@@ -765,9 +785,9 @@ std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params
 	return nullptr;
 }
 
-std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
+std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
 {
-	return nullptr;
+	return std::make_unique <CVulkanTexture> (format, usage, width, height, bMipmapped);
 }
 
 std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass()

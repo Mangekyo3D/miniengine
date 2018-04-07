@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cassert>
 
-COpenGLTexture::COpenGLTexture(EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
-	: ITexture(format, width, height, bMipmapped)
+COpenGLTexture::COpenGLTexture(EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
+	: ITexture(format, usage, width, height, bMipmapped)
 {
 	auto& device = COpenGLDevice::get();
 	device.glCreateTextures(GL_TEXTURE_2D, 1, &m_id);

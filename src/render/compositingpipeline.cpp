@@ -136,8 +136,8 @@ void CCompositingPipeline::draw(ICommandBuffer& cmd, std::vector <std::unique_pt
 
 void CCompositingPipeline::resize(uint32_t width, uint32_t height)
 {
-	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, width, height);
-	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, width, height);
+	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, ITexture::EUsage::eSampled | ITexture::EUsage::eAttachement, width, height);
+	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, ITexture::EUsage::eAttachement, width, height);
 
 	ITexture* sceneTex = m_sceneHDRTex.get();
 	m_sceneDrawPass.setupRenderPass(&sceneTex, 1, m_DepthTex.get());

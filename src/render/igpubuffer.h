@@ -5,14 +5,14 @@
 class IGPUBuffer
 {
 public:
-	enum class Usage {
-		eConstantVertex, // Vertex buffer that never changes
-		eIndex,
-		eAnimatedUniform, // Uniform that changes potentially every frame
-		eStreamSource     // Source for streaming requests
+	enum Usage {
+		eConstantVertex  =  1,       // Vertex buffer that never changes
+		eIndex           = (1 << 1), // Index Buffer
+		eAnimatedUniform = (1 << 2), // Uniform that changes potentially every frame
+		eStreamSource    = (1 << 3)  // Source for streaming requests
 	};
 
-	IGPUBuffer(size_t size) : m_size(size) {}
+	IGPUBuffer(size_t size, uint32_t usage) : m_size(size), m_usage(usage) {}
 	virtual ~IGPUBuffer() {}
 
 	// convenience template class that locks a buffer and can be dereferenced to the constant buffer type
@@ -72,4 +72,5 @@ protected:
 	virtual void  unlock() = 0;
 
 	size_t m_size;
+	uint32_t m_usage;
 };

@@ -4,10 +4,11 @@
 #include <algorithm>
 
 
-ITexture::ITexture(EFormat format, uint32_t width, uint32_t height, bool bMipmapped)
+ITexture::ITexture(EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped)
 	: m_width(width)
 	, m_height(height)
 	, m_format(format)
+	, m_usage(usage)
 {
 	if (bMipmapped)
 	{

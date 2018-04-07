@@ -62,7 +62,7 @@ ITexture* ResourceManager::loadTexture(std::string textureName)
 		BmpReader reader;
 		if (reader.openFromFile(finalFileName.data(), true))
 		{
-			auto texture = m_device->createTexture(ITexture::EFormat::eSRGB8, reader.getWidth(), reader.getHeight(), true);
+			auto texture = m_device->createTexture(ITexture::EFormat::eSRGB8, ITexture::EUsage::eSampled, reader.getWidth(), reader.getHeight(), true);
 			ITexture* result = texture.get();
 			TextureStreamRequest req(result, finalFileName.data());
 			m_device->addTextureStreamRequest(req);

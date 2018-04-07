@@ -2,8 +2,8 @@
 #include "openglbuffer.h"
 #include <stddef.h>
 
-COpenGLBuffer::COpenGLBuffer(size_t size)
-	: IGPUBuffer(size)
+COpenGLBuffer::COpenGLBuffer(size_t size, uint32_t usage)
+	: IGPUBuffer(size, usage)
 {
 	auto& device = COpenGLDevice::get();
 

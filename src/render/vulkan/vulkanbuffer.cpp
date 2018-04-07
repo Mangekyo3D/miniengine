@@ -3,10 +3,9 @@
 #include "vulkanswapchain.h"
 #include <iostream>
 
-CVulkanBuffer::CVulkanBuffer(size_t size, Usage usage)
-	: IGPUBuffer(size)
+CVulkanBuffer::CVulkanBuffer(size_t size, uint32_t usage)
+	: IGPUBuffer(size, usage)
 	, m_lastUser(nullptr)
-	, m_usage(usage)
 	, m_frame(0)
 	, m_buffer(VK_NULL_HANDLE)
 	, m_memoryChunk(nullptr)
@@ -88,21 +87,27 @@ VkDescriptorBufferInfo CVulkanBuffer::getDescriptorBufferInfo() const
 	return {m_buffer, 0, m_size};
 }
 
-VkBufferUsageFlags CVulkanBuffer::toVulkanUsageFlags(IGPUBuffer::Usage usage)
+VkBufferUsageFlags CVulkanBuffer::toVulkanUsageFlags(uint32_t usage)
 {
-	switch(usage)
+	VkBufferUsageFlags usageFlags = 0;
+	if (usage & Usage::eConstantVertex)
 	{
-		case CVulkanBuffer::Usage::eConstantVertex:
-			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		case CVulkanBuffer::Usage::eIndex:
-			return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		case CVulkanBuffer::Usage::eAnimatedUniform:
-			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		case IGPUBuffer::Usage::eStreamSource:
-			return VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		usageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	}
+	if (usage & Usage::eIndex)
+	{
+		usageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+	}
+	if (usage & Usage::eAnimatedUniform)
+	{
+		usageFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	}
+	if (usage & Usage::eStreamSource)
+	{
+		usageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	}
 
-	return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	return usageFlags;
 }
 
 void* CVulkanBuffer::lock()

@@ -308,9 +308,9 @@ std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame(ISwapchain& currentSwa
 	return std::make_unique <COpenGLCommandBuffer> (width, height);
 }
 
-std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size, IGPUBuffer::Usage usage)
+std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size, uint32_t usage)
 {
-	return std::make_unique <COpenGLBuffer>(size);
+	return std::make_unique <COpenGLBuffer>(size, usage);
 }
 
 std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass()
@@ -324,7 +324,7 @@ std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params
 	return std::make_unique <COpenGLPipeline> (params, shaderName, std::move(vertexDescriptor));
 }
 
-std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped)
+std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
 {
-	return std::make_unique <COpenGLTexture>(format, width, height, bMipmapped);
+	return std::make_unique <COpenGLTexture>(format, usage, width, height, bMipmapped);
 }
