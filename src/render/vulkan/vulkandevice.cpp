@@ -2,7 +2,7 @@
 #include "vulkanbuffer.h"
 #include "vulkantexture.h"
 #include "../ipipeline.h"
-#include "../irenderpass.h"
+#include "vulkanrenderpass.h"
 #include "../icommandbuffer.h"
 #include "../../OS/GameWindow.h"
 #include <iostream>
@@ -792,7 +792,7 @@ std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format,
 
 std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass()
 {
-	return nullptr;
+	return std::make_unique <CVulkanRenderPass> ();
 }
 
 SMemoryChunk::SMemoryChunk(VkDeviceMemory memory, const size_t size)
