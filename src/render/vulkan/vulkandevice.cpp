@@ -46,11 +46,6 @@ std::unique_ptr<ICommandBuffer> CVulkanDevice::beginFrame(ISwapchain& currentSwa
 	return nullptr;
 }
 
-VkDevice CVulkanDevice::getDevice()
-{
-	return m_device;
-}
-
 VkPhysicalDevice CVulkanDevice::getPhysicalDevice()
 {
 	return m_physicalDevice;
@@ -654,7 +649,6 @@ SMemoryChunk::SMemoryChunk(VkDeviceMemory memory, const size_t size)
 SMemoryChunk::~SMemoryChunk()
 {
 	auto& device = CVulkanDevice::get();
-	VkDevice vkDevice = device.getDevice();
 
 	for (SMemoryBlock& block : m_blocks)
 	{
@@ -666,7 +660,7 @@ SMemoryChunk::~SMemoryChunk()
 
 	if (m_memory)
 	{
-		device.vkFreeMemory(vkDevice, m_memory, nullptr);
+		device.vkFreeMemory(device, m_memory, nullptr);
 	}
 }
 

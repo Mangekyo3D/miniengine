@@ -63,7 +63,6 @@ public:
 													  const char* shaderName) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint16_t width, uint16_t height, bool bMipmapped) override;
 
-	VkDevice getDevice();
 	VkPhysicalDevice getPhysicalDevice();
 
 	// Creates a device compatible with rendering to a surface. Note, this call will only create a device once

@@ -65,7 +65,7 @@ struct SVertexBinding
 	}
 
 	std::vector <SVertexAttribParams> m_attributeParams;
-	size_t                              m_dataSize;
+	size_t                            m_dataSize;
 };
 
 struct TextureStreamRequest

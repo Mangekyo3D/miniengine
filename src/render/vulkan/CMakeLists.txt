@@ -1,10 +1,16 @@
 set (SRC
+	vulkanshadermodule.cpp
+	vulkanbuffer.cpp
+	vulkantexture.cpp
 	vulkandevice.cpp
 	vulkandevicefactory.cpp
 	vulkanswapchain.cpp
 	)
 
 set (INC
+	vulkanshadermodule.h
+	vulkanbuffer.h
+	vulkantexture.h
 	vulkandevice.h
 	vulkandevicefactory.h
 	vulkanswapchain.h
