@@ -136,7 +136,7 @@ void Engine::enterGameLoop()
 		audioDevice.updateListener(m_playerEntity->getPosition(), m_playerEntity->getObjectToWorldMatrix().getColumn(1), Vec3(0.0f, 0.0f, 0.0f));
 
 		m_renderer->updateFrameUniforms(m_camera);
-		m_renderer->drawFrame();
+		m_renderer->drawFrame(*m_gameWindow->getSwapchain());
 
 		m_gameWindow->swapBuffers();
 

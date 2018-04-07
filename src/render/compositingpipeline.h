@@ -22,8 +22,7 @@ class CFullScreenRenderPass
 		CFullScreenRenderPass(IPipeline* pipeline, IDevice* device);
 		~CFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
-		void setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height);
-
+		void setupRenderPass(ITexture** inputs, uint32_t numInputs, ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = 0);
 		void draw(ICommandBuffer&);
 
 	private:

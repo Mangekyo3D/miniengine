@@ -10,6 +10,7 @@ class Camera;
 class IBatch;
 class CCompositingPipeline;
 class ResourceManager;
+class ISwapchain;
 
 class Renderer
 {
@@ -28,7 +29,7 @@ class Renderer
 		}
 
 		void updateFrameUniforms(Camera& camera);
-		void drawFrame();
+		void drawFrame(ISwapchain& swapchain);
 
 		void setViewport(uint32_t width, uint32_t height);
 

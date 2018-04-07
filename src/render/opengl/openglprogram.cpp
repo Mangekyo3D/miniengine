@@ -2,24 +2,24 @@
 #include "opengldevice.h"
 #include <iostream>
 
-CProgram::CProgram()
+COpenGLProgram::COpenGLProgram()
 	: m_ID(0)
 {
 }
 
-void CProgram::attach(CShader& shader)
+void COpenGLProgram::attach(COpenGLShader& shader)
 {
 	m_shaders[shader.getType()] = &shader;
 }
 
-void CProgram::use()
+void COpenGLProgram::use()
 {
 	auto& device = COpenGLDevice::get();
 	device.glUseProgram(m_ID);
 }
 
 
-bool CProgram::link()
+bool COpenGLProgram::link()
 {
 	auto& device = COpenGLDevice::get();
 
@@ -29,7 +29,7 @@ bool CProgram::link()
 	// compile all attached shaders
 	for (auto iter : m_shaders)
 	{
-		CShader* shader = iter.second;
+		COpenGLShader* shader = iter.second;
 
 		if (!shader->compile())
 		{
@@ -42,7 +42,7 @@ bool CProgram::link()
 
 	for (auto iter : m_shaders)
 	{
-		CShader* shader = iter.second;
+		COpenGLShader* shader = iter.second;
 		device.glDetachShader(m_ID, shader->getID());
 	}
 
@@ -81,7 +81,7 @@ bool CProgram::link()
 	return true;
 }
 
-void CProgram::unload()
+void COpenGLProgram::unload()
 {
 	if (m_ID)
 	{

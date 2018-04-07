@@ -157,8 +157,10 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 class COpenGLCommandBuffer :public ICommandBuffer
 {
 	public:
-		COpenGLCommandBuffer(COpenGLDevice* device)
-			: m_device(device)
+		COpenGLCommandBuffer(COpenGLDevice* device, uint32_t swapchainWidth, uint32_t swapchainHeight)
+			: m_swapchainWidth(swapchainWidth)
+			, m_swapchainHeight(swapchainHeight)
+			, m_device(device)
 			, m_currentPipeline(nullptr)
 			, m_currentVertexDescriptor(nullptr)
 		{
@@ -213,6 +215,13 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), start, end);
 		}
 
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) override
+		{
+			m_device->glDrawElementsInstanced(meshPrimitiveToGLPrimitive(type),static_cast <GLint> (numIndices),
+											   (bShortIndex) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (static_cast <GLubyte*>(nullptr) + offset),
+											   static_cast <GLint> (numInstances));
+		}
+
 		IDevice& getDevice() override
 		{
 			return *m_device;
@@ -226,7 +235,14 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			uint32_t fbobjID = glpass.getID();
 			m_device->glBindFramebuffer(GL_FRAMEBUFFER, fbobjID);
 
-			m_device->glViewport(0, 0, glpass.getWidth(), glpass.getHeight());
+			if (fbobjID == 0)
+			{
+				m_device->glViewport(0, 0, m_swapchainWidth, m_swapchainHeight);
+			}
+			else
+			{
+				m_device->glViewport(0, 0, glpass.getWidth(), glpass.getHeight());
+			}
 
 			if (vClearColor)
 			{
@@ -279,14 +295,17 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		}
 
 	private:
+		uint32_t m_swapchainWidth, m_swapchainHeight;
 		COpenGLDevice* m_device;
 		COpenGLPipeline* m_currentPipeline;
 		COpenGLVertexDescriptorInterface* m_currentVertexDescriptor;
 };
 
-std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame()
+std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame(ISwapchain& currentSwapchain)
 {
-	return std::make_unique <COpenGLCommandBuffer> (this);
+	uint32_t width, height;
+	currentSwapchain.getSize(width, height);
+	return std::make_unique <COpenGLCommandBuffer> (this, width, height);
 }
 
 std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size)

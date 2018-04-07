@@ -50,7 +50,7 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 //	m_sampler = 0;
 }
 
-void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, uint32_t width, uint32_t height)
+void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
 {
 	m_inputs.clear();
 	m_inputs.reserve(numInputs);
@@ -61,7 +61,7 @@ void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInput
 	}
 
 	// temporary, these should be arguments in the function
-	m_renderpass->setupRenderPass(nullptr, 0, nullptr);
+	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
 }
 
 
@@ -142,5 +142,5 @@ void CCompositingPipeline::resize(uint32_t width, uint32_t height)
 
 	ITexture* sceneTex = m_sceneHDRTex.get();
 	m_sceneDrawPass.setupRenderPass(&sceneTex, 1, m_DepthTex.get());
-	m_toneMappingPass.setupRenderPass(&sceneTex, 1, width, height);
+	m_toneMappingPass.setupRenderPass(&sceneTex, 1);
 }

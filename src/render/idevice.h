@@ -9,6 +9,7 @@ class IGPUBuffer;
 class IPipeline;
 class IRenderPass;
 class ICommandBuffer;
+class ISwapchain;
 
 enum EPipelineFlags
 {
@@ -89,7 +90,7 @@ public:
 	{}
 	IDevice(const IDevice&) = delete;
 	virtual ~IDevice() {}
-	virtual std::unique_ptr<ICommandBuffer> beginFrame() = 0;
+	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& swapchain) = 0;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size) = 0;
 	virtual std::unique_ptr<IRenderPass> createRenderPass() = 0;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,

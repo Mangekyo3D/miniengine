@@ -2,12 +2,12 @@
 #include "openglshader.h"
 #include <map>
 
-class CProgram
+class COpenGLProgram
 {
 public:
-	CProgram();
+	COpenGLProgram();
 
-	void attach(CShader& shader);
+	void attach(COpenGLShader& shader);
 	void use();
 
 	// loading should be done after we have attached all shaders
@@ -15,6 +15,6 @@ public:
 	void unload();
 
 private:
-	std::map <CShader::EType, CShader*> m_shaders;
+	std::map <COpenGLShader::EShaderType, COpenGLShader*> m_shaders;
 	uint32_t m_ID;
 };

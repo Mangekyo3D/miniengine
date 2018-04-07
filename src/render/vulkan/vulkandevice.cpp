@@ -41,7 +41,7 @@ CVulkanDevice& CVulkanDevice::get()
 	return *s_device;
 }
 
-std::unique_ptr<ICommandBuffer> CVulkanDevice::beginFrame()
+std::unique_ptr<ICommandBuffer> CVulkanDevice::beginFrame(ISwapchain& currentSwapchain)
 {
 	return nullptr;
 }

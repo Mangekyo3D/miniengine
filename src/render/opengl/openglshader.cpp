@@ -6,21 +6,21 @@
 #include "opengldevice.h"
 #include "../../OS/OSFactory.h"
 
-int CShader::shaderTypeToGLType(EType type)
+int COpenGLShader::shaderTypeToGLType(EShaderType type)
 {
 	switch (type)
 	{
-		case EType::eVertex:
+		case EShaderType::eVertex:
 			return GL_VERTEX_SHADER;
-		case EType::eFragment:
+		case EShaderType::eFragment:
 			return GL_FRAGMENT_SHADER;
-		case EType::eGeometry:
+		case EShaderType::eGeometry:
 			return GL_GEOMETRY_SHADER;
-		case EType::eCompute:
+		case EShaderType::eCompute:
 			return GL_COMPUTE_SHADER;
-		case EType::eTesselationEval:
+		case EShaderType::eTesselationEval:
 			return GL_TESS_EVALUATION_SHADER;
-		case EType::eTesselationControl:
+		case EShaderType::eTesselationControl:
 			return GL_TESS_CONTROL_SHADER;
 		default:
 			break;
@@ -29,7 +29,7 @@ int CShader::shaderTypeToGLType(EType type)
 	return 0;
 }
 
-CShader::CShader(std::string filename, EType type)
+COpenGLShader::COpenGLShader(std::string filename, EShaderType type)
 	: m_ID (0)
 	, m_type(type)
 {
@@ -37,10 +37,10 @@ CShader::CShader(std::string filename, EType type)
 
 	switch(type)
 	{
-		case EType::eFragment:
+		case EShaderType::eFragment:
 			filename += ".frag.spv";
 			break;
-		case EType::eVertex:
+		case EShaderType::eVertex:
 			filename += ".vert.spv";
 			break;
 	}
@@ -48,12 +48,12 @@ CShader::CShader(std::string filename, EType type)
 	m_filename = utils.getShaderPath() + filename;
 }
 
-CShader::~CShader()
+COpenGLShader::~COpenGLShader()
 {
 	unload();
 }
 
-void CShader::unload()
+void COpenGLShader::unload()
 {
 	if (m_ID)
 	{
@@ -64,7 +64,7 @@ void CShader::unload()
 }
 
 
-bool CShader::compile()
+bool COpenGLShader::compile()
 {
 	if (m_ID != 0)
 	{

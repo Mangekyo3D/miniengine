@@ -35,11 +35,8 @@ class ICommandBuffer
 									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
 		virtual void bindPipeline(IPipeline* pipeline) = 0;
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer = nullptr, IGPUBuffer* instanceBuffer = nullptr) = 0;
-		virtual void drawIndexedInstanced() {}
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) = 0;
 		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end) = 0;
-	//	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
-	//								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
-	//								   static_cast <GLint> (m_instanceData.size()));
 
 		virtual IDevice& getDevice() = 0;
 

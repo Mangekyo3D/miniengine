@@ -30,6 +30,7 @@ void COpenGLRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs,
 
 	m_numOutputs = 0;
 	m_bDepthOutput = false;
+
 	if ((outputs && numOutputs > 0) || depthOut)
 	{
 		auto& device = COpenGLDevice::get();

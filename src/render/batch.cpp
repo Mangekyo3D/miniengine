@@ -55,10 +55,7 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 //		m_textures[i]->bind(static_cast<uint8_t>(i));
 //	}
 
-	cmd.drawIndexedInstanced();
-//	device.glDrawElementsInstanced(meshPrimitiveToGLPrimitive(m_primType),static_cast <GLint> (m_numIndices),
-//								   (m_bShortIndices) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, nullptr,
-//								   static_cast <GLint> (m_instanceData.size()));
+	cmd.drawIndexedInstanced(m_primType, m_numIndices, m_bShortIndices, 0, m_instanceData.size());
 
 	m_instanceData.clear();
 }

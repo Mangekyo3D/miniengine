@@ -27,6 +27,6 @@ class COpenGLPipeline : public IPipeline {
 
 	private:
 		SPipelineParams m_params;
-		CProgram m_program;
+		COpenGLProgram m_program;
 		std::unique_ptr <COpenGLVertexDescriptorInterface> m_descriptor;
 };

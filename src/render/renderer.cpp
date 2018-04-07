@@ -92,9 +92,9 @@ void Renderer::updateFrameUniforms(Camera& camera)
 }
 
 
-void Renderer::drawFrame()
+void Renderer::drawFrame(ISwapchain& swapchain)
 {
-	auto cmd = m_device->beginFrame();
+	auto cmd = m_device->beginFrame(swapchain);
 	m_device->flushPendingStreamRequests(*cmd);
 	m_compositor->draw(*cmd, m_batches, *m_cameraUniform, *m_lightUniform);
 	/*

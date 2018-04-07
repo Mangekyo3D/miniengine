@@ -95,8 +95,8 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::string shaderFile
 	: m_params(params)
 	, m_descriptor(std::move(descriptor))
 {
-	CShader fragment_shader(shaderFileName, CShader::EType::eFragment);
-	CShader vertex_shader(shaderFileName, CShader::EType::eVertex);
+	COpenGLShader fragment_shader(shaderFileName, COpenGLShader::EShaderType::eFragment);
+	COpenGLShader vertex_shader(shaderFileName, COpenGLShader::EShaderType::eVertex);
 
 	m_program.attach(vertex_shader);
 	m_program.attach(fragment_shader);
@@ -109,7 +109,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	// set up pipeline state for this pipeline
 	auto& device = COpenGLDevice::get();
 
-	//	// inverse depth trick. Some of these settings might be separated in the future
+	// inverse depth trick. Some of these settings might be separated in the future
 	if (m_params.m_flags & eReverseDepth)
 	{
 		device.glEnable(GL_DEPTH_TEST);

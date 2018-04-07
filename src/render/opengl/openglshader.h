@@ -1,30 +1,30 @@
 #pragma once
 #include <string>
 
-class CShader
+class COpenGLShader
 {
 public:
-	enum class EType {
-		eVertex,
-		eFragment,
-		eGeometry,
-		eTesselationEval,
-		eTesselationControl,
-		eCompute
+	enum EShaderType {
+		eVertex = 1,
+		eFragment = (1 << 1),
+		eGeometry = (1 << 2),
+		eTesselationEval = (1 << 3),
+		eTesselationControl = (1 << 4),
+		eCompute = (1 << 5)
 	};
 
-	CShader(std::string filename, EType type);
-	~CShader();
+	COpenGLShader(std::string filename, EShaderType type);
+	~COpenGLShader();
 
 	bool compile();
 	void unload();
-	EType getType() { return m_type; }
+	EShaderType getType() { return m_type; }
 	uint32_t getID() { return m_ID; }
 
 private:
-	int shaderTypeToGLType(EType type);
+	int shaderTypeToGLType(EShaderType type);
 
 	uint32_t m_ID;
 	std::string m_filename;
-	EType m_type;
+	EShaderType m_type;
 };
