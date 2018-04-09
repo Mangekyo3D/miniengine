@@ -16,7 +16,7 @@ Engine::Engine(GameWindow &win, SCommandLineOptions& options)
 {
 	auto device = IDevice::createDevice(win, options.bDebugContext, options.bWithVulkan);
 	m_resourceManager = std::make_unique<ResourceManager> (device.get());
-	m_renderer =  std::make_unique<Renderer>(m_resourceManager.get(), std::move(device));
+	m_renderer =  std::make_unique<Renderer>(std::move(device));
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
 	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);
@@ -136,9 +136,9 @@ void Engine::enterGameLoop()
 		audioDevice.updateListener(m_playerEntity->getPosition(), m_playerEntity->getObjectToWorldMatrix().getColumn(1), Vec3(0.0f, 0.0f, 0.0f));
 
 		m_renderer->updateFrameUniforms(m_camera);
-		m_renderer->drawFrame(*m_gameWindow->getSwapchain());
 
-		m_gameWindow->swapBuffers();
+		ISwapchain& swapchain = m_gameWindow->getSwapchain();
+		m_renderer->drawFrame(swapchain);
 
 		if (!IAudioDevice::get().checkStatus())
 		{
@@ -149,6 +149,7 @@ void Engine::enterGameLoop()
 	m_effects.clear();
 	m_worldEntities.clear();
 	m_resourceManager.reset();
+	m_gameWindow->releaseSwapchain();
 	m_renderer.reset();
 
 	IAudioDevice::shutdown();

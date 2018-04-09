@@ -1,7 +1,7 @@
 #include "compositingpipeline.h"
-#include "../resourcemanager.h"
 #include "batch.h"
 #include "irenderpass.h"
+#include "ipipeline.h"
 #include "itexture.h"
 #include "idevice.h"
 #include "igpubuffer.h"
@@ -9,7 +9,7 @@
 
 struct SFullScreenData
 {
-	SFullScreenData(IPipeline* pipeline, IDevice* device)
+	SFullScreenData(IDevice* device)
 	{
 		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV), IGPUBuffer::Usage::eConstantVertex);
 
@@ -19,18 +19,16 @@ struct SFullScreenData
 			lock[1].vertex = Vec3(3.0, -1.0, 0.0);
 			lock[2].vertex = Vec3(-1.0, 3.0, 0.0);
 		}
-
-		m_pipeline = pipeline;
 	}
 
 	std::unique_ptr <IGPUBuffer> m_fullScreenTriangle;
-	IPipeline* m_pipeline;
+	std::unique_ptr <IPipeline>  m_pipeline;
 };
 
-CFullScreenRenderPass::CFullScreenRenderPass(IPipeline* pipeline, IDevice* device)
+IFullScreenRenderPass::IFullScreenRenderPass(IDevice* device)
 {
-	m_data = std::make_unique <SFullScreenData> (pipeline, device);
 	m_renderpass = device->createRenderPass();
+	m_data = std::make_unique <SFullScreenData> (device);
 
 	// create sampler for texture sampling of material
 //	auto& gldevice = COpenGLDevice::get();
@@ -41,7 +39,7 @@ CFullScreenRenderPass::CFullScreenRenderPass(IPipeline* pipeline, IDevice* devic
 //	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
-CFullScreenRenderPass::~CFullScreenRenderPass()
+IFullScreenRenderPass::~IFullScreenRenderPass()
 {
 //	auto& device = COpenGLDevice::get();
 
@@ -49,7 +47,7 @@ CFullScreenRenderPass::~CFullScreenRenderPass()
 //	m_sampler = 0;
 }
 
-void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInputs, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
+void IFullScreenRenderPass::setupRenderPass(IDevice& device, ITexture** inputs, uint32_t numInputs, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
 {
 	m_inputs.clear();
 	m_inputs.reserve(numInputs);
@@ -60,17 +58,19 @@ void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInput
 	}
 
 	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
+
+	setupPipelines(device);
 }
 
 
-void CFullScreenRenderPass::draw(ICommandBuffer& cmd)
+void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 {
 	// test clear color
 	static const float vClearColor[] = {1.0f, 0.0f, 0.0f, 0.0f};
 
 	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor);
 
-	cmd.bindPipeline(m_data->m_pipeline);
+	cmd.bindPipeline(m_data->m_pipeline.get());
 	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
 
 //	for (uint32_t i = 0; i < m_inputs.size(); ++i)
@@ -106,19 +106,69 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 
 	for (auto& batch : batches)
 	{
+		cmd.bindPipeline(m_pipelines[batch->getPipeline()].get());
 		batch->draw(cmd);
 	}
 }
 
-void CSceneRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
+void CSceneRenderPass::setupRenderPass(IDevice& device, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
 {
 	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
+	setupPipelines(device);
 }
 
+void CSceneRenderPass::setupPipelines(IDevice& device)
+{
+	// check first pipeline for existence. if it exists, we have already run this code
+	if (!m_pipelines[eDiffuse])
+	{
+		SPipelineParams params;
+		params.m_flags = eDepthCompareGreater | eCullBackFace;
 
-CCompositingPipeline::CCompositingPipeline(ResourceManager* resourceManager, IDevice* device)
+		const char* pipelineName = "generic";
+
+		{
+			SVertexBinding vertBinding(sizeof(VertexFormatVN));
+			vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), eFloat, 3);
+			vertBinding.addAttribute(offsetof(VertexFormatVN, normal), e1010102int, 4);
+			m_pipelines[eDiffuse] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+		}
+
+		{
+			SVertexBinding vertBinding(sizeof(VertexFormatVNT));
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), e1010102int, 4);
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), eFloat, 2);
+
+			pipelineName = "genericTextured";
+			m_pipelines[eDiffuseTextured] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+
+			params.m_flags |= ePrimitiveRestart;
+			m_pipelines[eDiffuseTexturedPrimRestart] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+		}
+	}
+}
+
+CToneMappingPass::~CToneMappingPass()
+{
+
+}
+
+void CToneMappingPass::setupPipelines(IDevice& device)
+{
+	if (!m_data->m_pipeline)
+	{
+		SPipelineParams params;
+		SVertexBinding vertBinding(sizeof(VertexFormatV));
+		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
+		const char* pipelineName = "toneMapping";
+		m_data->m_pipeline = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+	}
+}
+
+CCompositingPipeline::CCompositingPipeline(IDevice* device)
 	: m_sceneDrawPass(device)
-	, m_toneMappingPass(resourceManager->loadPipeline(eToneMapping), device)
+	, m_toneMappingPass(device)
 	, m_device(device)
 {
 }
@@ -133,12 +183,12 @@ void CCompositingPipeline::draw(ICommandBuffer& cmd, std::vector <std::unique_pt
 	m_toneMappingPass.draw(cmd);
 }
 
-void CCompositingPipeline::resize(uint32_t width, uint32_t height)
+void CCompositingPipeline::resize(IDevice& device, uint32_t width, uint32_t height)
 {
 	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, ITexture::EUsage::eSampled | ITexture::EUsage::eAttachement, width, height);
 	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, ITexture::EUsage::eAttachement, width, height);
 
 	ITexture* sceneTex = m_sceneHDRTex.get();
-	m_sceneDrawPass.setupRenderPass(&sceneTex, 1, m_DepthTex.get());
-	m_toneMappingPass.setupRenderPass(&sceneTex, 1);
+	m_sceneDrawPass.setupRenderPass(device, &sceneTex, 1, m_DepthTex.get());
+	m_toneMappingPass.setupRenderPass(device, &sceneTex, 1);
 }

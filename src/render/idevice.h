@@ -10,63 +10,8 @@ class IRenderPass;
 class ICommandBuffer;
 class ISwapchain;
 class IGPUBuffer;
-
-enum EPipelineFlags
-{
-	eReverseDepth = 1L,
-	eCullBackFace     = (1L << 1),
-	ePrimitiveRestart = (1L << 2)
-};
-
-struct SPipelineParams
-{
-	SPipelineParams()
-	{
-		m_flags = 0;
-	}
-
-	uint64_t m_flags;
-};
-
-enum EVertexFormat
-{
-	eFloat,
-	e1010102int
-};
-
-struct SVertexAttribParams
-{
-	SVertexAttribParams()
-	{
-	}
-
-	SVertexAttribParams(uint32_t ofs, EVertexFormat fmt,uint8_t comp)
-		: offset(ofs)
-		, format(fmt)
-		, components(comp)
-	{
-	}
-
-	uint32_t offset;
-	EVertexFormat format;
-	uint8_t components;
-};
-
-struct SVertexBinding
-{
-	SVertexBinding(size_t dataSize)
-		: m_dataSize(dataSize)
-	{
-	}
-
-	void addAttribute(uint32_t offset, EVertexFormat format,uint8_t components)
-	{
-		m_attributeParams.emplace_back(offset, format,components);
-	}
-
-	std::vector <SVertexAttribParams> m_attributeParams;
-	size_t                            m_dataSize;
-};
+struct SPipelineParams;
+struct SVertexBinding;
 
 struct TextureStreamRequest
 {
@@ -93,7 +38,7 @@ public:
 	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& swapchain) = 0;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) = 0;
 	virtual std::unique_ptr<IRenderPass> createRenderPass() = 0;
-	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
+	virtual std::unique_ptr<IPipeline> createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
 													  const char* shaderName) = 0;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped = false) = 0;
 

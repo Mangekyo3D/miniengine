@@ -25,7 +25,7 @@ class SMDModel
 		std::vector <Vec2>     m_texCoordData;
 		std::vector <uint16_t> m_indexData;
 		std::unique_ptr<IMesh> m_mesh;
-		IPipeline*        m_pipeline;
+		enum EScenePipeline    m_pipeline;
 
 		bool m_bUseTexture;
 

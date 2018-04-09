@@ -1,11 +1,11 @@
 #pragma once
-#pragma once
+#include "renderer.h"
+
 #include <vector>
 #include <string>
 #include <memory>
+#include <array>
 
-
-class ResourceManager;
 class ITexture;
 class IBatch;
 class IGPUBuffer;
@@ -16,21 +16,31 @@ class IRenderPass;
 
 struct SFullScreenData;
 
-class CFullScreenRenderPass
+class IFullScreenRenderPass
 {
 	public:
-		CFullScreenRenderPass(IPipeline* pipeline, IDevice* device);
-		~CFullScreenRenderPass();
+		IFullScreenRenderPass(IDevice* device);
+		virtual ~IFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
-		void setupRenderPass(ITexture** inputs, uint32_t numInputs, ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = 0);
+		void setupRenderPass(IDevice& device, ITexture** inputs, uint32_t numInputs, ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = nullptr);
 		void draw(ICommandBuffer&);
 
-	private:
+	protected:
+		virtual void setupPipelines(IDevice& device) = 0;
+
 		std::unique_ptr <IRenderPass>     m_renderpass;
 		std::unique_ptr <SFullScreenData> m_data;
 		std::vector <ITexture*> m_inputs;
+};
 
-		uint32_t m_sampler;
+class CToneMappingPass : public IFullScreenRenderPass
+{
+	public:
+		CToneMappingPass(IDevice* device) : IFullScreenRenderPass(device) {}
+		~CToneMappingPass();
+
+	private:
+		virtual void setupPipelines(IDevice& device) override;
 };
 
 class CSceneRenderPass
@@ -40,24 +50,26 @@ class CSceneRenderPass
 		~CSceneRenderPass();
 
 		void draw(ICommandBuffer&, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
-		void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
+		void setupRenderPass(IDevice& device, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
 
 	private:
+		void setupPipelines(IDevice& device);
 		std::unique_ptr <IRenderPass>     m_renderpass;
+		std::array <std::unique_ptr <IPipeline>, eMaxScenePipelines> m_pipelines;
 };
 
 class CCompositingPipeline
 {
 	public:
-		CCompositingPipeline(ResourceManager* resourceManager, IDevice* device);
+		CCompositingPipeline(IDevice* device);
 		~CCompositingPipeline();
 
 		void draw(ICommandBuffer& cmd, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
-		void resize(uint32_t width, uint32_t height);
+		void resize(IDevice& device, uint32_t width, uint32_t height);
 
 	private:
 		CSceneRenderPass m_sceneDrawPass;
-		CFullScreenRenderPass m_toneMappingPass;
+		CToneMappingPass m_toneMappingPass;
 
 		std::unique_ptr <ITexture> m_sceneHDRTex;
 		std::unique_ptr <ITexture> m_DepthTex;

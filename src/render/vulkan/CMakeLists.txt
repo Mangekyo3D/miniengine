@@ -6,6 +6,8 @@ set (SRC
 	vulkandevicefactory.cpp
 	vulkanswapchain.cpp
 	vulkanrenderpass.cpp
+	vulkancommandbuffer.cpp
+	vulkanpipeline.cpp
 	)
 
 set (INC
@@ -16,6 +18,8 @@ set (INC
 	vulkandevicefactory.h
 	vulkanswapchain.h
 	vulkanrenderpass.h
+	vulkancommandbuffer.h
+	vulkanpipeline.h
 	)
 
 set (INC_DIRS)

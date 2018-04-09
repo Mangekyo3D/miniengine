@@ -41,7 +41,7 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 		// we are writing to the swapchain color buffer in that case, prepare the renderpass accordingly
 		VkAttachmentDescription description {
 			0,
-			VK_FORMAT_R8G8B8A8_UNORM,
+			VK_FORMAT_B8G8R8A8_UNORM,
 			VK_SAMPLE_COUNT_1_BIT,
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			VK_ATTACHMENT_STORE_OP_STORE,

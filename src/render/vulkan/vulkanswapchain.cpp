@@ -109,7 +109,39 @@ void CVulkanSwapchain::cleanup()
 void CVulkanSwapchain::swapBuffers()
 {
 	auto& device = CVulkanDevice::get();
+	SFrame& frame = m_frames[m_currentFrameIndex];
 
+	// after commands have been processed, present image to presentation engine
+	VkPresentInfoKHR presentInfo = {
+		VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		nullptr,
+		1,
+		&frame.m_renderingFinishedSemaphore,
+		1,
+		&m_swapchain,
+		&m_currentSwapchainImage,
+		nullptr
+	};
+
+	VkResult result = device.vkQueuePresentKHR(device.getPresentQueue(), &presentInfo);
+
+	switch (result)
+	{
+		case VK_SUCCESS:
+			break;
+		case VK_ERROR_OUT_OF_DATE_KHR:
+		case VK_SUBOPTIMAL_KHR:
+			break;
+
+		default:
+			std::cout << "Error during queue presentation" << std::endl;
+			break;
+	}
+}
+
+SFrame& CVulkanSwapchain::getNextFrame()
+{
+	auto& device = CVulkanDevice::get();
 	VkSemaphore imageAvailableSemaphore = m_nextAvailableSemaphore;
 
 	if (!imageAvailableSemaphore)
@@ -151,6 +183,9 @@ void CVulkanSwapchain::swapBuffers()
 	frame.cleanupDelayedBlocks();
 
 	frame.m_swapchainImage = m_swapchainImages[m_currentSwapchainImage];
+	frame.m_imageView = m_swapchainImageviews[m_currentSwapchainImage];
+
+	return frame;
 }
 
 void CVulkanSwapchain::recreate()
@@ -259,6 +294,7 @@ void CVulkanSwapchain::recreate()
 
 SFrame::SFrame()
 	: m_swapchainImage(VK_NULL_HANDLE)
+	, m_imageView(VK_NULL_HANDLE)
 	, m_framebuffer(VK_NULL_HANDLE)
 	, m_fence(VK_NULL_HANDLE)
 	, m_swapchainImageAvailableSemaphore(VK_NULL_HANDLE)
@@ -314,6 +350,13 @@ SFrame::~SFrame()
 		device.vkDestroyFence(device, m_fence, nullptr);
 		m_fence = VK_NULL_HANDLE;
 	}
+
+	if (m_framebuffer != VK_NULL_HANDLE)
+	{
+		device.vkDestroyFramebuffer(device, m_framebuffer, nullptr);
+		m_framebuffer = VK_NULL_HANDLE;
+	}
+
 
 	// destroy old command buffers if they exist
 	if (m_commandBuffer)

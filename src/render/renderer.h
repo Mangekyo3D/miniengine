@@ -2,20 +2,27 @@
 
 #include <vector>
 #include <memory>
-#include "compositingpipeline.h"
 
 class GameWindow;
 class IDevice;
 class Camera;
 class IBatch;
 class CCompositingPipeline;
-class ResourceManager;
 class ISwapchain;
+class IGPUBuffer;
+
+// pipelines for scene specific materials
+enum EScenePipeline {
+	eDiffuse = 0,
+	eDiffuseTextured,
+	eDiffuseTexturedPrimRestart,
+	eMaxScenePipelines
+};
 
 class Renderer
 {
 	public:
-		Renderer(ResourceManager* resourceManager, std::unique_ptr<IDevice> device);
+		Renderer(std::unique_ptr<IDevice> device);
 		~Renderer();
 		Renderer(const Renderer&) = delete;
 		Renderer& operator = (const Renderer&) = delete;

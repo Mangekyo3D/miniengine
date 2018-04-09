@@ -6,7 +6,7 @@
 class CVulkanShaderModule
 {
 public:
-	CVulkanShaderModule(const char* filename);
+	CVulkanShaderModule(const std::string& filename);
 	~CVulkanShaderModule();
 	void load();
 

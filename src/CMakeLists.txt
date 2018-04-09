@@ -15,9 +15,7 @@ set (SRC
 
 	render/batch.cpp
 	render/icommandbuffer.cpp
-	render/irenderpass.cpp
 	render/itexture.cpp
-	render/ipipeline.cpp
 	render/idevice.cpp
 	render/compositingpipeline.cpp
 	render/renderer.cpp

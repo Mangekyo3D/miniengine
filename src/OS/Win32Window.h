@@ -2,8 +2,6 @@
 #include <windows.h>
 #include <memory>
 
-class ISwapchain;
-
 class Win32Window : public GameWindow
 {
 public:

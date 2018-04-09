@@ -59,7 +59,7 @@ public:
 	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain);
 	virtual std::unique_ptr<IRenderPass> createRenderPass() override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) override;
-	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
+	virtual std::unique_ptr<IPipeline> createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
 													  const char* shaderName) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped) override;
 
@@ -118,12 +118,6 @@ private:
 	VkInstance     m_instance;
 
 	VkDebugReportCallbackEXT m_debugHandle;
-
-	// pipeline for diffuse pass
-	VkPipeline m_diffusePipeline;
-	VkPipelineLayout m_pipelineLayout;
-
-	VkDescriptorSetLayout m_descriptorSetLayout;
 
 	VkPhysicalDevice m_physicalDevice;
 	VkDevice m_device;

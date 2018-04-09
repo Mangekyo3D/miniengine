@@ -6,8 +6,8 @@
 
 #include <cstring>
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, IPipeline* ma, const std::vector<ITexture *> *textures)
-	: m_pipeline(ma)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
+	: IBatch(pipeline)
 	, m_numInstances(0)
 	, m_numIndices(m->getNumIndices())
 	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
@@ -47,7 +47,6 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 
 	setupInstanceBuffer(cmd.getDevice());
 
-	cmd.bindPipeline(m_pipeline);
 	cmd.setVertexStream(m_vertexBuffer.get(), m_instanceBuffer.get(), m_indexBuffer.get(), m_bShortIndices);
 
 //	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
@@ -86,8 +85,8 @@ void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(IDevice& device, IPipeline* material, const std::vector<ITexture *> *textures)
-	: m_material(material)
+CDynamicArrayBatch::CDynamicArrayBatch(IDevice& device, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
+	: IBatch(pipeline)
 {
 	if (textures)
 	{

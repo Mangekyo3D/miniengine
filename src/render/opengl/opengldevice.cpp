@@ -246,6 +246,9 @@ class COpenGLCommandBuffer :public ICommandBuffer
 				m_device->glViewport(0, 0, glpass.getWidth(), glpass.getHeight());
 			}
 
+			m_device->glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+			m_device->glDepthRangef(1.0f, 0.0f);
+
 			if (vClearColor)
 			{
 				// exception for zero framebuffer, it will have no outputs attached in OpenGL
@@ -321,7 +324,7 @@ std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass()
 	return std::make_unique <COpenGLRenderPass>();
 }
 
-std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
+std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
 {
 	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (perVertBinding, perInstanceBinding);
 	return std::make_unique <COpenGLPipeline> (params, shaderName, std::move(vertexDescriptor));

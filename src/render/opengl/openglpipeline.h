@@ -1,7 +1,8 @@
 #pragma once
 #include "../ipipeline.h"
-#include "../idevice.h"
 #include "openglprogram.h"
+#include <memory>
+class IGPUBuffer;
 
 // material descriptor wraps and sets up all data needed for a shader
 class COpenGLVertexDescriptorInterface

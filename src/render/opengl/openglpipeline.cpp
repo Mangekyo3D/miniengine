@@ -110,20 +110,15 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	auto& device = COpenGLDevice::get();
 
 	// inverse depth trick. Some of these settings might be separated in the future
-	if (m_params.m_flags & eReverseDepth)
+	if (m_params.m_flags & eDepthCompareGreater)
 	{
 		device.glEnable(GL_DEPTH_TEST);
 		device.glDepthFunc(GL_GEQUAL);
-
-		device.glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-		device.glDepthRangef(1.0f, 0.0f);
 	}
 	else
 	{
 		device.glDisable(GL_DEPTH_TEST);
 		device.glDepthFunc(GL_ALWAYS);
-		device.glClipControl(GL_LOWER_LEFT, GL_NEGATIVE_ONE_TO_ONE);
-		device.glDepthRangef(0.0f, 1.0f);
 	}
 
 	if (m_params.m_flags & eCullBackFace)

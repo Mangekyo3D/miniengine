@@ -6,7 +6,7 @@ class ITexture;
 class IRenderPass
 {
 	public:
-		IRenderPass();
+		IRenderPass() {}
 		virtual ~IRenderPass() {}
 
 		// setup the renderpass with inputs and outputs.

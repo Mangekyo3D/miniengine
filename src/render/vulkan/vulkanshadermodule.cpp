@@ -4,10 +4,9 @@
 #include <fstream>
 #include <iostream>
 
-CVulkanShaderModule::CVulkanShaderModule(const char* filename)
+CVulkanShaderModule::CVulkanShaderModule(const std::string& filename)
 {
 	m_filename = OSUtils::get().getShaderPath() + filename;
-
 	load();
 }
 

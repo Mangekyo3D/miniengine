@@ -57,8 +57,8 @@ class GameWindow
 		virtual void maximize() = 0;
 		virtual void getMouseState(int& x, int& y) = 0;
 		void assignSwapchain(std::unique_ptr<ISwapchain> swapchain);
-		ISwapchain* getSwapchain() { return m_swapchain.get(); }
-		void swapBuffers();
+		ISwapchain& getSwapchain() { return *m_swapchain; }
+		void releaseSwapchain();
 
 		CSignal <ResizeEvent&>        onResize;
 		CSignal <KeyEvent&>           onKey;

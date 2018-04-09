@@ -191,9 +191,7 @@ Bullet::Bullet(Engine& engine)
 	if (!s_batch)
 	{
 		Renderer* renderer = engine.getRenderer();
-		ResourceManager* resourceManager = engine.getResourceManager();
-		IPipeline* pipeline = resourceManager->loadPipeline(eDiffuseTextured);
-		s_batch = renderer->addNewBatch <CDynamicArrayBatch>(pipeline);
+		s_batch = renderer->addNewBatch <CDynamicArrayBatch>(eDiffuseTextured);
 	}
 }
 

@@ -78,14 +78,19 @@ struct MeshInstanceData {
 class IBatch
 {
 	public:
+		IBatch(enum EScenePipeline pipeline) : m_pipeline (pipeline) {}
 		virtual ~IBatch() {}
 		virtual void draw(ICommandBuffer&) = 0;
+		enum EScenePipeline getPipeline() {return m_pipeline; }
+
+	protected:
+		enum EScenePipeline m_pipeline;
 };
 
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IDevice& device, IMesh *, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IDevice& device, IMesh *, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch();
 
 		void draw(ICommandBuffer&) override;
@@ -101,7 +106,6 @@ class CIndexedInstancedBatch : public IBatch
 		size_t m_numIndices;
 		bool   m_bShortIndices;
 		ICommandBuffer::EPrimitiveType m_primType;
-		IPipeline* m_pipeline;
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		std::unique_ptr<IGPUBuffer> m_indexBuffer;
 		// attributes that are specific to a certain instance
@@ -115,7 +119,7 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(IDevice& device, IPipeline *, const std::vector<ITexture*> *textures = nullptr);
+		CDynamicArrayBatch(IDevice& device, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch();
 
 		void draw(ICommandBuffer&) override;
@@ -125,7 +129,6 @@ class CDynamicArrayBatch : public IBatch
 	private:
 		std::vector <ITexture*> m_textures;
 		ICommandBuffer::EPrimitiveType m_primType;
-		IPipeline* m_material;
 
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;

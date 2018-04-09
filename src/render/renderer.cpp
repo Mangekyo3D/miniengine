@@ -1,11 +1,13 @@
 #include "renderer.h"
 #include "idevice.h"
 #include "igpubuffer.h"
+#include "iswapchain.h"
 #include "batch.h"
 
 #include "../camera.h"
 #include "../resourcemanager.h"
 #include "../OS/GameWindow.h"
+#include "compositingpipeline.h"
 
 #include <iostream>
 
@@ -23,10 +25,10 @@ struct LightUniformBuffer
 };
 
 
-Renderer::Renderer (ResourceManager* resourceManager, std::unique_ptr <IDevice> device)
+Renderer::Renderer (std::unique_ptr <IDevice> device)
 	: m_device(std::move(device))
 {
-	m_compositor = std::make_unique <CCompositingPipeline>(resourceManager, m_device.get());
+	m_compositor = std::make_unique <CCompositingPipeline>(m_device.get());
 
 	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);
 	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);
@@ -92,9 +94,14 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 void Renderer::drawFrame(ISwapchain& swapchain)
 {
-	auto cmd = m_device->beginFrame(swapchain);
-	m_device->flushPendingStreamRequests(*cmd);
-	m_compositor->draw(*cmd, m_batches, *m_cameraUniform, *m_lightUniform);
+	{
+		auto cmd = m_device->beginFrame(swapchain);
+
+		m_device->flushPendingStreamRequests(*cmd);
+		m_compositor->draw(*cmd, m_batches, *m_cameraUniform, *m_lightUniform);
+	}
+
+	swapchain.swapBuffers();
 	/*
 	// light position
 	float sunHeight = sin(0.01*gtime);
@@ -205,7 +212,7 @@ void Renderer::drawFrame(ISwapchain& swapchain)
 
 void Renderer::setViewport(uint32_t width, uint32_t height)
 {
-	m_compositor->resize(width, height);
+	m_compositor->resize(*m_device, width, height);
 }
 
 

@@ -9,11 +9,11 @@ class CVulkanRenderPass : public IRenderPass
 		~CVulkanRenderPass();
 		// setup the renderpass with inputs and outputs.
 		virtual void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
-		VkRenderPass getID() { return m_renderPass; }
 		VkFramebuffer getFramebuffer() { return m_framebuffer; }
 		bool isSwapchainPass() const { return bIsSwapchainPass; }
 		uint32_t getWidth() const { return m_width; }
 		uint32_t getHeight() const { return m_height; }
+		operator VkRenderPass () {return m_renderPass; }
 
 	private:
 		// setup framebuffers
