@@ -11,10 +11,12 @@ public:
 	CVulkanBuffer(size_t size, uint32_t usage);
 	~CVulkanBuffer();
 
-	uint32_t getAnimatedOffset() { return static_cast <uint32_t>(m_frame * m_size); }
+	VkDeviceSize getAnimatedOffset() const { return static_cast <uint32_t>(m_frame * m_size); }
 	VkDescriptorBufferInfo getDescriptorBufferInfo() const;
 
-	void bindAsVertexBuffer(SFrame& frame);
+	void setLastFrameUser(SFrame& frame);
+
+	VkBuffer getID() {return m_buffer; }
 
 private:
 	void create();

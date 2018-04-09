@@ -74,7 +74,7 @@ CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, u
 
 		// finally, create a view for this image
 		VkImageSubresourceRange subresourceRange = {
-			static_cast<VkImageAspectFlags> ((m_format != EFormat::eDepth32f) ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
+			static_cast<VkImageAspectFlags> (!isFormatDepth() ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
 			0,
 			1,
 			0,
@@ -150,7 +150,7 @@ VkImageUsageFlags CVulkanTexture::usageFlags()
 	}
 	if (m_usage & EUsage::eAttachement)
 	{
-		if (m_format == EFormat::eDepth32f)
+		if (isFormatDepth())
 		{
 			usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		}

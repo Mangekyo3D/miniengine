@@ -59,7 +59,6 @@ void CFullScreenRenderPass::setupRenderPass(ITexture** inputs, uint32_t numInput
 		m_inputs.push_back(inputs[i]);
 	}
 
-	// temporary, these should be arguments in the function
 	m_renderpass->setupRenderPass(outputs, numOutputs, depthOut);
 }
 

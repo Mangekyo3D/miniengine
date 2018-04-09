@@ -27,3 +27,8 @@ ITexture::ITexture(EFormat format, uint32_t usage, uint32_t width, uint32_t heig
 		m_mipLevels = 1;
 	}
 }
+
+bool ITexture::isFormatDepth() const
+{
+	return (m_format == EFormat::eDepth32f);
+}

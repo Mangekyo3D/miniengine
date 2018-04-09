@@ -48,14 +48,14 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 	setupInstanceBuffer(cmd.getDevice());
 
 	cmd.bindPipeline(m_pipeline);
-	cmd.setVertexStream(m_vertexBuffer.get(), m_indexBuffer.get(), m_instanceBuffer.get());
+	cmd.setVertexStream(m_vertexBuffer.get(), m_instanceBuffer.get(), m_indexBuffer.get(), m_bShortIndices);
 
 //	for (size_t i = 0, totalTex = m_textures.size(); i < totalTex; ++i)
 //	{
 //		m_textures[i]->bind(static_cast<uint8_t>(i));
 //	}
 
-	cmd.drawIndexedInstanced(m_primType, m_numIndices, m_bShortIndices, 0, m_instanceData.size());
+	cmd.drawIndexedInstanced(m_primType, m_numIndices, 0, m_instanceData.size());
 
 	m_instanceData.clear();
 }

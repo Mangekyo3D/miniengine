@@ -45,7 +45,7 @@ class CVulkanSwapchain : public ISwapchain
 		void recreate();
 		void cleanup();
 
-		SFrame& getCurrentFrame();
+		SFrame& getCurrentFrame() { return m_frames[m_currentFrameIndex]; }
 
 		operator VkSwapchainKHR& () { return m_swapchain; }
 		VkExtent2D& getExtent() { return m_extent; }

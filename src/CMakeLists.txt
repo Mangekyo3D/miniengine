@@ -21,6 +21,7 @@ set (SRC
 	render/idevice.cpp
 	render/compositingpipeline.cpp
 	render/renderer.cpp
+	render/rendergraph.cpp
 	)
 
 set (INC
@@ -46,6 +47,7 @@ set (INC
 	render/ipipeline.h
 	render/compositingpipeline.h
 	render/renderer.h
+	render/rendergraph.h
 	)
 
 set (SHADERS

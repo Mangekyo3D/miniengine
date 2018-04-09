@@ -71,20 +71,18 @@ public:
 	operator VkInstance () { return m_instance;}
 	operator VkDevice () { return m_device;}
 
-	VkRenderPass getRenderPass() { return m_renderPass; }
-
-	void renderFrame(CVulkanSwapchain& swapchain, CViewport& viewport);
-
 	bool getSwapchainCreationParameters(VkSurfaceKHR windowSurface, VkSwapchainKHR oldSwapchain, VkSwapchainCreateInfoKHR& swapchainCreateInfo);
-	void beginFrame(SFrame& frame);
-	void submitFrame(CVulkanSwapchain& swapchain, SFrame& frame);
 
 	bool allocateMemory(SMemoryChunk** chunk, size_t& offset, VkMemoryRequirements& requirements, bool bMappable = true);
 
 	bool getSupportsImage(VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags);
 
 	VkCommandPool getGraphicsCommandPool(int nFrame) { return m_graphicsCommandPool; }
-	VkDescriptorSetLayout& getScenePassDescriptorSetLayout() { return m_descriptorSetLayout; }
+
+	uint32_t getGraphicsQueueIndex() { return m_graphicsQueueIndex; }
+	uint32_t getPresentQueueIndex() { return m_presentQueueIndex; }
+	VkQueue getGraphicsQueue() { return m_graphicsQueue; }
+	VkQueue getPresentQueue() { return m_presentQueue; }
 
 #if !defined(VK_INSTANCE_DEBUG_FUNCTION)
 #define VK_INSTANCE_DEBUG_FUNCTION( fun) PFN_##fun fun;
@@ -121,8 +119,6 @@ private:
 
 	VkDebugReportCallbackEXT m_debugHandle;
 
-	// renderpass responsible for rendering to swapchains
-	VkRenderPass m_renderPass;
 	// pipeline for diffuse pass
 	VkPipeline m_diffusePipeline;
 	VkPipelineLayout m_pipelineLayout;

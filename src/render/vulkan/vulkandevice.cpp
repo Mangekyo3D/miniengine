@@ -39,7 +39,131 @@ class CVulkanCommandBuffer : public ICommandBuffer
 	public:
 		CVulkanCommandBuffer(ISwapchain& swapchain)
 			: m_device(&CVulkanDevice::get())
+			, m_swapchain(static_cast<CVulkanSwapchain*> (&swapchain))
+			, m_frame(&m_swapchain->getCurrentFrame())
+			, m_cmd(m_frame->m_commandBuffer)
 		{
+			m_device->vkResetCommandBuffer(m_cmd, 0);
+
+			VkCommandBufferBeginInfo cmdBufferBeginInfo = {
+				VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+				nullptr,
+				VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
+				nullptr
+			};
+
+			if (m_device->vkBeginCommandBuffer(m_cmd, &cmdBufferBeginInfo) != VK_SUCCESS)
+			{
+				std::cout << "Command Buffer Failed to initialize" << std::endl;
+			}
+
+			if (m_device->getGraphicsQueue() != m_device->getPresentQueue())
+			{
+				VkImageSubresourceRange subresourceRange = {
+					VK_IMAGE_ASPECT_COLOR_BIT,
+					0,
+					1,
+					0,
+					1
+				};
+
+				VkImageMemoryBarrier toClear = {
+					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+					nullptr,
+					0,
+					VK_ACCESS_MEMORY_READ_BIT,
+					VK_IMAGE_LAYOUT_UNDEFINED,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+					m_device->getPresentQueueIndex(),
+					m_device->getGraphicsQueueIndex(),
+					m_frame->m_swapchainImage,
+					subresourceRange
+				};
+
+				m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toClear);
+			}
+		}
+
+		~CVulkanCommandBuffer()
+		{
+			if (m_device->getGraphicsQueue() != m_device->getPresentQueue())
+			{
+				VkImageSubresourceRange subresourceRange = {
+					VK_IMAGE_ASPECT_COLOR_BIT,
+					0,
+					1,
+					0,
+					1
+				};
+
+				VkImageMemoryBarrier toPresent = {
+					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+					nullptr,
+					VK_ACCESS_MEMORY_READ_BIT,
+					VK_ACCESS_MEMORY_READ_BIT,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+					m_device->getGraphicsQueueIndex(),
+					m_device->getPresentQueueIndex(),
+					m_frame->m_swapchainImage,
+					subresourceRange
+				};
+
+				m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &toPresent);
+			}
+
+			if (m_device->vkEndCommandBuffer(m_cmd) != VK_SUCCESS)
+			{
+				std::cout << "Command Buffer Failed to record" << std::endl;
+			}
+
+			VkPipelineStageFlags waitDstMasks = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			VkSubmitInfo submitInfo = {
+				VK_STRUCTURE_TYPE_SUBMIT_INFO,
+				nullptr,
+				1,
+				&m_frame->m_swapchainImageAvailableSemaphore,
+				&waitDstMasks,
+				1,
+				&m_cmd,
+				1,
+				&m_frame->m_renderingFinishedSemaphore
+			};
+
+			// submit all commands in queue
+			if (m_device->vkQueueSubmit(m_device->getGraphicsQueue(), 1, &submitInfo, m_frame->m_fence) != VK_SUCCESS)
+			{
+				std::cout << "Error during queue submit" << std::endl;
+			}
+
+			uint32_t swapchainImageIndex = m_swapchain->getCurrentFrameImageIndex();
+			VkSwapchainKHR vkSwapchain = *m_swapchain;
+			// after commands have been processed, present image to presentation engine
+			VkPresentInfoKHR presentInfo = {
+				VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+				nullptr,
+				1,
+				&m_frame->m_renderingFinishedSemaphore,
+				1,
+				&vkSwapchain,
+				&swapchainImageIndex,
+				nullptr
+			};
+
+			VkResult result = m_device->vkQueuePresentKHR(m_device->getPresentQueue(), &presentInfo);
+
+			switch (result)
+			{
+				case VK_SUCCESS:
+					break;
+				case VK_ERROR_OUT_OF_DATE_KHR:
+				case VK_SUBOPTIMAL_KHR:
+					break;
+
+				default:
+					std::cout << "Error during queue presentation" << std::endl;
+					break;
+			}
 		}
 
 		virtual void setStreamingBuffer(IGPUBuffer* buf) override
@@ -58,19 +182,41 @@ class CVulkanCommandBuffer : public ICommandBuffer
 
 		}
 
-		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer = nullptr, IGPUBuffer* instanceBuffer = nullptr) override
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr,  IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) override
 		{
+			uint32_t bindCount = 0;
+			VkBuffer buffers[2] = {0};
+			VkDeviceSize offsets[2] = {0};
 
+			CVulkanBuffer* vBuf = static_cast<CVulkanBuffer*> (vertexBuffer);
+			buffers[bindCount] = vBuf->getID();
+			offsets[bindCount] = vBuf->getAnimatedOffset();
+
+			if (instanceBuffer)
+			{
+				++bindCount;
+				CVulkanBuffer* vInst = static_cast<CVulkanBuffer*> (instanceBuffer);
+				buffers[bindCount] = vInst->getID();
+				offsets[bindCount] = vInst->getAnimatedOffset();
+			}
+
+			m_device->vkCmdBindVertexBuffers(m_cmd, 0, bindCount + 1, buffers, offsets);
+
+			if (indexBuffer)
+			{
+				CVulkanBuffer* vInd = static_cast<CVulkanBuffer*> (indexBuffer);
+				m_device->vkCmdBindIndexBuffer(m_cmd, vInd->getID(), 0, bShortIndex ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+			}
 		}
 
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) override
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override
 		{
-
+			m_device->vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<uint32_t> (offset), 0);
 		}
 
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end) override
+		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) override
 		{
-
+			m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
 		}
 
 		virtual IDevice& getDevice() override
@@ -81,15 +227,104 @@ class CVulkanCommandBuffer : public ICommandBuffer
 	protected:
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override
 		{
+			CVulkanRenderPass& rpass = static_cast<CVulkanRenderPass&> (renderpass);
 
+			// initialize data - clear colors, viewport size
+			VkClearValue clearValues[2];
+
+			uint32_t clearComponents = 0;
+			if (vClearColor)
+			{
+				clearValues[clearComponents].color.float32[0] = vClearColor[0];
+				clearValues[clearComponents].color.float32[1] = vClearColor[1];
+				clearValues[clearComponents].color.float32[2] = vClearColor[2];
+				clearValues[clearComponents].color.float32[3] = vClearColor[3];
+
+				clearComponents++;
+			}
+			if (clearDepth)
+			{
+				clearValues[clearComponents].depthStencil = {*clearDepth, 0};
+
+				clearComponents++;
+			}
+
+			VkExtent2D extent;
+			VkFramebuffer framebuffer;
+
+			if (rpass.isSwapchainPass())
+			{
+				extent = m_swapchain->getExtent();
+
+				if (m_frame->m_framebuffer != VK_NULL_HANDLE)
+				{
+					m_device->vkDestroyFramebuffer(*m_device, m_frame->m_framebuffer, nullptr);
+				}
+
+				VkFramebufferCreateInfo framebufferCreateInfo = {
+					VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+					nullptr,
+					0,
+					rpass.getID(),
+					1,
+					&m_frame->m_imageView,
+					extent.width,
+					extent.height,
+					1
+				};
+
+				if (m_device->vkCreateFramebuffer(*m_device, &framebufferCreateInfo, nullptr, &m_frame->m_framebuffer) != VK_SUCCESS)
+				{
+					std::cout << "Failed to create framebuffer" << std::endl;
+				}
+
+				framebuffer = m_frame->m_framebuffer;
+			}
+			else
+			{
+				extent.width = rpass.getWidth();
+				extent.height = rpass.getHeight();
+
+				framebuffer = rpass.getFramebuffer();
+			}
+
+			VkRect2D rect = {VkOffset2D {0, 0}, extent};
+
+			VkViewport viewportBounds = {
+				0.0f,
+				0.0f,
+				static_cast <float> (extent.width),
+				static_cast <float> (extent.height),
+				0.0f,
+				1.0f
+			};
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {
+				VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+				nullptr,
+				rpass.getID(),
+				framebuffer,
+				rect,
+				clearComponents,
+				clearValues
+			};
+
+			m_device->vkCmdBeginRenderPass(m_cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			m_device->vkCmdSetViewport(m_cmd, 0, 1, &viewportBounds);
+			m_device->vkCmdSetScissor(m_cmd, 0, 1, &rect);
 		}
 
 		virtual void endRenderPass() override
 		{
-
+			// the end. Submit and chill
+			m_device->vkCmdEndRenderPass(m_cmd);
 		}
 
 		CVulkanDevice* m_device;
+		CVulkanSwapchain* m_swapchain;
+		SFrame* m_frame;
+		VkCommandBuffer m_cmd;
 };
 
 CVulkanDevice* CVulkanDevice::s_device = nullptr;
@@ -421,11 +656,11 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	VkApplicationInfo appInfo = {
 		VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		nullptr,
-		"Vulkan Animation Test",
+		"Space Pirates",
 		VK_MAKE_VERSION(1, 0, 0),
-		"TestEngine",
+		"Mini Engine",
 		VK_MAKE_VERSION(1, 0, 0),
-		VK_API_VERSION_1_0
+		VK_API_VERSION_1_1
 	};
 
 	std::vector <const char*> enabledLayers;
@@ -480,11 +715,12 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 		VkDebugReportCallbackCreateInfoEXT debugCreateInfo = {
 			VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
 			nullptr,
-			VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-			VK_DEBUG_REPORT_DEBUG_BIT_EXT |
+			//VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
+			//VK_DEBUG_REPORT_DEBUG_BIT_EXT |
 			VK_DEBUG_REPORT_ERROR_BIT_EXT |
 			VK_DEBUG_REPORT_WARNING_BIT_EXT |
-			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT,
+			//VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+			0,
 			vulkanDebugCallback,
 			nullptr
 		};
@@ -516,11 +752,6 @@ CVulkanDevice::~CVulkanDevice()
 	if (m_descriptorSetLayout)
 	{
 		vkDestroyDescriptorSetLayout(m_device, m_descriptorSetLayout, nullptr);
-	}
-
-	if (m_renderPass)
-	{
-		vkDestroyRenderPass(m_device, m_renderPass, nullptr);
 	}
 
 	// first, delete the device if it exists

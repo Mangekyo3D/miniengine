@@ -150,30 +150,6 @@ void CVulkanSwapchain::swapBuffers()
 
 	frame.cleanupDelayedBlocks();
 
-	if (frame.m_framebuffer != VK_NULL_HANDLE)
-	{
-		device.vkDestroyFramebuffer(device, frame.m_framebuffer, nullptr);
-	}
-
-	VkRenderPass renderPass = device.getRenderPass();
-
-	VkFramebufferCreateInfo framebufferCreateInfo = {
-		VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-		nullptr,
-		0,
-		renderPass,
-		1,
-		&m_swapchainImageviews[m_currentSwapchainImage],
-		m_extent.width,
-		m_extent.height,
-		1
-	};
-
-	if (device.vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &frame.m_framebuffer) != VK_SUCCESS)
-	{
-		std::cout << "Failed to create framebuffer" << std::endl;
-	}
-
 	frame.m_swapchainImage = m_swapchainImages[m_currentSwapchainImage];
 }
 

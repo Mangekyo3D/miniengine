@@ -163,6 +163,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			, m_device(&COpenGLDevice::get())
 			, m_currentPipeline(nullptr)
 			, m_currentVertexDescriptor(nullptr)
+			, m_bShortIndices(true)
 		{
 		}
 
@@ -205,20 +206,21 @@ class COpenGLCommandBuffer :public ICommandBuffer
 			}
 		}
 
-		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer, IGPUBuffer* instanceBuffer) override
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer, IGPUBuffer* indexBuffer, bool bShortIndices) override
 		{
+			m_bShortIndices = bShortIndices;
 			m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
 		}
 
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end)
+		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count)
 		{
-			m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), start, end);
+			m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), start, count);
 		}
 
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) override
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override
 		{
 			m_device->glDrawElementsInstanced(meshPrimitiveToGLPrimitive(type),static_cast <GLint> (numIndices),
-											   (bShortIndex) ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (static_cast <GLubyte*>(nullptr) + offset),
+											   m_bShortIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (static_cast <GLubyte*>(nullptr) + offset),
 											   static_cast <GLint> (numInstances));
 		}
 
@@ -299,6 +301,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		COpenGLDevice* m_device;
 		COpenGLPipeline* m_currentPipeline;
 		COpenGLVertexDescriptorInterface* m_currentVertexDescriptor;
+		bool m_bShortIndices;
 };
 
 std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame(ISwapchain& currentSwapchain)

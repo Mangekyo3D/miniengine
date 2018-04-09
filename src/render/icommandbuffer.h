@@ -35,9 +35,9 @@ class ICommandBuffer
 		virtual void copyBufferToTex(ITexture* tex, size_t offset,
 									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
 		virtual void bindPipeline(IPipeline* pipeline) = 0;
-		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* indexBuffer = nullptr, IGPUBuffer* instanceBuffer = nullptr) = 0;
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, bool bShortIndex, size_t offset, size_t numInstances) = 0;
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t end) = 0;
+		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr, IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) = 0;
+		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) = 0;
+		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) = 0;
 
 		virtual IDevice& getDevice() = 0;
 

@@ -145,12 +145,7 @@ void CVulkanBuffer::unlock()
 	device.vkUnmapMemory(device, m_memoryChunk->m_memory);
 }
 
-void CVulkanBuffer::bindAsVertexBuffer(SFrame& frame)
+void CVulkanBuffer::setLastFrameUser(SFrame& frame)
 {
-	auto& device = CVulkanDevice::get();
-	const VkDeviceSize offset = m_frame * m_size;
-	VkCommandBuffer& cmd = frame.m_commandBuffer;
-
-	device.vkCmdBindVertexBuffers(cmd, 0, 1, &m_buffer, &offset);
 	m_lastUser = &frame;
 }

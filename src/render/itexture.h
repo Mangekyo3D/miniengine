@@ -24,12 +24,14 @@ class ITexture
 		virtual ~ITexture() {}
 		uint8_t getNumMipmaps() const { return m_mipLevels; }
 		EFormat getFormat() const { return m_format; }
-		uint16_t getWidth() const { return m_width; }
-		uint16_t getHeight() const { return m_height; }
+		bool    isFormatDepth() const;
+		uint32_t getWidth() const { return m_width; }
+		uint32_t getHeight() const { return m_height; }
+		uint32_t getUsage() const { return m_usage; }
 
 	protected:
-		uint16_t m_width;
-		uint16_t m_height;
+		uint32_t m_width;
+		uint32_t m_height;
 		uint8_t  m_mipLevels;
 		EFormat  m_format;
 		uint32_t m_usage;
