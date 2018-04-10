@@ -4,7 +4,7 @@ in layout(location=0) vec4 ivPos;
 in layout(location=1) vec3 ivNormal;
 in layout(location=2) mat4 imWorldFromModel;
 
-layout (std140, binding = 0) uniform TransformBlock
+layout (std140, set = 0, binding = 0) uniform TransformBlock
 {
 	mat4 mViewFromWorld;
 	mat4 mClipFromView;

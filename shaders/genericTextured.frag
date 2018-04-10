@@ -6,13 +6,17 @@ in layout(location = 0) INTERFACE
 	vec2 vTexCoord;
 } vs_in;
 
-layout (std140, binding = 1) uniform LightingBlock
+layout (std140, set = 0, binding = 1) uniform LightingBlock
 {
 	vec4 cColor;
 	vec3 lightDir;
 } lighting;
 
-layout(binding=2) uniform sampler2D diffuseTex;
+#ifdef VULKAN
+layout(set = 1, binding=0) uniform sampler2D diffuseTex;
+#else
+layout(binding=0) uniform sampler2D diffuseTex;
+#endif
 
 out layout(location = 0) vec4 cColor;
 

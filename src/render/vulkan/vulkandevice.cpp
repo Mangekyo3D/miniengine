@@ -84,7 +84,10 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties(physDevice, &properties);
 
-		std::cout << "Device: " << properties.deviceName << std::endl;
+		if (m_bDebugInstance)
+		{
+			std::cout << "Device: " << properties.deviceName << std::endl;
+		}
 
 		// get extension properties for this device
 		uint32_t numExtensionProps;
@@ -395,7 +398,6 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 		std::cout << "Vulkan Instance creation failed" << std::endl;
 		return;
 	}
-
 
 	#define VK_INSTANCE_FUNCTION( fun ) \
 	if (!(fun = (PFN_##fun)vkGetInstanceProcAddr(m_instance, #fun))) { \

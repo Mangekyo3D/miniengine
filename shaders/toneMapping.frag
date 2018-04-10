@@ -1,6 +1,6 @@
 #version 450 core
 
-layout(binding=0) uniform sampler2D sceneTex;
+layout(set = 0, binding=0) uniform sampler2D sceneTex;
 
 out layout(location = 0)vec4 cColor;
 

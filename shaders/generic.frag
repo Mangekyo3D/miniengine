@@ -5,7 +5,7 @@ in layout(location = 0) INTERFACE
 	vec3 vNormal;
 } vs_in;
 
-layout (std140, binding = 1) uniform LightingBlock
+layout (std140, set = 0, binding = 1) uniform LightingBlock
 {
 	vec4 cColor;
 	vec3 lightDir;

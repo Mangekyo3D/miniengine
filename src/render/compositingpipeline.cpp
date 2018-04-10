@@ -125,12 +125,13 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 		SSamplerParams sampler;
 
 		SPipelineParams params;
+		SDescriptorSet globalSet;
 
 		params.addSampler(sampler);
-		params.addUniformBlock(eVertexStage);
-		params.addUniformBlock(eFragmentStage);
-		params.addTextureSlot(eFragmentStage, 0);
+		globalSet.addUniformBlock(eVertexStage);
+		globalSet.addUniformBlock(eFragmentStage);
 
+		params.globalSet = &globalSet;
 		params.renderpass = m_renderpass.get();
 		params.flags = eDepthCompareGreater | eCullBackFace;
 
@@ -141,6 +142,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 		instanceBinding.addAttribute(12 * sizeof(float), eFloat, 4);
 
 		params.perInstanceBinding = &instanceBinding;
+
 		{
 			params.shaderModule = "generic";
 
@@ -153,7 +155,11 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 		}
 
 		{
+			SDescriptorSet perDrawSet;
+			perDrawSet.addTextureSlot(eFragmentStage, 0);
+
 			params.shaderModule = "genericTextured";
+			params.perDrawSet = &perDrawSet;
 
 			SVertexBinding vertBinding(sizeof(VertexFormatVNT));
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
@@ -179,10 +185,12 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 	if (!m_data->m_pipeline)
 	{
 		SSamplerParams sampler;
+		SDescriptorSet descriptorSet;
 
 		SPipelineParams params;
 		params.addSampler(sampler);
-		params.addTextureSlot(eFragmentStage, 0);
+		descriptorSet.addTextureSlot(eFragmentStage, 0);
+		params.globalSet = &descriptorSet;
 
 		params.renderpass = m_renderpass.get();
 		params.shaderModule = "toneMapping";

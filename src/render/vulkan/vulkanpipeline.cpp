@@ -8,6 +8,8 @@
 #include <iostream>
 
 CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
+	: m_globaLayout(VK_NULL_HANDLE)
+	, m_perDrawLayout(VK_NULL_HANDLE)
 {
 	auto& device = CVulkanDevice::get();
 
@@ -242,40 +244,24 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 		dynamicStates.data()
 	};
 
-	std::vector <VkDescriptorSetLayoutBinding> layoutBindings;
-	uint32_t binding = 0;
+	uint32_t numLayouts = 0;
+	VkDescriptorSetLayout setLayouts[2];
 
-	for (auto& descriptor : params.descriptors)
+	if ((setLayouts[numLayouts] = createSet(params.globalSet)) != VK_NULL_HANDLE)
 	{
-		layoutBindings.push_back(
-			VkDescriptorSetLayoutBinding {
-				binding++,
-				descriptorToVulkanType(descriptor.type),
-				1,
-				stageFlagsToVulkanFlags(descriptor.shaderStages),
-				(descriptor.type == eTextureSampler) ? &m_samplers[descriptor.sampler] : nullptr
-			});
+		m_globaLayout = setLayouts[numLayouts++];
 	}
-
-	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
-		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		nullptr,
-		0,
-		static_cast <uint32_t> (layoutBindings.size()),
-		layoutBindings.data()
-	};
-
-	if (device.vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+	if ((setLayouts[numLayouts] = createSet(params.perDrawSet)) != VK_NULL_HANDLE)
 	{
-		std::cout << "Error during descriptor set layout creation" << std::endl;
+		m_perDrawLayout = setLayouts[numLayouts++];
 	}
 
 	VkPipelineLayoutCreateInfo layoutInfo = {
 		VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 		nullptr,
 		0,
-		1,
-		&m_descriptorSetLayout,
+		numLayouts,
+		setLayouts,
 		0,
 		nullptr
 	};
@@ -328,15 +314,25 @@ CVulkanPipeline::~CVulkanPipeline()
 		device.vkDestroyPipeline(device, m_pipeline, nullptr);
 	}
 
-	if (m_descriptorSetLayout)
+	if (m_globaLayout)
 	{
-		device.vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
+		device.vkDestroyDescriptorSetLayout(device, m_globaLayout, nullptr);
+	}
+
+	if (m_perDrawLayout)
+	{
+		device.vkDestroyDescriptorSetLayout(device, m_perDrawLayout, nullptr);
 	}
 
 	for (auto& sampler : m_samplers)
 	{
 		device.vkDestroySampler(device, sampler, nullptr);
 	}
+}
+
+void CVulkanPipeline::setRequiredPerFrameDescriptors(uint32_t numDescriptors)
+{
+
 }
 
 VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
@@ -385,4 +381,82 @@ VkDescriptorType CVulkanPipeline::descriptorToVulkanType(EDescriptorType desc)
 	}
 
 	return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+}
+
+VkDescriptorSetLayout CVulkanPipeline::createSet(SDescriptorSet* params)
+{
+	if (params)
+	{
+		auto& device = CVulkanDevice::get();
+
+		std::vector <VkDescriptorSetLayoutBinding> layoutBindings;
+
+		for (auto& descriptor : params->descriptors)
+		{
+			layoutBindings.push_back(
+				VkDescriptorSetLayoutBinding {
+					static_cast <uint32_t> (layoutBindings.size()),
+					descriptorToVulkanType(descriptor.type),
+					1,
+					stageFlagsToVulkanFlags(descriptor.shaderStages),
+					(descriptor.type == eTextureSampler) ? &m_samplers[descriptor.sampler] : nullptr
+				});
+		}
+
+		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
+			VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+			nullptr,
+			0,
+			static_cast <uint32_t> (layoutBindings.size()),
+			layoutBindings.data()
+		};
+
+		VkDescriptorSetLayout setLayout;
+
+		if (device.vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, &setLayout) != VK_SUCCESS)
+		{
+			std::cout << "Error during descriptor set layout creation" << std::endl;
+		}
+
+		return setLayout;
+	}
+
+	return VK_NULL_HANDLE;
+}
+
+SDescriptorPool::SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t numDecr)
+{
+	auto& device = CVulkanDevice::get();
+
+	std::array <VkDescriptorPoolSize, 1> poolSizes {
+		VkDescriptorPoolSize {
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+			1
+		}
+	};
+
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = {
+		VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+		nullptr,
+		0,
+		1,
+		numDecr,
+		perDesrInfo
+	};
+
+	if (device.vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_pool) != VK_SUCCESS)
+	{
+		std::cout << "Error during descriptor pool creation" << std::endl;
+	}
+
+}
+
+SDescriptorPool::~SDescriptorPool()
+{
+	auto& device = CVulkanDevice::get();
+
+	if (m_pool)
+	{
+		device.vkDestroyDescriptorPool(device, m_pool, nullptr);
+	}
 }

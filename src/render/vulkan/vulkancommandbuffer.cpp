@@ -134,7 +134,7 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 	VkImageMemoryBarrier toFill = {
 		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
 		nullptr,
-		VK_ACCESS_MEMORY_READ_BIT,
+		VK_ACCESS_HOST_WRITE_BIT,
 		VK_ACCESS_TRANSFER_WRITE_BIT,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -157,7 +157,7 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 		subresourceRange
 	};
 
-	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFill);
+	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFill);
 
 	VkImageSubresourceLayers subresource = {
 		VK_IMAGE_ASPECT_COLOR_BIT,

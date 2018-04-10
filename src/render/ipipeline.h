@@ -87,14 +87,8 @@ struct SDescriptorLayout
 	uint32_t sampler = 0;
 };
 
-struct SPipelineParams
+struct SDescriptorSet
 {
-	IRenderPass* renderpass = nullptr;
-	SVertexBinding* perVertBinding = nullptr;
-	SVertexBinding* perInstanceBinding= nullptr;
-	const char*     shaderModule = nullptr;
-	uint64_t        flags = 0;
-
 	void addUniformBlock(uint32_t stages)
 	{
 		descriptors.emplace_back(eUniformBlock, stages);
@@ -105,12 +99,24 @@ struct SPipelineParams
 		descriptors.emplace_back(eTextureSampler, stages, sampler);
 	}
 
+	std::vector <SDescriptorLayout> descriptors;
+};
+
+struct SPipelineParams
+{
+	IRenderPass* renderpass = nullptr;
+	SVertexBinding* perVertBinding = nullptr;
+	SVertexBinding* perInstanceBinding= nullptr;
+	const char*     shaderModule = nullptr;
+	uint64_t        flags = 0;
+
+	SDescriptorSet* perDrawSet = nullptr;
+	SDescriptorSet* globalSet = nullptr;
+
 	void addSampler(SSamplerParams& p)
 	{
 		samplers.push_back(p);
 	}
-
-	std::vector <SDescriptorLayout> descriptors;
 	std::vector <SSamplerParams> samplers;
 };
 
@@ -120,5 +126,7 @@ class IPipeline
 		IPipeline() {}
 		virtual ~IPipeline() {}
 
-		//virtual prepareDrawingResources() = 0;
+		// sets the number of descriptors per set. Input is an array whose size should match the
+		// descriptor sets that are passed
+		virtual void setRequiredPerFrameDescriptors(uint32_t numDescriptors) = 0;
 };

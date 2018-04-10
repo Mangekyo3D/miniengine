@@ -25,6 +25,7 @@ class COpenGLPipeline : public IPipeline {
 	public:
 		COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor);
 		COpenGLVertexDescriptorInterface* bind();
+		virtual void setRequiredPerFrameDescriptors(uint32_t numDescriptors) {}
 
 	private:
 		uint64_t       m_pipelineFlags;
