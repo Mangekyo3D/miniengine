@@ -25,6 +25,9 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override;
 		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) override;
 
+		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource*);
+		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource*);
+
 		virtual IDevice& getDevice() override;
 
 	protected:

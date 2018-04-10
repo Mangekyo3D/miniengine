@@ -6,6 +6,7 @@ set (SRC
 	openglrenderpass.cpp
 	openglprogram.cpp
 	openglshader.cpp
+	openglcommandbuffer.cpp
 )
 
 set (INC
@@ -16,6 +17,7 @@ set (INC
 	openglrenderpass.h
 	openglprogram.h
 	openglshader.h
+	openglcommandbuffer.h
 	)
 
 if (WIN32)

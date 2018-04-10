@@ -186,12 +186,13 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 
 	VkCompareOp depthCompOp = VK_COMPARE_OP_ALWAYS;
 	bool bDepthCompare = VK_FALSE;
-	bool bDepthWrite = VK_TRUE;
+	bool bDepthWrite = VK_FALSE;
 
 	if (params.flags & eDepthCompareGreater)
 	{
 		depthCompOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
 		bDepthCompare = VK_TRUE;
+		bDepthWrite = VK_TRUE;
 	}
 
 	VkPipelineDepthStencilStateCreateInfo depthStencilInfo = {
@@ -330,7 +331,7 @@ CVulkanPipeline::~CVulkanPipeline()
 	}
 }
 
-void CVulkanPipeline::setRequiredPerFrameDescriptors(uint32_t numDescriptors)
+void CVulkanPipeline::setRequiredPerFrameDescriptors(size_t numDescriptors)
 {
 
 }

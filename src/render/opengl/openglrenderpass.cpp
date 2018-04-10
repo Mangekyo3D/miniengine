@@ -72,5 +72,4 @@ void COpenGLRenderPass::setupRenderPass(ITexture** outputs, uint32_t numOutputs,
 			m_bDepthOutput = true;
 		}
 	}
-
 }

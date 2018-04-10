@@ -231,6 +231,42 @@ void CVulkanCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint3
 	m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
 }
 
+void CVulkanCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources)
+{
+	for (uint32_t i = 0; i < numBindings; ++i)
+	{
+		switch (sources[i].type)
+		{
+			case SDescriptorSource::eBuffer:
+			{
+				break;
+			}
+			case SDescriptorSource::eTexture:
+			{
+				break;
+			}
+		}
+	}
+}
+
+void CVulkanCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
+{
+	for (uint32_t i = 0; i < numBindings; ++i)
+	{
+		switch (sources[i].type)
+		{
+			case SDescriptorSource::eBuffer:
+			{
+				break;
+			}
+			case SDescriptorSource::eTexture:
+			{
+				break;
+			}
+		}
+	}
+}
+
 IDevice& CVulkanCommandBuffer::getDevice()
 {
 	return *m_device;

@@ -102,6 +102,52 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 	m_program.attach(fragment_shader);
 
 	m_program.link();
+
+	auto& device = COpenGLDevice::get();
+
+	for (auto& samplerParams : params.samplers)
+	{
+		uint32_t sampler;
+		device.glCreateSamplers(1, &sampler);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		SamplerInfo samplerInfo = {sampler, -1};
+		m_samplers.push_back(samplerInfo);
+	}
+
+	uint32_t textureSlot = 0;
+	if (params.globalSet)
+	{
+		for (auto& descriptor : params.globalSet->descriptors)
+		{
+			if (descriptor.type == eTextureSampler)
+			{
+				m_samplers[descriptor.sampler].slot = textureSlot++;
+			}
+		}
+	}
+	if (params.perDrawSet)
+	{
+		for (auto& descriptor : params.perDrawSet->descriptors)
+		{
+			if (descriptor.type == eTextureSampler)
+			{
+				m_samplers[descriptor.sampler].slot = textureSlot++;
+			}
+		}
+	}
+}
+
+COpenGLPipeline::~COpenGLPipeline()
+{
+	auto& device = COpenGLDevice::get();
+	for (auto& sampler : m_samplers)
+	{
+		device.glDeleteSamplers(1, &sampler.sampler);
+	}
 }
 
 COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
@@ -143,5 +189,11 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 
 	m_program.use();
 	m_descriptor->bind();
+
+	for (auto& sampler : m_samplers)
+	{
+		device.glBindSampler(sampler.slot, sampler.sampler);
+	}
+
 	return m_descriptor.get();
 }

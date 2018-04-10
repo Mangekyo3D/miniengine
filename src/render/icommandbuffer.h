@@ -9,6 +9,32 @@ class IRenderPass;
 class ICommandBuffer;
 class IDevice;
 
+struct SDescriptorSource
+{
+	SDescriptorSource(IGPUBuffer* buf)
+	{
+		data.buffer = buf;
+		type = eBuffer;
+	}
+
+	SDescriptorSource(ITexture* tex)
+	{
+		data.texture = tex;
+		type = eTexture;
+	}
+
+	union{
+		IGPUBuffer* buffer;
+		ITexture*   texture;
+	} data;
+
+	enum EDescriptorSource
+	{
+		eBuffer,
+		eTexture
+	} type;
+};
+
 class ICommandBuffer
 {
 	public:
@@ -38,6 +64,9 @@ class ICommandBuffer
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr, IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) = 0;
 		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) = 0;
 		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) = 0;
+
+		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource*) = 0;
+		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource*) = 0;
 
 		virtual IDevice& getDevice() = 0;
 

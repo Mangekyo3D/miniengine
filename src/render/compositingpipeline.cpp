@@ -6,6 +6,7 @@
 #include "idevice.h"
 #include "igpubuffer.h"
 #include <iostream>
+#include <algorithm>
 
 struct SFullScreenData
 {
@@ -29,22 +30,10 @@ IFullScreenRenderPass::IFullScreenRenderPass(IDevice* device)
 {
 	m_renderpass = device->createRenderPass();
 	m_data = std::make_unique <SFullScreenData> (device);
-
-	// create sampler for texture sampling of material
-//	auto& gldevice = COpenGLDevice::get();
-//	gldevice.glCreateSamplers(1, &m_sampler);
-//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//	gldevice.glSamplerParameteri(m_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 IFullScreenRenderPass::~IFullScreenRenderPass()
 {
-//	auto& device = COpenGLDevice::get();
-
-//	device.glDeleteSamplers(1, &m_sampler);
-//	m_sampler = 0;
 }
 
 void IFullScreenRenderPass::setupRenderPass(IDevice& device, ITexture** inputs, uint32_t numInputs, ITexture** outputs, uint32_t numOutputs, ITexture* depthOut)
@@ -65,19 +54,21 @@ void IFullScreenRenderPass::setupRenderPass(IDevice& device, ITexture** inputs, 
 
 void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 {
-	// test clear color
-	static const float vClearColor[] = {1.0f, 0.0f, 0.0f, 0.0f};
-
-	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor);
+	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass);
 
 	cmd.bindPipeline(m_data->m_pipeline.get());
-	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
+	m_data->m_pipeline->setRequiredPerFrameDescriptors(1);
 
-//	for (uint32_t i = 0; i < m_inputs.size(); ++i)
-//	{
-//		m_inputs[i]->bind(i);
-//		device.glBindSampler(i, m_sampler);
-//	}
+	std::vector <SDescriptorSource> descriptorSource;
+	descriptorSource.reserve(m_inputs.size());
+	for (auto& input : m_inputs)
+	{
+		descriptorSource.emplace_back(input);
+	}
+
+	cmd.bindGlobalDescriptors(descriptorSource.size(), descriptorSource.data());
+
+	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
 
 	cmd.drawArrays(ICommandBuffer::EPrimitiveType::eTriangles, 0, 3);
 }
@@ -98,16 +89,36 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 
 	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass, vClearColor, &vClearDepth);
 
-//	COpenGLBuffer& bglCameraData = static_cast<COpenGLBuffer&>(cameraData);
-//	COpenGLBuffer& bglLightData = static_cast<COpenGLBuffer&>(lightData);
+	std::array <SDescriptorSource, 2> descriptorSource = {
+		SDescriptorSource{&cameraData},
+		SDescriptorSource{&lightData}
+	};
 
-//	device.glBindBufferBase(GL_UNIFORM_BUFFER, 0, bglCameraData.getID());
-//	device.glBindBufferBase(GL_UNIFORM_BUFFER, 1, bglLightData.getID());
+	cmd.bindGlobalDescriptors(descriptorSource.size(), descriptorSource.data());
 
-	for (auto& batch : batches)
+	auto predicate = [] (const std::unique_ptr<IBatch> &b1, const std::unique_ptr<IBatch> & b2) {
+		return b1->getPipeline() < b2->getPipeline();
+	};
+
+	std::sort(batches.begin(), batches.end(), predicate);
+
+	auto start = batches.begin();
+
+	while(start != batches.end())
 	{
-		cmd.bindPipeline(m_pipelines[batch->getPipeline()].get());
-		batch->draw(cmd);
+		uint32_t pipelineNum = (*start)->getPipeline();
+		IPipeline* pipeline = m_pipelines[pipelineNum].get();
+
+		auto end = std::upper_bound(start, batches.end(), *start, predicate);
+		cmd.bindPipeline(pipeline);
+		pipeline->setRequiredPerFrameDescriptors(end - start);
+
+		while (start != end)
+		{
+			(*start++)->draw(cmd);
+		}
+
+		start = end;
 	}
 }
 

@@ -128,5 +128,5 @@ class IPipeline
 
 		// sets the number of descriptors per set. Input is an array whose size should match the
 		// descriptor sets that are passed
-		virtual void setRequiredPerFrameDescriptors(uint32_t numDescriptors) = 0;
+		virtual void setRequiredPerFrameDescriptors(size_t numDescriptors) = 0;
 };

@@ -24,11 +24,20 @@ class COpenGLVertexDescriptorInterface
 class COpenGLPipeline : public IPipeline {
 	public:
 		COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor);
+		~COpenGLPipeline();
 		COpenGLVertexDescriptorInterface* bind();
-		virtual void setRequiredPerFrameDescriptors(uint32_t numDescriptors) {}
+		virtual void setRequiredPerFrameDescriptors(size_t numDescriptors) {}
 
 	private:
 		uint64_t       m_pipelineFlags;
 		COpenGLProgram m_program;
 		std::unique_ptr <COpenGLVertexDescriptorInterface> m_descriptor;
+
+		struct SamplerInfo
+		{
+			uint32_t sampler;
+			int32_t slot;
+		};
+
+		std::vector <SamplerInfo> m_samplers;
 };

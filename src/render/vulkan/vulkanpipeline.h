@@ -20,7 +20,7 @@ class CVulkanPipeline : public IPipeline
 	public:
 		CVulkanPipeline(SPipelineParams& params);
 		~CVulkanPipeline();
-		virtual void setRequiredPerFrameDescriptors(uint32_t numDescriptors);
+		virtual void setRequiredPerFrameDescriptors(size_t numDescriptors);
 		operator VkPipeline () {return m_pipeline; }
 
 	private:
