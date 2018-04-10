@@ -15,6 +15,6 @@ public:
 	void unload();
 
 private:
-	std::map <COpenGLShader::EShaderType, COpenGLShader*> m_shaders;
+	std::map <EShaderStage, COpenGLShader*> m_shaders;
 	uint32_t m_ID;
 };

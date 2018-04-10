@@ -13,9 +13,9 @@ public:
 	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain) override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) override;
 	virtual std::unique_ptr<IRenderPass> createRenderPass() override;
-	virtual std::unique_ptr<IPipeline> createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding,
-													  const char* shaderName) override;
+	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped) override;
+	virtual void finishJobs() override;
 
 	PFNGLCLEARNAMEDFRAMEBUFFERFVPROC glClearNamedFramebufferfv;
 	PFNGLCLEARNAMEDFRAMEBUFFERFIPROC glClearNamedFramebufferfi;
@@ -29,6 +29,7 @@ public:
 	PFNGLDEPTHFUNCPROC  glDepthFunc;
 	PFNGLPIXELSTOREIPROC glPixelStorei;
 	PFNGLCULLFACEPROC   glCullFace;
+	PFNGLFINISHPROC     glFinish;
 
 	PFNGLATTACHSHADERPROC glAttachShader;
 	PFNGLDETACHSHADERPROC glDetachShader;

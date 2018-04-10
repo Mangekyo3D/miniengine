@@ -21,8 +21,6 @@ class ResourceManager
 		IAudioResource* loadAudio(std::string audioName);
 
 	private:
-		void loadDefaultPipelines();
-
 		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
 		std::map <std::string, std::unique_ptr<ITexture> > m_textures;
 		std::map <std::string, std::unique_ptr<IAudioResource> > m_audio;

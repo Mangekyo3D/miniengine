@@ -12,7 +12,7 @@ layout (std140, binding = 1) uniform LightingBlock
 	vec3 lightDir;
 } lighting;
 
-layout(binding=0) uniform sampler2D diffuseTex;
+layout(binding=2) uniform sampler2D diffuseTex;
 
 out layout(location = 0) vec4 cColor;
 

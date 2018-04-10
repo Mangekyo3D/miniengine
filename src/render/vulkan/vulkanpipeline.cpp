@@ -7,13 +7,45 @@
 #include <vector>
 #include <iostream>
 
-CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
+CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 {
 	auto& device = CVulkanDevice::get();
-	std::string filename = shaderName;
+
+	for (auto samplerParams : params.samplers)
+	{
+		VkSampler sampler;
+		VkSamplerCreateInfo samplerInfo = {
+			VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+			nullptr,
+			0,
+			VK_FILTER_LINEAR,
+			VK_FILTER_LINEAR,
+			VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			0.0f,
+			VK_FALSE,
+			0.0f,
+			VK_FALSE,
+			VK_COMPARE_OP_ALWAYS,
+			0.0f,
+			100.0f,
+			VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
+			VK_FALSE
+		};
+
+		if (device.vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
+		{
+			std::cout << "Failed to create sampler" << std::endl;
+		}
+		m_samplers.push_back(sampler);
+	}
+
+	std::string filename = params.shaderModule;
 	CVulkanShaderModule fragmentShader(filename + ".frag.spv");
 	CVulkanShaderModule vertexShader(filename + ".vert.spv");
-	CVulkanRenderPass& rpass = static_cast <CVulkanRenderPass&> (renderpass);
+	CVulkanRenderPass& rpass = static_cast <CVulkanRenderPass&> (*params.renderpass);
 
 	VkPipelineShaderStageCreateInfo pipelineShaderStages[] =
 	{
@@ -42,7 +74,7 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 		nullptr,
 		0,
 		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		((params.m_flags & ePrimitiveRestart) != 0)
+		((params.flags & ePrimitiveRestart) != 0)
 	};
 
 	VkPipelineViewportStateCreateInfo viewportInfo = {
@@ -60,16 +92,16 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 
 	uint32_t numVertBindings = 0;
 
-	if (perVertBinding)
+	if (params.perVertBinding)
 	{
 		vertexBindings[numVertBindings++] =
 			VkVertexInputBindingDescription {
 				0,
-				static_cast<uint32_t> (perVertBinding->m_dataSize),
+				static_cast<uint32_t> (params.perVertBinding->dataSize),
 				VK_VERTEX_INPUT_RATE_VERTEX
 			};
 
-		for (auto& attribs : perVertBinding->m_attributeParams)
+		for (auto& attribs : params.perVertBinding->attributeParams)
 		{
 			vertexAttributes.emplace_back(
 				VkVertexInputAttributeDescription {
@@ -81,16 +113,16 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 		}
 	}
 
-	if (perInstanceBinding)
+	if (params.perInstanceBinding)
 	{
 		vertexBindings[numVertBindings++] =
 			VkVertexInputBindingDescription {
 				1,
-				static_cast<uint32_t> (perInstanceBinding->m_dataSize),
+				static_cast<uint32_t> (params.perInstanceBinding->dataSize),
 				VK_VERTEX_INPUT_RATE_INSTANCE
 			};
 
-		for (auto& attribs : perInstanceBinding->m_attributeParams)
+		for (auto& attribs : params.perInstanceBinding->attributeParams)
 		{
 			vertexAttributes.push_back(
 				VkVertexInputAttributeDescription {
@@ -119,7 +151,7 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 		0,
 		0,
 		VK_POLYGON_MODE_FILL,
-		static_cast <VkCullModeFlags> ((params.m_flags & eCullBackFace) ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE),
+		static_cast <VkCullModeFlags> ((params.flags & eCullBackFace) ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE),
 		VK_FRONT_FACE_COUNTER_CLOCKWISE,
 		0,
 		0,
@@ -154,7 +186,7 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 	bool bDepthCompare = VK_FALSE;
 	bool bDepthWrite = VK_TRUE;
 
-	if (params.m_flags & eDepthCompareGreater)
+	if (params.flags & eDepthCompareGreater)
 	{
 		depthCompOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
 		bDepthCompare = VK_TRUE;
@@ -210,16 +242,20 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 		dynamicStates.data()
 	};
 
-	std::array <VkDescriptorSetLayoutBinding, 1> layoutBindings
+	std::vector <VkDescriptorSetLayoutBinding> layoutBindings;
+	uint32_t binding = 0;
+
+	for (auto& descriptor : params.descriptors)
 	{
-		VkDescriptorSetLayoutBinding {
-			0,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-			1,
-			VK_SHADER_STAGE_VERTEX_BIT,
-			nullptr
-		}
-	};
+		layoutBindings.push_back(
+			VkDescriptorSetLayoutBinding {
+				binding++,
+				descriptorToVulkanType(descriptor.type),
+				1,
+				stageFlagsToVulkanFlags(descriptor.shaderStages),
+				(descriptor.type == eTextureSampler) ? &m_samplers[descriptor.sampler] : nullptr
+			});
+	}
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
 		VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
@@ -273,7 +309,7 @@ CVulkanPipeline::CVulkanPipeline(IRenderPass& renderpass, SPipelineParams& param
 
 	if (device.vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
 	{
-		std::cout << "Error during diffuse pipeline creation" << std::endl;
+		std::cout << "Error during " << params.shaderModule << " pipeline creation" << std::endl;
 	}
 
 }
@@ -297,6 +333,10 @@ CVulkanPipeline::~CVulkanPipeline()
 		device.vkDestroyDescriptorSetLayout(device, m_descriptorSetLayout, nullptr);
 	}
 
+	for (auto& sampler : m_samplers)
+	{
+		device.vkDestroySampler(device, sampler, nullptr);
+	}
 }
 
 VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
@@ -316,4 +356,33 @@ VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
 	}
 
 	return VK_FORMAT_UNDEFINED;
+}
+
+VkShaderStageFlags CVulkanPipeline::stageFlagsToVulkanFlags(uint32_t stages)
+{
+	VkShaderStageFlags flags = 0;
+
+	if (stages & eVertexStage)
+	{
+		flags |= VK_SHADER_STAGE_VERTEX_BIT;
+	}
+	if (stages & eFragmentStage)
+	{
+		flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+	}
+
+	return flags;
+}
+
+VkDescriptorType CVulkanPipeline::descriptorToVulkanType(EDescriptorType desc)
+{
+	switch (desc)
+	{
+		case eUniformBlock:
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		case eTextureSampler:
+			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	}
+
+	return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 }

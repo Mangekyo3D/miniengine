@@ -13,8 +13,8 @@ COpenGLVertexDescriptorInterface::COpenGLVertexDescriptorInterface(SVertexBindin
 
 	if (perVertBinding)
 	{
-		m_perVertDataSize = perVertBinding->m_dataSize;
-		for (const auto& attribute : perVertBinding->m_attributeParams)
+		m_perVertDataSize = perVertBinding->dataSize;
+		for (const auto& attribute : perVertBinding->attributeParams)
 		{
 			device.glEnableVertexArrayAttrib(m_vertexArrayObject, currentLocation);
 			device.glVertexArrayAttribBinding(m_vertexArrayObject, currentLocation, 0);
@@ -25,9 +25,9 @@ COpenGLVertexDescriptorInterface::COpenGLVertexDescriptorInterface(SVertexBindin
 
 	if (perInstanceBinding)
 	{
-		m_perInstanceDataSize = perInstanceBinding->m_dataSize;
+		m_perInstanceDataSize = perInstanceBinding->dataSize;
 		device.glVertexArrayBindingDivisor(m_vertexArrayObject, 1, 1);
-		for (const auto& attribute : perInstanceBinding->m_attributeParams)
+		for (const auto& attribute : perInstanceBinding->attributeParams)
 		{
 			device.glEnableVertexArrayAttrib(m_vertexArrayObject, currentLocation);
 			device.glVertexArrayAttribBinding(m_vertexArrayObject, currentLocation, 1);
@@ -91,12 +91,12 @@ uint32_t COpenGLVertexDescriptorInterface::formatToGLFormat(EVertexFormat format
 	return GL_FLOAT;
 }
 
-COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::string shaderFileName, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor)
-	: m_params(params)
+COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor)
+	: m_pipelineFlags(params.flags)
 	, m_descriptor(std::move(descriptor))
 {
-	COpenGLShader fragment_shader(shaderFileName, COpenGLShader::EShaderType::eFragment);
-	COpenGLShader vertex_shader(shaderFileName, COpenGLShader::EShaderType::eVertex);
+	COpenGLShader fragment_shader(params.shaderModule, EShaderStage::eFragmentStage);
+	COpenGLShader vertex_shader(params.shaderModule, EShaderStage::eVertexStage);
 
 	m_program.attach(vertex_shader);
 	m_program.attach(fragment_shader);
@@ -110,7 +110,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	auto& device = COpenGLDevice::get();
 
 	// inverse depth trick. Some of these settings might be separated in the future
-	if (m_params.m_flags & eDepthCompareGreater)
+	if (m_pipelineFlags & eDepthCompareGreater)
 	{
 		device.glEnable(GL_DEPTH_TEST);
 		device.glDepthFunc(GL_GEQUAL);
@@ -121,7 +121,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 		device.glDepthFunc(GL_ALWAYS);
 	}
 
-	if (m_params.m_flags & eCullBackFace)
+	if (m_pipelineFlags & eCullBackFace)
 	{
 		device.glEnable(GL_CULL_FACE);
 		device.glCullFace(GL_BACK);
@@ -131,7 +131,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 		device.glDisable(GL_CULL_FACE);
 	}
 
-	if (m_params.m_flags & ePrimitiveRestart)
+	if (m_pipelineFlags & ePrimitiveRestart)
 	{
 		device.glEnable(GL_PRIMITIVE_RESTART);
 		device.glPrimitiveRestartIndex(~0x0);

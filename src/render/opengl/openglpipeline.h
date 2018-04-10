@@ -23,11 +23,11 @@ class COpenGLVertexDescriptorInterface
 
 class COpenGLPipeline : public IPipeline {
 	public:
-		COpenGLPipeline(SPipelineParams& params, std::string shaderFileName, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor);
+		COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor);
 		COpenGLVertexDescriptorInterface* bind();
 
 	private:
-		SPipelineParams m_params;
+		uint64_t       m_pipelineFlags;
 		COpenGLProgram m_program;
 		std::unique_ptr <COpenGLVertexDescriptorInterface> m_descriptor;
 };

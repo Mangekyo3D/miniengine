@@ -58,6 +58,7 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 	this->glDepthFunc = ::glDepthFunc;
 	this->glPixelStorei = ::glPixelStorei;
 	this->glCullFace = ::glCullFace;
+	this->glFinish = ::glFinish;
 
 	INITFUNCTION(glClearNamedFramebufferfv)
 	INITFUNCTION(glClearNamedFramebufferfi)
@@ -324,13 +325,18 @@ std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass()
 	return std::make_unique <COpenGLRenderPass>();
 }
 
-std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
+std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params)
 {
-	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (perVertBinding, perInstanceBinding);
-	return std::make_unique <COpenGLPipeline> (params, shaderName, std::move(vertexDescriptor));
+	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (params.perVertBinding, params.perInstanceBinding);
+	return std::make_unique <COpenGLPipeline> (params, std::move(vertexDescriptor));
 }
 
 std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
 {
 	return std::make_unique <COpenGLTexture>(format, usage, width, height, bMipmapped);
+}
+
+void COpenGLDevice::finishJobs()
+{
+	glFinish();
 }

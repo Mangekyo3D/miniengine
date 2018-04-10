@@ -14,9 +14,14 @@ CVulkanRenderPass::CVulkanRenderPass()
 
 CVulkanRenderPass::~CVulkanRenderPass()
 {
+	auto& device = CVulkanDevice::get();
+	if (m_framebuffer)
+	{
+		device.vkDestroyFramebuffer(device, m_framebuffer, nullptr);
+	}
+
 	if (m_renderPass)
 	{
-		auto& device = CVulkanDevice::get();
 		device.vkDestroyRenderPass(device, m_renderPass, nullptr);
 	}
 }

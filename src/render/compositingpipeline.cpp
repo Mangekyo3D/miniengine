@@ -122,29 +122,49 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 	// check first pipeline for existence. if it exists, we have already run this code
 	if (!m_pipelines[eDiffuse])
 	{
+		SSamplerParams sampler;
+
 		SPipelineParams params;
-		params.m_flags = eDepthCompareGreater | eCullBackFace;
 
-		const char* pipelineName = "generic";
+		params.addSampler(sampler);
+		params.addUniformBlock(eVertexStage);
+		params.addUniformBlock(eFragmentStage);
+		params.addTextureSlot(eFragmentStage, 0);
 
+		params.renderpass = m_renderpass.get();
+		params.flags = eDepthCompareGreater | eCullBackFace;
+
+		SVertexBinding instanceBinding(sizeof(MeshInstanceData));
+		instanceBinding.addAttribute(0, eFloat, 4);
+		instanceBinding.addAttribute(4 * sizeof(float), eFloat, 4);
+		instanceBinding.addAttribute(8 * sizeof(float), eFloat, 4);
+		instanceBinding.addAttribute(12 * sizeof(float), eFloat, 4);
+
+		params.perInstanceBinding = &instanceBinding;
 		{
+			params.shaderModule = "generic";
+
 			SVertexBinding vertBinding(sizeof(VertexFormatVN));
 			vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), eFloat, 3);
 			vertBinding.addAttribute(offsetof(VertexFormatVN, normal), e1010102int, 4);
-			m_pipelines[eDiffuse] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+
+			params.perVertBinding = &vertBinding;
+			m_pipelines[eDiffuse] = device.createPipeline(params);
 		}
 
 		{
+			params.shaderModule = "genericTextured";
+
 			SVertexBinding vertBinding(sizeof(VertexFormatVNT));
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), e1010102int, 4);
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), eFloat, 2);
+			params.perVertBinding = &vertBinding;
 
-			pipelineName = "genericTextured";
-			m_pipelines[eDiffuseTextured] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+			m_pipelines[eDiffuseTextured] = device.createPipeline(params);
 
-			params.m_flags |= ePrimitiveRestart;
-			m_pipelines[eDiffuseTexturedPrimRestart] = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+			params.flags |= ePrimitiveRestart;
+			m_pipelines[eDiffuseTexturedPrimRestart] = device.createPipeline(params);
 		}
 	}
 }
@@ -158,11 +178,19 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 {
 	if (!m_data->m_pipeline)
 	{
+		SSamplerParams sampler;
+
 		SPipelineParams params;
+		params.addSampler(sampler);
+		params.addTextureSlot(eFragmentStage, 0);
+
+		params.renderpass = m_renderpass.get();
+		params.shaderModule = "toneMapping";
 		SVertexBinding vertBinding(sizeof(VertexFormatV));
 		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
-		const char* pipelineName = "toneMapping";
-		m_data->m_pipeline = device.createPipeline(*m_renderpass, params, &vertBinding, nullptr, pipelineName);
+		params.perVertBinding = &vertBinding;
+
+		m_data->m_pipeline = device.createPipeline(params);
 	}
 }
 

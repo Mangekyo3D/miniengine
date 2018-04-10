@@ -704,14 +704,19 @@ std::unique_ptr<IGPUBuffer> CVulkanDevice::createGPUBuffer(size_t size, uint32_t
 	return std::make_unique <CVulkanBuffer> (size, usage);
 }
 
-std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(IRenderPass& renderpass, SPipelineParams& params, SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding, const char* shaderName)
+std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params)
 {
-	return std::make_unique <CVulkanPipeline>(renderpass, params, perVertBinding, perInstanceBinding, shaderName);
+	return std::make_unique <CVulkanPipeline>(params);
 }
 
 std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
 {
 	return std::make_unique <CVulkanTexture> (format, usage, width, height, bMipmapped);
+}
+
+void CVulkanDevice::finishJobs()
+{
+	vkDeviceWaitIdle(m_device);
 }
 
 std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass()

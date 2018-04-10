@@ -111,6 +111,8 @@ VK_DEVICE_FUNCTION(vkCreateDescriptorPool)
 VK_DEVICE_FUNCTION(vkAllocateDescriptorSets)
 VK_DEVICE_FUNCTION(vkUpdateDescriptorSets)
 VK_DEVICE_FUNCTION(vkDestroyDescriptorPool)
+VK_DEVICE_FUNCTION(vkDestroySampler)
+VK_DEVICE_FUNCTION(vkCreateSampler)
 
 //swapchain extension
 VK_DEVICE_FUNCTION(vkCreateSwapchainKHR)
