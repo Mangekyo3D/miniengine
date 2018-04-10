@@ -168,19 +168,21 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		{
 		}
 
-		virtual void setStreamingBuffer(IGPUBuffer* buf) override
+		~COpenGLCommandBuffer()
 		{
-			COpenGLBuffer* glBuf = static_cast<COpenGLBuffer*>(buf);
+			// unbind streaming buffer so it may be cleaned up properly
+			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		}
 
-			if (glBuf == nullptr)
-			{
-				m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-			}
-			else
-			{
-				m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-				m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, glBuf->getID());
-			}
+		IGPUBuffer& createStreamingBuffer(size_t size) override
+		{
+			auto newBuffer = m_device->createGPUBuffer(size, IGPUBuffer::Usage::eStreamSource);
+			m_streamingBuffer.reset(static_cast<COpenGLBuffer*> (newBuffer.release()));
+
+			m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_streamingBuffer->getID());
+
+			return *m_streamingBuffer;
 		}
 
 		virtual void copyBufferToTex(ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override
@@ -306,6 +308,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		COpenGLPipeline* m_currentPipeline;
 		COpenGLVertexDescriptorInterface* m_currentVertexDescriptor;
 		bool m_bShortIndices;
+		std::unique_ptr <COpenGLBuffer> m_streamingBuffer;
 };
 
 std::unique_ptr<ICommandBuffer> COpenGLDevice::beginFrame(ISwapchain& currentSwapchain)

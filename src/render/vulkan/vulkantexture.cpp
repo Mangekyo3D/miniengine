@@ -6,31 +6,8 @@ CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, u
 	: ITexture(format, usage, width, height, bMipmapped)
 {
 	VkExtent3D extent = {width, height, 1};
-	VkImageLayout layout;
 
 	auto& device = CVulkanDevice::get();
-
-	switch(m_format)
-	{
-		case EFormat::eSRGB8:
-		case EFormat::eRGB8:
-		case EFormat::eRGB16f:
-			// if the image is sampled then we should initialize it unless it's an attachment, in which case
-			// it will be drawn into later and won't need to be initialized
-			if ((m_usage & EUsage::eSampled) && !(m_usage & EUsage::eAttachement))
-			{
-				layout = VK_IMAGE_LAYOUT_PREINITIALIZED;
-			}
-			else
-			{
-				layout = VK_IMAGE_LAYOUT_UNDEFINED;
-			}
-			break;
-		case EFormat::eDepth32f:
-			// depth textures rarely need preinitialization
-			layout = VK_IMAGE_LAYOUT_UNDEFINED;
-			break;
-	}
 
 	// first ask vulkan if the format we are feeding it is supported
 	VkImageCreateInfo createInfo = {
@@ -40,7 +17,7 @@ CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, u
 		VK_IMAGE_TYPE_2D,
 		typeToFormat(),
 		extent,
-		1,
+		m_mipLevels,
 		1,
 		VK_SAMPLE_COUNT_1_BIT,
 		VK_IMAGE_TILING_OPTIMAL,
@@ -48,7 +25,7 @@ CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, u
 		VK_SHARING_MODE_EXCLUSIVE,
 		0,
 		nullptr,
-		layout
+		VK_IMAGE_LAYOUT_UNDEFINED
 	};
 
 	// if image is supported, go ahead and create it
@@ -147,6 +124,11 @@ VkImageUsageFlags CVulkanTexture::usageFlags()
 	if (m_usage & EUsage::eSampled)
 	{
 		usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+
+		if (!(m_usage & EUsage::eAttachement))
+		{
+			usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		}
 	}
 	if (m_usage & EUsage::eAttachement)
 	{
@@ -161,4 +143,21 @@ VkImageUsageFlags CVulkanTexture::usageFlags()
 	}
 
 	return usageFlags;
+}
+
+size_t CVulkanTexture::getFormatPixelSize()
+{
+	switch(m_format)
+	{
+		case EFormat::eRGB8:
+			return 4;
+		case EFormat::eSRGB8:
+			return 4;
+		case EFormat::eRGB16f:
+			return 16;
+		case EFormat::eDepth32f:
+			return 4;
+	}
+
+	return 4;
 }

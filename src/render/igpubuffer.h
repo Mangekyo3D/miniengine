@@ -13,6 +13,8 @@ public:
 	};
 
 	IGPUBuffer(size_t size, uint32_t usage) : m_size(size), m_usage(usage) {}
+	IGPUBuffer(const IGPUBuffer&) = delete;
+	IGPUBuffer& operator = (const IGPUBuffer&) = delete;
 	virtual ~IGPUBuffer() {}
 
 	// convenience template class that locks a buffer and can be dereferenced to the constant buffer type

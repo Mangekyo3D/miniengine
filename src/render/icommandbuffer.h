@@ -31,7 +31,7 @@ class ICommandBuffer
 
 		virtual ~ICommandBuffer() {}
 
-		virtual void setStreamingBuffer(IGPUBuffer* buf) = 0;
+		virtual IGPUBuffer& createStreamingBuffer(size_t size) = 0;
 		virtual void copyBufferToTex(ITexture* tex, size_t offset,
 									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
 		virtual void bindPipeline(IPipeline* pipeline) = 0;

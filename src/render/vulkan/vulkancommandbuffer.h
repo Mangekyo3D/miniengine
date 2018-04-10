@@ -1,9 +1,11 @@
 #pragma once
 #include "../icommandbuffer.h"
 #include <vulkan/vulkan.h>
+#include <memory>
 
 class CVulkanDevice;
 class CVulkanSwapchain;
+class CVulkanBuffer;
 struct SFrame;
 class ISwapchain;
 
@@ -13,7 +15,7 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		CVulkanCommandBuffer(ISwapchain& swapchain);
 		~CVulkanCommandBuffer();
 
-		virtual void setStreamingBuffer(IGPUBuffer* buf) override;
+		virtual IGPUBuffer& createStreamingBuffer(size_t size) override;
 		virtual void copyBufferToTex(ITexture* tex, size_t offset,
 									 uint16_t width, uint16_t height, uint8_t miplevel) override;
 		virtual void bindPipeline(IPipeline* pipeline) override;
@@ -30,6 +32,7 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		virtual void endRenderPass() override;
 
 		CVulkanDevice* m_device;
+		std::unique_ptr <CVulkanBuffer> m_streamingBuffer;
 		CVulkanSwapchain* m_swapchain;
 		SFrame* m_frame;
 		VkCommandBuffer m_cmd;

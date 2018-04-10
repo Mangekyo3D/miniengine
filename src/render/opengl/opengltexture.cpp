@@ -28,6 +28,24 @@ void COpenGLTexture::bind(uint8_t unit)
 	device.glBindTextureUnit(unit, m_id);
 }
 
+size_t COpenGLTexture::getFormatPixelSize()
+{
+	switch (m_format)
+	{
+		case eRGB8:
+			return 3;
+		case eRGB16f:
+			return 12;
+		case eDepth32f:
+			return 4;
+		case eSRGB8:
+			return 3;
+
+		default:
+			return 3;
+	}
+}
+
 uint32_t COpenGLTexture::formatToGLFormat()
 {
 	switch (m_format)

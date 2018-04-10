@@ -30,10 +30,10 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 		requests.reserve(m_textureRequests.size());
 
 		//create a buffer object that is large enough for all the pending requests
-		auto streamBuffer = createGPUBuffer(m_texStreamBufferSize, IGPUBuffer::Usage::eStreamSource);
+		auto& streamBuffer = cmd.createStreamingBuffer(m_texStreamBufferSize);
 		size_t offset = 0;
 
-		if (auto lock = IGPUBuffer::CAutoLock<char>(*streamBuffer))
+		if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(streamBuffer))
 		{
 			for (auto req : m_textureRequests)
 			{
@@ -46,6 +46,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 					uint8_t currentMipmap = 0;
 					uint8_t  mipLevels = 0;
 					uint16_t maxDim = std::max(width, height);
+					const size_t bytesPerPixel = req.m_texture->getFormatPixelSize();
 
 					while (maxDim > 0)
 					{
@@ -58,15 +59,17 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 					{
 						for (uint32_t j = 0; j < height; ++j)
 						{
-							size_t index = (i * height + j) * 3;
+							size_t index = (i * height + j) * bytesPerPixel;
+							size_t readerindex = (i * height + j) * 3;
 							for (uint8_t c = 0; c < 3; ++c)
 							{
-								size_t componentIndex = index + c;
 								// back convert to srgb and assign to current mipmap
-								lock[componentIndex + offset] = reader.getData()[componentIndex];
+								lock[index + c + offset] = reader.getData()[readerindex + c];
 							}
 						}
 					}
+
+					reader.reset();
 
 					FlushRequest flReq = {
 						req.m_texture,
@@ -77,11 +80,14 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 					};
 					requests.push_back(flReq);
 
-					offset += width * height * 3;
+					offset += width * height * bytesPerPixel;
 
 					if (mipLevels > 1)
 					{
-						std::unique_ptr <uint8_t[]> highMipData(reader.acquireData());
+						std::unique_ptr <uint8_t[]> oldData;
+						// use pointer for access and separate unique_ptr for ownership.
+						//This will all
+						uint8_t* highMipData = &lock[requests.back().offset];
 
 						uint16_t oldHeight = height;
 						uint16_t oldWidth = width;
@@ -94,7 +100,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 							width = std::max(width, (uint16_t)1);
 							height = std::max(height, (uint16_t)1);
 
-							std::unique_ptr <uint8_t[]> newMipData(new uint8_t [height * width * 3]);
+							std::unique_ptr <uint8_t[]> newMipData(new uint8_t [height * width * bytesPerPixel]);
 
 							if (width == 1 && height == 1)
 							{
@@ -102,9 +108,9 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								{
 									// convert and average high mipmap in linear space
 									uint8_t trC = highMipData[c];
-									uint8_t tlC = highMipData[3 + c];
-									uint8_t brC = highMipData[6 + c];
-									uint8_t blC = highMipData[9 + c];
+									uint8_t tlC = highMipData[bytesPerPixel + c];
+									uint8_t brC = highMipData[2 * bytesPerPixel + c];
+									uint8_t blC = highMipData[3 * bytesPerPixel + c];
 
 									float nC = (colorComponentSRGBToLinear(trC / 255.0f) +
 											colorComponentSRGBToLinear(tlC / 255.0f) +
@@ -124,7 +130,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								};
 								requests.push_back(flReq);
 
-								offset += 3;
+								offset += bytesPerPixel;
 							}
 							else if (width == 1)
 							{
@@ -133,13 +139,13 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 									float oldCoF = 0.5f + j / (float) (height - 1) * (oldHeight - 2);
 									uint32_t oldCo = static_cast<uint32_t> (oldCoF);
 									float    interpFac = oldCoF - oldCo;
-									size_t index = j * 3;
+									size_t index = j * bytesPerPixel;
 
 									for (uint8_t c = 0; c < 3; ++c)
 									{
 										// convert and average high mipmap in linear space
-										uint8_t tC = highMipData[oldCo * 3 + c];
-										uint8_t bC = highMipData[(oldCo + 1) * 3 + c];
+										uint8_t tC = highMipData[oldCo * bytesPerPixel + c];
+										uint8_t bC = highMipData[(oldCo + 1) * bytesPerPixel + c];
 
 										float nC = colorComponentSRGBToLinear(tC / 255.0f) * interpFac+
 												colorComponentSRGBToLinear(bC / 255.0f) * (1.0f - interpFac);
@@ -157,7 +163,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								};
 								requests.push_back(flReq);
 
-								offset += height * 3;
+								offset += height * bytesPerPixel;
 							}
 							else if (height == 1)
 							{
@@ -166,13 +172,13 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 									float oldCoF = 0.5f + i / (float)(width - 1) * (oldWidth - 2);
 									uint32_t oldCo = static_cast<uint32_t> (oldCoF);
 									float    interpFac = oldCoF - oldCo;
-									size_t index = i * 3;
+									size_t index = i * bytesPerPixel;
 
 									for (uint8_t c = 0; c < 3; ++c)
 									{
 										// convert and average high mipmap in linear space
-										uint8_t rC = highMipData[oldCo * 3 + c];
-										uint8_t lC = highMipData[(oldCo + 1) * 3 + c];
+										uint8_t rC = highMipData[oldCo * bytesPerPixel + c];
+										uint8_t lC = highMipData[(oldCo + 1) * bytesPerPixel + c];
 
 										float nC = colorComponentSRGBToLinear(rC / 255.0f) * interpFac+
 												colorComponentSRGBToLinear(lC / 255.0f) * (1.0f - interpFac);
@@ -190,7 +196,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								};
 								requests.push_back(flReq);
 
-								offset += width * 3;
+								offset += width * bytesPerPixel;
 							}
 							else
 							{
@@ -201,15 +207,15 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 										float oldCoF[2] = { 0.5f + i / (float)(width - 1) * (oldWidth - 2), 0.5f + j / (float) (height - 1) * (oldHeight - 2)};
 										uint32_t oldCo[2] = { static_cast<uint32_t> (oldCoF[0]), static_cast<uint32_t> (oldCoF[1])};
 										float    interpFac[2] = { oldCoF[0] - oldCo[0], oldCoF[1] - oldCo[1]};
-										size_t index =(i * height + j) * 3;
+										size_t index =(i * height + j) * bytesPerPixel;
 
 										for (uint8_t c = 0; c < 3; ++c)
 										{
 											// convert and average high mipmap in linear space
-											uint8_t trC = highMipData[(oldCo[0] * oldHeight + oldCo[1]) * 3 + c];
-											uint8_t tlC = highMipData[(oldCo[0] * oldHeight + oldCo[1] + 1) * 3 + c];
-											uint8_t brC = highMipData[((oldCo[0] + 1) * oldHeight + oldCo[1]) * 3 + c];
-											uint8_t blC = highMipData[((oldCo[0] + 1)* oldHeight + oldCo[1] + 1) * 3 + c];
+											uint8_t trC = highMipData[(oldCo[0] * oldHeight + oldCo[1]) * bytesPerPixel + c];
+											uint8_t tlC = highMipData[(oldCo[0] * oldHeight + oldCo[1] + 1) * bytesPerPixel + c];
+											uint8_t brC = highMipData[((oldCo[0] + 1) * oldHeight + oldCo[1]) * bytesPerPixel + c];
+											uint8_t blC = highMipData[((oldCo[0] + 1)* oldHeight + oldCo[1] + 1) * bytesPerPixel + c];
 
 											float nC = colorComponentSRGBToLinear(trC / 255.0f) * interpFac[0] * interpFac[1]+
 													colorComponentSRGBToLinear(tlC / 255.0f) * (1.0f - interpFac[0]) * interpFac[1] +
@@ -231,10 +237,11 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								};
 								requests.push_back(flReq);
 
-								offset += width * height * 3;
+								offset += width * height * bytesPerPixel;
 							}
 
-							highMipData.reset(newMipData.release());
+							oldData.reset(newMipData.release());
+							highMipData = oldData.get();
 							oldWidth = width;
 							oldHeight = height;
 							height >>= 1;
@@ -247,7 +254,6 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 			}
 		}
 
-		cmd.setStreamingBuffer(streamBuffer.get());
 		for (auto flReq : requests)
 		{
 			cmd.copyBufferToTex(flReq.tex, flReq.offset, flReq.width, flReq.height, flReq.mipmap);
@@ -276,8 +282,7 @@ size_t TextureStreamRequest::calculateSize() const
 	uint8_t numMipMaps = m_texture->getNumMipmaps();
 	uint16_t width = m_texture->getWidth();
 	uint16_t height = m_texture->getHeight();
-	// hardcoded 3 (3 bytes per pixel) here is dangerous, fix at some point
-	const size_t bytesPerPixel = 3;
+	const size_t bytesPerPixel = m_texture->getFormatPixelSize();
 
 	for (int i = numMipMaps; i > 0; --i)
 	{

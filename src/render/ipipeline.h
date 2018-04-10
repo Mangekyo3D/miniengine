@@ -120,5 +120,5 @@ class IPipeline
 		IPipeline() {}
 		virtual ~IPipeline() {}
 
-		virtual prepareDrawingResources() = 0;
+		//virtual prepareDrawingResources() = 0;
 };

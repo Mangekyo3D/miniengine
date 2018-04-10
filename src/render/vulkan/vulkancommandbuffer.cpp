@@ -4,6 +4,7 @@
 #include "vulkanpipeline.h"
 #include "vulkanbuffer.h"
 #include "vulkanrenderpass.h"
+#include "vulkantexture.h"
 
 #include <iostream>
 
@@ -12,6 +13,7 @@ CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 	, m_swapchain(static_cast<CVulkanSwapchain*> (&swapchain))
 	, m_frame(&m_swapchain->getNextFrame())
 	, m_cmd(m_frame->m_commandBuffer)
+	, m_streamingBuffer(nullptr)
 {
 	m_device->vkResetCommandBuffer(m_cmd, 0);
 
@@ -105,17 +107,84 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 	{
 		std::cout << "Error during queue submit" << std::endl;
 	}
+
+	m_frame->orphanBuffer(std::move(m_streamingBuffer));
 }
 
-void CVulkanCommandBuffer::setStreamingBuffer(IGPUBuffer* buf)
+IGPUBuffer& CVulkanCommandBuffer::createStreamingBuffer(size_t size)
 {
-
+	auto newBuf = m_device->createGPUBuffer(size, IGPUBuffer::Usage::eStreamSource);
+	m_streamingBuffer.reset(static_cast<CVulkanBuffer*> (newBuf.release()));
+	return *m_streamingBuffer;
 }
 
 void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 										   uint16_t width, uint16_t height, uint8_t miplevel)
 {
+	CVulkanTexture* vkTex = static_cast<CVulkanTexture*> (tex);
 
+	VkImageSubresourceRange subresourceRange = {
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		miplevel,
+		1,
+		0,
+		1
+	};
+
+	VkImageMemoryBarrier toFill = {
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		nullptr,
+		VK_ACCESS_MEMORY_READ_BIT,
+		VK_ACCESS_TRANSFER_WRITE_BIT,
+		VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		m_device->getGraphicsQueueIndex(),
+		m_device->getGraphicsQueueIndex(),
+		*vkTex,
+		subresourceRange
+	};
+
+	VkImageMemoryBarrier toUse = {
+		VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		nullptr,
+		VK_ACCESS_TRANSFER_WRITE_BIT,
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		m_device->getGraphicsQueueIndex(),
+		m_device->getGraphicsQueueIndex(),
+		*vkTex,
+		subresourceRange
+	};
+
+	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFill);
+
+	VkImageSubresourceLayers subresource = {
+		VK_IMAGE_ASPECT_COLOR_BIT,
+		miplevel,
+		0,
+		1
+	};
+
+	VkOffset3D imageOffset = {0, 0, 0};
+	VkExtent3D imageExtent = {width, height, 1};
+	VkBufferImageCopy copy {
+		offset,
+		0,
+		0,
+		subresource,
+		imageOffset,
+		imageExtent
+	};
+
+	m_device->vkCmdCopyBufferToImage(m_cmd,
+				*m_streamingBuffer,
+				*vkTex,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&copy);
+
+	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toUse);
 }
 
 void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline)
@@ -132,17 +201,15 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	VkDeviceSize offsets[2] = {0};
 
 	CVulkanBuffer* vBuf = static_cast<CVulkanBuffer*> (vertexBuffer);
-	buffers[bindCount] = vBuf->getID();
+	buffers[bindCount] = *vBuf;
 	offsets[bindCount] = vBuf->getAnimatedOffset();
-	vBuf->setLastFrameUser(*m_frame);
 
 	if (instanceBuffer)
 	{
 		++bindCount;
 		CVulkanBuffer* vInst = static_cast<CVulkanBuffer*> (instanceBuffer);
-		buffers[bindCount] = vInst->getID();
+		buffers[bindCount] = *vInst;
 		offsets[bindCount] = vInst->getAnimatedOffset();
-		vInst->setLastFrameUser(*m_frame);
 	}
 
 	m_device->vkCmdBindVertexBuffers(m_cmd, 0, bindCount + 1, buffers, offsets);
@@ -150,8 +217,7 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	if (indexBuffer)
 	{
 		CVulkanBuffer* vInd = static_cast<CVulkanBuffer*> (indexBuffer);
-		m_device->vkCmdBindIndexBuffer(m_cmd, vInd->getID(), 0, bShortIndex ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
-		vInd->setLastFrameUser(*m_frame);
+		m_device->vkCmdBindIndexBuffer(m_cmd, *vInd, 0, bShortIndex ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 	}
 }
 

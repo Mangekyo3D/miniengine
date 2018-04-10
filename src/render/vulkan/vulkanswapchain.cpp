@@ -5,6 +5,7 @@
 #include "../../OS/X11Window.h"
 #endif
 #include "vulkandevice.h"
+#include "vulkanbuffer.h"
 
 #include <iostream>
 #include <limits.h>
@@ -109,7 +110,7 @@ void CVulkanSwapchain::cleanup()
 void CVulkanSwapchain::swapBuffers()
 {
 	auto& device = CVulkanDevice::get();
-	SFrame& frame = m_frames[m_currentFrameIndex];
+	SFrame& frame = *m_frames[m_currentFrameIndex].get();
 
 	// after commands have been processed, present image to presentation engine
 	VkPresentInfoKHR presentInfo = {
@@ -169,7 +170,7 @@ SFrame& CVulkanSwapchain::getNextFrame()
 
 	m_currentFrameIndex = (m_currentFrameIndex + 1) % getNumberOfVirtualFrames();
 
-	SFrame& frame = m_frames[m_currentFrameIndex];
+	SFrame& frame = *m_frames[m_currentFrameIndex].get();
 
 	// if we have assigned a semaphore to the frame, recycle it for the next frame
 	if (frame.m_swapchainImageAvailableSemaphore)
@@ -182,7 +183,7 @@ SFrame& CVulkanSwapchain::getNextFrame()
 	device.vkWaitForFences(device, 1, &frame.m_fence, VK_TRUE, UINT_MAX);
 	device.vkResetFences(device, 1, &frame.m_fence);
 
-	frame.cleanupDelayedBlocks();
+	frame.cleanupOrphanedData();
 
 	frame.m_swapchainImage = m_swapchainImages[m_currentSwapchainImage];
 	frame.m_imageView = m_swapchainImageviews[m_currentSwapchainImage];
@@ -235,7 +236,7 @@ void CVulkanSwapchain::recreate()
 
 	for (uint32_t i = 0; i < getNumberOfVirtualFrames(); ++i)
 	{
-		m_frames.emplace_back();
+		m_frames.push_back(std::make_unique<SFrame>());
 	}
 
 	// create semaphores
@@ -369,15 +370,15 @@ SFrame::~SFrame()
 
 	device.vkDestroySemaphore(device, m_renderingFinishedSemaphore, nullptr);
 
-	cleanupDelayedBlocks();
+	cleanupOrphanedData();
 }
 
-void SFrame::cleanupDelayedBlocks()
+void SFrame::cleanupOrphanedData()
 {
-	for (SDeferredDeletionBlock& block : m_deletedBlocks)
-	{
-		block.m_chunk->freeBlock(block.m_offset);
-	}
+	m_orphanedBuffers.clear();
+}
 
-	m_deletedBlocks.clear();
+void SFrame::orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer)
+{
+	m_orphanedBuffers.push_back(std::move(buffer));
 }

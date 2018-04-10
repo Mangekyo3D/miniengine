@@ -2,21 +2,20 @@
 #include "../iswapchain.h"
 #include <vector>
 #include "vulkan/vulkan.h"
+#include <memory>
 class GameWindow;
-
-struct SDeferredDeletionBlock
-{
-	struct SMemoryChunk* m_chunk;
-	size_t m_offset;
-};
+class CVulkanBuffer;
 
 // Frame that encapsulates data corresponding to state of one frame: command buffer, semaphores for synchronization and fences
 struct SFrame
 {
 	SFrame();
+	SFrame(const SFrame&) = delete;
+	SFrame& operator = (const SFrame&) = delete;
 	~SFrame();
 
-	void cleanupDelayedBlocks();
+	void cleanupOrphanedData();
+	void orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer);
 
 	VkSemaphore m_swapchainImageAvailableSemaphore;
 	VkSemaphore m_renderingFinishedSemaphore;
@@ -32,7 +31,7 @@ struct SFrame
 	VkFence m_fence;
 
 	// blocks that should be deleted once the frame has finished executing
-	std::vector<SDeferredDeletionBlock> m_deletedBlocks;
+	std::vector<std::unique_ptr <CVulkanBuffer> > m_orphanedBuffers;
 };
 
 class CVulkanSwapchain : public ISwapchain
@@ -61,7 +60,7 @@ class CVulkanSwapchain : public ISwapchain
 		VkSwapchainKHR m_swapchain;
 		uint32_t m_numSwapchainImages;
 
-		std::vector <SFrame> m_frames;
+		std::vector <std::unique_ptr <SFrame> > m_frames;
 		// semaphores for frame acquisition. Those are passed to SFrames to synchronize rendering
 		std::vector <VkSemaphore> m_frameAcquireSemaphores;
 

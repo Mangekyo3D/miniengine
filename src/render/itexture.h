@@ -28,6 +28,7 @@ class ITexture
 		uint32_t getWidth() const { return m_width; }
 		uint32_t getHeight() const { return m_height; }
 		uint32_t getUsage() const { return m_usage; }
+		virtual size_t getFormatPixelSize() = 0;
 
 	protected:
 		uint32_t m_width;

@@ -8,6 +8,7 @@ class COpenGLTexture : public ITexture
 		~COpenGLTexture();
 		void bind(uint8_t unit);
 		uint32_t getID() { return m_id; }
+		virtual size_t getFormatPixelSize() override;
 
 	protected:
 		uint32_t formatToGLFormat();

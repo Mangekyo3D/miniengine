@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 
 struct SMemoryChunk;
-struct SFrame;
 
 class CVulkanBuffer : public IGPUBuffer
 {
@@ -14,9 +13,7 @@ public:
 	VkDeviceSize getAnimatedOffset() const { return static_cast <uint32_t>(m_frame * m_size); }
 	VkDescriptorBufferInfo getDescriptorBufferInfo() const;
 
-	void setLastFrameUser(SFrame& frame);
-
-	VkBuffer getID() {return m_buffer; }
+	operator VkBuffer () {return m_buffer; }
 
 private:
 	void create();
@@ -33,7 +30,4 @@ private:
 	uint8_t    m_frame;
 
 	SMemoryChunk* m_memoryChunk;
-
-	// last user of this buffer. When the buffer is flushed, the frame is responsible for cleaning up the buffer
-	SFrame* m_lastUser;
 };

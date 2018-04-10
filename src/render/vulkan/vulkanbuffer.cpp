@@ -5,7 +5,6 @@
 
 CVulkanBuffer::CVulkanBuffer(size_t size, uint32_t usage)
 	: IGPUBuffer(size, usage)
-	, m_lastUser(nullptr)
 	, m_frame(0)
 	, m_buffer(VK_NULL_HANDLE)
 	, m_memoryChunk(nullptr)
@@ -143,9 +142,4 @@ void CVulkanBuffer::unlock()
 
 	device.vkFlushMappedMemoryRanges(device, 1, &mappedRange);
 	device.vkUnmapMemory(device, m_memoryChunk->m_memory);
-}
-
-void CVulkanBuffer::setLastFrameUser(SFrame& frame)
-{
-	m_lastUser = &frame;
 }
