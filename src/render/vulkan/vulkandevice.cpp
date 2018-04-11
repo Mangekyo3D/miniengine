@@ -371,7 +371,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 		VK_MAKE_VERSION(1, 0, 0),
 		"Mini Engine",
 		VK_MAKE_VERSION(1, 0, 0),
-		VK_API_VERSION_1_1
+		VK_API_VERSION_1_0
 	};
 
 	std::vector <const char*> enabledLayers;
