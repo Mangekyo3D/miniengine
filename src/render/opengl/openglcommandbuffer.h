@@ -20,7 +20,8 @@ class COpenGLCommandBuffer :public ICommandBuffer
 
 		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) override;
 
-		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources) override;
+		virtual void bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource*) override;
+		virtual void bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource* sources) override;
 		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources) override;
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer, IGPUBuffer* indexBuffer, bool bShortIndices) override;
 
@@ -45,6 +46,8 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		bool m_bShortIndices;
 		bool m_bPrimitiveRestart;
 		std::unique_ptr <COpenGLBuffer> m_streamingBuffer;
-		uint32_t m_numGlobalBuffers;
-		uint32_t m_numGlobalTextures;
+		uint32_t m_numGlobalPipelineBuffers;
+		uint32_t m_numGlobalPipelineTextures;
+		uint32_t m_numRenderpassBuffers;
+		uint32_t m_numRenderpassTextures;
 };

@@ -65,7 +65,8 @@ class ICommandBuffer
 		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) = 0;
 		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) = 0;
 
-		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource*) = 0;
+		virtual void bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource*) = 0;
+		virtual void bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource*) = 0;
 		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource*) = 0;
 
 		virtual IDevice& getDevice() = 0;

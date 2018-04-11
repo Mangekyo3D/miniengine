@@ -6,7 +6,7 @@
 #endif
 #include "vulkandevice.h"
 #include "vulkanbuffer.h"
-#include "vulkanpipeline.h"
+#include "vulkandescriptorset.h"
 
 #include <iostream>
 #include <limits.h>
@@ -388,7 +388,7 @@ void SFrame::orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer)
 	}
 }
 
-void SFrame::orphanDescriptorPool(std::unique_ptr<SDescriptorPool> pool)
+void SFrame::orphanDescriptorPool(std::unique_ptr<CDescriptorPool> pool)
 {
 	if (pool)
 	{

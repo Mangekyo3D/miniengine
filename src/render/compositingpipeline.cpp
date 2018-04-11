@@ -28,7 +28,8 @@ struct SFullScreenData
 
 IFullScreenRenderPass::IFullScreenRenderPass(IDevice* device)
 {
-	m_renderpass = device->createRenderPass();
+	SRenderPassParams params;
+	m_renderpass = device->createRenderPass(params);
 	m_data = std::make_unique <SFullScreenData> (device);
 }
 
@@ -65,7 +66,7 @@ void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 		descriptorSource.emplace_back(input);
 	}
 
-	cmd.bindGlobalDescriptors(descriptorSource.size(), descriptorSource.data());
+	cmd.bindGlobalPipelineDescriptors(descriptorSource.size(), descriptorSource.data());
 
 	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
 
@@ -74,7 +75,14 @@ void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 
 CSceneRenderPass::CSceneRenderPass(IDevice* device)
 {
-	m_renderpass = device->createRenderPass();
+	SRenderPassParams params;
+	SDescriptorSet globalSet;
+
+	globalSet.addUniformBlock(eVertexStage);
+	globalSet.addUniformBlock(eFragmentStage);
+	params.set = &globalSet;
+
+	m_renderpass = device->createRenderPass(params);
 }
 
 CSceneRenderPass::~CSceneRenderPass()
@@ -93,7 +101,7 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 		SDescriptorSource{&lightData}
 	};
 
-	cmd.bindGlobalDescriptors(descriptorSource.size(), descriptorSource.data());
+	cmd.bindGlobalRenderPassDescriptors(descriptorSource.size(), descriptorSource.data());
 
 	auto predicate = [] (const std::unique_ptr<IBatch> &b1, const std::unique_ptr<IBatch> & b2) {
 		return b1->getPipeline() < b2->getPipeline();
@@ -134,13 +142,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 		SSamplerParams sampler;
 
 		SPipelineParams params;
-		SDescriptorSet globalSet;
-
 		params.addSampler(sampler);
-		globalSet.addUniformBlock(eVertexStage);
-		globalSet.addUniformBlock(eFragmentStage);
-
-		params.globalSet = &globalSet;
 		params.renderpass = m_renderpass.get();
 		params.flags = eDepthCompareGreater | eCullBackFace;
 
@@ -159,7 +161,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 			vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), eFloat, 3);
 			vertBinding.addAttribute(offsetof(VertexFormatVN, normal), e1010102int, 4);
 
-			params.perVertBinding = &vertBinding;
+			params.perDrawBinding = &vertBinding;
 			m_pipelines[eDiffuse] = device.createPipeline(params);
 		}
 
@@ -174,7 +176,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), e1010102int, 4);
 			vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), eFloat, 2);
-			params.perVertBinding = &vertBinding;
+			params.perDrawBinding = &vertBinding;
 
 			m_pipelines[eDiffuseTextured] = device.createPipeline(params);
 
@@ -209,7 +211,7 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 		params.shaderModule = "toneMapping";
 		SVertexBinding vertBinding(sizeof(VertexFormatV));
 		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
-		params.perVertBinding = &vertBinding;
+		params.perDrawBinding = &vertBinding;
 
 		m_data->m_pipeline = device.createPipeline(params);
 	}

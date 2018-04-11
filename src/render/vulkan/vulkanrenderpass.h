@@ -1,11 +1,14 @@
 #pragma once
 #include "../irenderpass.h"
 #include <vulkan/vulkan.h>
+#include <memory>
+
+class CVulkanDescriptorSet;
 
 class CVulkanRenderPass : public IRenderPass
 {
 	public:
-		CVulkanRenderPass();
+		CVulkanRenderPass(SRenderPassParams& params);
 		~CVulkanRenderPass();
 		// setup the renderpass with inputs and outputs.
 		virtual void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
@@ -14,6 +17,7 @@ class CVulkanRenderPass : public IRenderPass
 		uint32_t getWidth() const { return m_width; }
 		uint32_t getHeight() const { return m_height; }
 		operator VkRenderPass () {return m_renderPass; }
+		CVulkanDescriptorSet* getDescriptorSet() { return m_descriptorSet.get(); }
 
 	private:
 		// setup framebuffers
@@ -25,4 +29,5 @@ class CVulkanRenderPass : public IRenderPass
 		VkRenderPass m_renderPass;
 		VkFramebuffer m_framebuffer;
 		bool bIsSwapchainPass;
+		std::unique_ptr <CVulkanDescriptorSet> m_descriptorSet;
 };

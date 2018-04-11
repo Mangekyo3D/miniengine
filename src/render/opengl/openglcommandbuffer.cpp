@@ -13,8 +13,10 @@ COpenGLCommandBuffer::COpenGLCommandBuffer(uint32_t swapchainWidth, uint32_t swa
 	, m_currentVertexDescriptor(nullptr)
 	, m_bShortIndices(true)
 	, m_bPrimitiveRestart(false)
-	, m_numGlobalBuffers(0)
-	, m_numGlobalTextures(0)
+	, m_numGlobalPipelineBuffers(0)
+	, m_numGlobalPipelineTextures(0)
+	, m_numRenderpassBuffers(0)
+	, m_numRenderpassTextures(0)
 {
 }
 
@@ -61,10 +63,10 @@ void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredD
 	}
 }
 
-void COpenGLCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources)
+void COpenGLCommandBuffer::bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	m_numGlobalBuffers = 0;
-	m_numGlobalTextures = 0;
+	m_numRenderpassBuffers = 0;
+	m_numRenderpassTextures = 0;
 
 	for (uint32_t i = 0; i < numBindings; ++i)
 	{
@@ -73,13 +75,38 @@ void COpenGLCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptor
 			case SDescriptorSource::eBuffer:
 			{
 				COpenGLBuffer* buf = static_cast<COpenGLBuffer*> (sources[i].data.buffer);
-				m_device->glBindBufferBase(GL_UNIFORM_BUFFER, m_numGlobalBuffers++, buf->getID());
+				m_device->glBindBufferBase(GL_UNIFORM_BUFFER, m_numRenderpassBuffers++, buf->getID());
 				break;
 			}
 			case SDescriptorSource::eTexture:
 			{
 				COpenGLTexture* tex = static_cast<COpenGLTexture*> (sources[i].data.texture);
-				tex->bind(m_numGlobalTextures++);
+				tex->bind(m_numRenderpassTextures++);
+				break;
+			}
+		}
+	}
+}
+
+void COpenGLCommandBuffer::bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource* sources)
+{
+	m_numGlobalPipelineBuffers = 0;
+	m_numGlobalPipelineTextures = 0;
+
+	for (uint32_t i = 0; i < numBindings; ++i)
+	{
+		switch (sources[i].type)
+		{
+			case SDescriptorSource::eBuffer:
+			{
+				COpenGLBuffer* buf = static_cast<COpenGLBuffer*> (sources[i].data.buffer);
+				m_device->glBindBufferBase(GL_UNIFORM_BUFFER, m_numRenderpassBuffers + m_numGlobalPipelineBuffers++, buf->getID());
+				break;
+			}
+			case SDescriptorSource::eTexture:
+			{
+				COpenGLTexture* tex = static_cast<COpenGLTexture*> (sources[i].data.texture);
+				tex->bind(m_numRenderpassTextures + m_numGlobalPipelineTextures++);
 				break;
 			}
 		}
@@ -88,8 +115,8 @@ void COpenGLCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptor
 
 void COpenGLCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	uint32_t numGlobalBuffers = m_numGlobalBuffers;
-	uint32_t numGlobalTextures = m_numGlobalTextures;
+	uint32_t numGlobalBuffers = m_numGlobalPipelineBuffers + m_numRenderpassBuffers;
+	uint32_t numGlobalTextures = m_numGlobalPipelineTextures + m_numRenderpassTextures;
 
 	for (uint32_t i = 0; i < numBindings; ++i)
 	{
@@ -151,6 +178,9 @@ void COpenGLCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 	COpenGLRenderPass& glpass = static_cast<COpenGLRenderPass&> (renderpass);
 	uint32_t fbobjID = glpass.getID();
 	m_device->glBindFramebuffer(GL_FRAMEBUFFER, fbobjID);
+
+	m_numRenderpassBuffers = 0;
+	m_numRenderpassTextures = 0;
 
 	if (fbobjID == 0)
 	{

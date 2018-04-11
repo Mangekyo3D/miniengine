@@ -107,7 +107,7 @@ struct SDescriptorSet
 struct SPipelineParams
 {
 	IRenderPass* renderpass = nullptr;
-	SVertexBinding* perVertBinding = nullptr;
+	SVertexBinding* perDrawBinding = nullptr;
 	SVertexBinding* perInstanceBinding= nullptr;
 	const char*     shaderModule = nullptr;
 	uint64_t        flags = 0;

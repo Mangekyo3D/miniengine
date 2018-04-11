@@ -7,7 +7,7 @@ class CVulkanDevice;
 class CVulkanSwapchain;
 class CVulkanBuffer;
 struct SFrame;
-struct SDescriptorPool;
+class CDescriptorPool;
 class ISwapchain;
 
 class CVulkanCommandBuffer : public ICommandBuffer
@@ -26,7 +26,8 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override;
 		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) override;
 
-		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource*);
+		virtual void bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource*);
+		virtual void bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource*);
 		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource*);
 
 		virtual IDevice& getDevice() override;
@@ -34,11 +35,14 @@ class CVulkanCommandBuffer : public ICommandBuffer
 	protected:
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override;
 		virtual void endRenderPass() override;
+		void bindDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources);
+
 
 		CVulkanDevice* m_device;
 		std::unique_ptr <CVulkanBuffer> m_streamingBuffer;
-		std::unique_ptr <SDescriptorPool> m_globalPool;
-		std::unique_ptr <SDescriptorPool> m_perDrawPool;
+		std::unique_ptr <CDescriptorPool> m_renderpassGlobalPool;
+		std::unique_ptr <CDescriptorPool> m_pipelineGlobalPool;
+		std::unique_ptr <CDescriptorPool> m_pipelinePerDrawPool;
 		CVulkanSwapchain* m_swapchain;
 		SFrame* m_frame;
 		VkCommandBuffer m_cmd;

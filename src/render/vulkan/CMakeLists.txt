@@ -8,6 +8,7 @@ set (SRC
 	vulkanrenderpass.cpp
 	vulkancommandbuffer.cpp
 	vulkanpipeline.cpp
+	vulkandescriptorset.cpp
 	)
 
 set (INC
@@ -20,6 +21,7 @@ set (INC
 	vulkanrenderpass.h
 	vulkancommandbuffer.h
 	vulkanpipeline.h
+	vulkandescriptorset.h
 	)
 
 set (INC_DIRS)

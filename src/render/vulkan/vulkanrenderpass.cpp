@@ -1,15 +1,20 @@
 #include "vulkanrenderpass.h"
 #include "vulkandevice.h"
 #include "vulkantexture.h"
+#include "vulkandescriptorset.h"
 #include <vector>
 #include <iostream>
 #include <cassert>
 
-CVulkanRenderPass::CVulkanRenderPass()
+CVulkanRenderPass::CVulkanRenderPass(SRenderPassParams& params)
 	: m_renderPass(VK_NULL_HANDLE)
 	, m_framebuffer(VK_NULL_HANDLE)
 	, bIsSwapchainPass(false)
 {
+	if (params.set)
+	{
+		m_descriptorSet = std::make_unique <CVulkanDescriptorSet> (*params.set);
+	}
 }
 
 CVulkanRenderPass::~CVulkanRenderPass()

@@ -4,39 +4,27 @@
 #include <vector>
 #include <memory>
 
+class CVulkanDescriptorSet;
 class IRenderPass;
-
-struct SDescriptorPool
-{
-	SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t numDecr, uint32_t numSets);
-	SDescriptorPool(const SDescriptorPool&) = delete;
-	SDescriptorPool& operator = (const SDescriptorPool&) = delete;
-	~SDescriptorPool();
-
-	VkDescriptorPool m_pool;
-};
 
 class CVulkanPipeline : public IPipeline
 {
 	public:
 		CVulkanPipeline(SPipelineParams& params);
 		~CVulkanPipeline();
-		std::unique_ptr <SDescriptorPool> createPerFrameDescriptorPool(size_t numDescriptors);
-		std::unique_ptr <SDescriptorPool> createGlobalPool();
 
 		operator VkPipeline () {return m_pipeline; }
+		CVulkanDescriptorSet* getGlobalSet() { return m_globaLayout.get(); }
+		CVulkanDescriptorSet* getPerDrawSet() { return m_perDrawLayout.get(); }
 
 	private:
 		VkFormat attributeParamToVertFormat(SVertexAttribParams&);
-		VkShaderStageFlags stageFlagsToVulkanFlags(uint32_t stages);
-		VkDescriptorType descriptorToVulkanType(EDescriptorType desc);
-		VkDescriptorSetLayout createSetLayout(SDescriptorSet*);
 
 		VkPipelineLayout m_pipelineLayout;
 		VkPipeline m_pipeline;
 
-		VkDescriptorSetLayout m_globaLayout;
-		VkDescriptorSetLayout m_perDrawLayout;
+		std::unique_ptr <CVulkanDescriptorSet> m_globaLayout;
+		std::unique_ptr <CVulkanDescriptorSet> m_perDrawLayout;
 
 		std::vector <VkSampler> m_samplers;
 };

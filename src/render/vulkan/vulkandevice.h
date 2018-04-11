@@ -31,8 +31,6 @@ struct SMemoryChunk
 	~SMemoryChunk();
 	bool allocateBlock(size_t size, size_t alignment, size_t& offset);
 	void freeBlock(size_t offset);
-	// push the block for deletion after the current frame has finished executing
-	void delayedFreeBlock(size_t offset);
 
 	// memory object for this memory chunk
 	VkDeviceMemory m_memory;
@@ -57,7 +55,7 @@ public:
 	static CVulkanDevice& get();
 
 	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain);
-	virtual std::unique_ptr<IRenderPass> createRenderPass() override;
+	virtual std::unique_ptr<IRenderPass> createRenderPass(SRenderPassParams&) override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) override;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params) override;
 	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped) override;
@@ -134,3 +132,5 @@ private:
 
 	static CVulkanDevice* s_device;
 };
+
+VkShaderStageFlags stageFlagsToVulkanFlags(uint32_t stages);

@@ -5,7 +5,7 @@
 #include <memory>
 class GameWindow;
 class CVulkanBuffer;
-struct SDescriptorPool;
+class CDescriptorPool;
 
 // Frame that encapsulates data corresponding to state of one frame: command buffer, semaphores for synchronization and fences
 struct SFrame
@@ -17,7 +17,7 @@ struct SFrame
 
 	void cleanupOrphanedData();
 	void orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer);
-	void orphanDescriptorPool(std::unique_ptr<SDescriptorPool> pool);
+	void orphanDescriptorPool(std::unique_ptr<CDescriptorPool> pool);
 
 	VkSemaphore m_swapchainImageAvailableSemaphore;
 	VkSemaphore m_renderingFinishedSemaphore;
@@ -34,7 +34,7 @@ struct SFrame
 
 	// blocks that should be deleted once the frame has finished executing
 	std::vector<std::unique_ptr <CVulkanBuffer> > m_orphanedBuffers;
-	std::vector<std::unique_ptr <SDescriptorPool> > m_orphanedPools;
+	std::vector<std::unique_ptr <CDescriptorPool> > m_orphanedPools;
 };
 
 class CVulkanSwapchain : public ISwapchain

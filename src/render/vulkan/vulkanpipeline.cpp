@@ -2,6 +2,7 @@
 #include "vulkanshadermodule.h"
 #include "vulkandevice.h"
 #include "vulkanrenderpass.h"
+#include "vulkandescriptorset.h"
 #include <string>
 #include <array>
 #include <vector>
@@ -9,8 +10,6 @@
 #include <limits>
 
 CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
-	: m_globaLayout(VK_NULL_HANDLE)
-	, m_perDrawLayout(VK_NULL_HANDLE)
 {
 	auto& device = CVulkanDevice::get();
 
@@ -43,6 +42,15 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 			std::cout << "Failed to create sampler" << std::endl;
 		}
 		m_samplers.push_back(sampler);
+	}
+
+	if (params.globalSet && params.globalSet->descriptors.size() > 0)
+	{
+		m_globaLayout = std::make_unique <CVulkanDescriptorSet> (*params.globalSet, m_samplers.data());
+	}
+	if (params.perDrawSet && params.perDrawSet->descriptors.size() > 0)
+	{
+		m_perDrawLayout = std::make_unique <CVulkanDescriptorSet> (*params.perDrawSet, m_samplers.data());
 	}
 
 	std::string filename = params.shaderModule;
@@ -95,16 +103,16 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 
 	uint32_t numVertBindings = 0;
 
-	if (params.perVertBinding)
+	if (params.perDrawBinding)
 	{
 		vertexBindings[numVertBindings++] =
 			VkVertexInputBindingDescription {
 				0,
-				static_cast<uint32_t> (params.perVertBinding->dataSize),
+				static_cast<uint32_t> (params.perDrawBinding->dataSize),
 				VK_VERTEX_INPUT_RATE_VERTEX
 			};
 
-		for (auto& attribs : params.perVertBinding->attributeParams)
+		for (auto& attribs : params.perDrawBinding->attributeParams)
 		{
 			vertexAttributes.emplace_back(
 				VkVertexInputAttributeDescription {
@@ -247,15 +255,19 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 	};
 
 	uint32_t numLayouts = 0;
-	VkDescriptorSetLayout setLayouts[2];
+	VkDescriptorSetLayout setLayouts[3];
 
-	if ((setLayouts[numLayouts] = createSetLayout(params.globalSet)) != VK_NULL_HANDLE)
+	if (CVulkanDescriptorSet* renderpassSet = rpass.getDescriptorSet())
 	{
-		m_globaLayout = setLayouts[numLayouts++];
+		setLayouts[numLayouts++] = *renderpassSet;
 	}
-	if ((setLayouts[numLayouts] = createSetLayout(params.perDrawSet)) != VK_NULL_HANDLE)
+	if (m_globaLayout)
 	{
-		m_perDrawLayout = setLayouts[numLayouts++];
+		setLayouts[numLayouts++] = *m_globaLayout;
+	}
+	if (m_perDrawLayout)
+	{
+		setLayouts[numLayouts++] = *m_perDrawLayout;
 	}
 
 	VkPipelineLayoutCreateInfo layoutInfo = {
@@ -316,37 +328,10 @@ CVulkanPipeline::~CVulkanPipeline()
 		device.vkDestroyPipeline(device, m_pipeline, nullptr);
 	}
 
-	if (m_globaLayout)
-	{
-		device.vkDestroyDescriptorSetLayout(device, m_globaLayout, nullptr);
-	}
-
-	if (m_perDrawLayout)
-	{
-		device.vkDestroyDescriptorSetLayout(device, m_perDrawLayout, nullptr);
-	}
-
 	for (auto& sampler : m_samplers)
 	{
 		device.vkDestroySampler(device, sampler, nullptr);
 	}
-}
-
-std::unique_ptr <SDescriptorPool> CVulkanPipeline::createPerFrameDescriptorPool(size_t numDescriptors)
-{
-	if (numDescriptors)
-	{
-		return std::make_unique <SDescriptorPool> (nullptr, 0, static_cast<uint32_t> (numDescriptors));
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-std::unique_ptr <SDescriptorPool> CVulkanPipeline::createGlobalPool()
-{
-	return std::make_unique <SDescriptorPool> (nullptr, 0, 1);
 }
 
 VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
@@ -366,103 +351,4 @@ VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
 	}
 
 	return VK_FORMAT_UNDEFINED;
-}
-
-VkShaderStageFlags CVulkanPipeline::stageFlagsToVulkanFlags(uint32_t stages)
-{
-	VkShaderStageFlags flags = 0;
-
-	if (stages & eVertexStage)
-	{
-		flags |= VK_SHADER_STAGE_VERTEX_BIT;
-	}
-	if (stages & eFragmentStage)
-	{
-		flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
-	}
-
-	return flags;
-}
-
-VkDescriptorType CVulkanPipeline::descriptorToVulkanType(EDescriptorType desc)
-{
-	switch (desc)
-	{
-		case eUniformBlock:
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		case eTextureSampler:
-			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	}
-
-	return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-}
-
-VkDescriptorSetLayout CVulkanPipeline::createSetLayout(SDescriptorSet* params)
-{
-	if (params)
-	{
-		auto& device = CVulkanDevice::get();
-
-		std::vector <VkDescriptorSetLayoutBinding> layoutBindings;
-
-		for (auto& descriptor : params->descriptors)
-		{
-			layoutBindings.push_back(
-				VkDescriptorSetLayoutBinding {
-					static_cast <uint32_t> (layoutBindings.size()),
-					descriptorToVulkanType(descriptor.type),
-					1,
-					stageFlagsToVulkanFlags(descriptor.shaderStages),
-					(descriptor.type == eTextureSampler) ? &m_samplers[descriptor.sampler] : nullptr
-				});
-		}
-
-		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {
-			VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-			nullptr,
-			0,
-			static_cast <uint32_t> (layoutBindings.size()),
-			layoutBindings.data()
-		};
-
-		VkDescriptorSetLayout setLayout;
-
-		if (device.vkCreateDescriptorSetLayout(device, &descriptorSetLayoutInfo, nullptr, &setLayout) != VK_SUCCESS)
-		{
-			std::cout << "Error during descriptor set layout creation" << std::endl;
-		}
-
-		return setLayout;
-	}
-
-	return VK_NULL_HANDLE;
-}
-
-SDescriptorPool::SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t numDecr, uint32_t numSets)
-{
-	auto& device = CVulkanDevice::get();
-
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = {
-		VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-		nullptr,
-		0,
-		numSets,
-		numDecr,
-		perDesrInfo
-	};
-
-	if (device.vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_pool) != VK_SUCCESS)
-	{
-		std::cout << "Error during descriptor pool creation" << std::endl;
-	}
-}
-
-SDescriptorPool::~SDescriptorPool()
-{
-	auto& device = CVulkanDevice::get();
-
-	if (m_pool)
-	{
-		device.vkDestroyDescriptorPool(device, m_pool, nullptr);
-	}
 }

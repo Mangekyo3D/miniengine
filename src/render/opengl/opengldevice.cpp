@@ -167,14 +167,14 @@ std::unique_ptr<IGPUBuffer> COpenGLDevice::createGPUBuffer(size_t size, uint32_t
 	return std::make_unique <COpenGLBuffer>(size, usage);
 }
 
-std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass()
+std::unique_ptr<IRenderPass> COpenGLDevice::createRenderPass(SRenderPassParams&)
 {
 	return std::make_unique <COpenGLRenderPass>();
 }
 
 std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params)
 {
-	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (params.perVertBinding, params.perInstanceBinding);
+	auto vertexDescriptor = std::make_unique <COpenGLVertexDescriptorInterface> (params.perDrawBinding, params.perInstanceBinding);
 	return std::make_unique <COpenGLPipeline> (params, std::move(vertexDescriptor));
 }
 

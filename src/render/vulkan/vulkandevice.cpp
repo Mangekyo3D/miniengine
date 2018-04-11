@@ -721,9 +721,9 @@ void CVulkanDevice::finishJobs()
 	vkDeviceWaitIdle(m_device);
 }
 
-std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass()
+std::unique_ptr<IRenderPass> CVulkanDevice::createRenderPass(SRenderPassParams& params)
 {
-	return std::make_unique <CVulkanRenderPass> ();
+	return std::make_unique <CVulkanRenderPass> (params);
 }
 
 SMemoryChunk::SMemoryChunk(VkDeviceMemory memory, const size_t size)
@@ -850,7 +850,18 @@ void SMemoryChunk::freeBlock(size_t offset)
 	}
 }
 
-void SMemoryChunk::delayedFreeBlock(size_t offset)
+VkShaderStageFlags stageFlagsToVulkanFlags(uint32_t stages)
 {
+	VkShaderStageFlags flags = 0;
 
+	if (stages & eVertexStage)
+	{
+		flags |= VK_SHADER_STAGE_VERTEX_BIT;
+	}
+	if (stages & eFragmentStage)
+	{
+		flags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+	}
+
+	return flags;
 }

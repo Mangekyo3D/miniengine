@@ -5,6 +5,7 @@
 #include "vulkanbuffer.h"
 #include "vulkanrenderpass.h"
 #include "vulkantexture.h"
+#include "vulkandescriptorset.h"
 
 #include <iostream>
 
@@ -109,8 +110,9 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 	}
 
 	m_frame->orphanBuffer(std::move(m_streamingBuffer));
-	m_frame->orphanDescriptorPool(std::move(m_globalPool));
-	m_frame->orphanDescriptorPool(std::move(m_perDrawPool));
+	m_frame->orphanDescriptorPool(std::move(m_pipelineGlobalPool));
+	m_frame->orphanDescriptorPool(std::move(m_pipelinePerDrawPool));
+	m_frame->orphanDescriptorPool(std::move(m_renderpassGlobalPool));
 }
 
 IGPUBuffer& CVulkanCommandBuffer::createStreamingBuffer(size_t size)
@@ -195,11 +197,13 @@ void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredD
 
 	m_device->vkCmdBindPipeline(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipe);
 
-	m_frame->orphanDescriptorPool(std::move(m_globalPool));
-	m_frame->orphanDescriptorPool(std::move(m_perDrawPool));
+	m_frame->orphanDescriptorPool(std::move(m_pipelineGlobalPool));
+	m_frame->orphanDescriptorPool(std::move(m_pipelinePerDrawPool));
 
-	m_globalPool = pipe->createGlobalPool();
-	m_perDrawPool = pipe->createPerFrameDescriptorPool(numRequiredDescriptors);
+	if (CVulkanDescriptorSet* globalSet = pipe->getGlobalSet())
+		m_pipelineGlobalPool = globalSet->createDescriptorPool(1);
+	if (CVulkanDescriptorSet* perDrawSet = pipe->getPerDrawSet())
+		m_pipelinePerDrawPool  = perDrawSet->createDescriptorPool(static_cast <uint32_t> (numRequiredDescriptors));
 }
 
 void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer,  IGPUBuffer* indexBuffer, bool bShortIndex)
@@ -239,10 +243,47 @@ void CVulkanCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint3
 	m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
 }
 
-void CVulkanCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources)
+void CVulkanCommandBuffer::bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	std::vector <VkDescriptorImageInfo> images;
-	std::vector <VkDescriptorBufferInfo> buffers;
+	bindDescriptorsGeneric(m_renderpassGlobalPool.get(), numBindings, sources);
+}
+
+void CVulkanCommandBuffer::bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource* sources)
+{
+	bindDescriptorsGeneric(m_pipelineGlobalPool.get(), numBindings, sources);
+}
+
+void CVulkanCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
+{
+	bindDescriptorsGeneric(m_pipelinePerDrawPool.get(), numBindings, sources);
+}
+
+void CVulkanCommandBuffer::bindDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources)
+{
+	struct DescriptorInfo
+	{
+		DescriptorInfo(VkDescriptorImageInfo info)
+		{
+			polymorphic.imageInfo = info;
+		}
+
+		DescriptorInfo(VkDescriptorBufferInfo info)
+		{
+			polymorphic.bufferInfo = info;
+		}
+
+		union {
+			VkDescriptorImageInfo imageInfo;
+			VkDescriptorBufferInfo bufferInfo;
+		} polymorphic;
+	};
+
+	VkDescriptorSet set = pool->allocate();
+
+	std::vector <DescriptorInfo> info;
+	info.reserve(numBindings);
+	std::vector <VkWriteDescriptorSet> writeSets;
+	writeSets.reserve(numBindings);
 
 	for (uint32_t i = 0; i < numBindings; ++i)
 	{
@@ -251,35 +292,43 @@ void CVulkanCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptor
 			case SDescriptorSource::eBuffer:
 			{
 				CVulkanBuffer* buffer = static_cast <CVulkanBuffer*> (sources[i].data.buffer);
-				buffers.push_back(buffer->getDescriptorBufferInfo());
+				info.push_back(buffer->getDescriptorBufferInfo());
+				writeSets.push_back(VkWriteDescriptorSet {
+										VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+										nullptr,
+										set,
+										i,
+										0,
+										1,
+										VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+										nullptr,
+										&info.back().polymorphic.bufferInfo,
+										nullptr
+									});
 				break;
 			}
 			case SDescriptorSource::eTexture:
 			{
 				CVulkanTexture* texture = static_cast <CVulkanTexture*> (sources[i].data.texture);
-				images.push_back(texture->getDescriptorImageInfo());
+				info.push_back(texture->getDescriptorImageInfo());
+				writeSets.push_back(VkWriteDescriptorSet {
+										VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+										nullptr,
+										set,
+										i,
+										0,
+										1,
+										VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+										&info.back().polymorphic.imageInfo,
+										nullptr,
+										nullptr
+									});
 				break;
 			}
 		}
 	}
-}
 
-void CVulkanCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
-{
-	for (uint32_t i = 0; i < numBindings; ++i)
-	{
-		switch (sources[i].type)
-		{
-			case SDescriptorSource::eBuffer:
-			{
-				break;
-			}
-			case SDescriptorSource::eTexture:
-			{
-				break;
-			}
-		}
-	}
+	m_device->vkUpdateDescriptorSets(*m_device, static_cast <uint32_t> (writeSets.size()), writeSets.data(), 0, nullptr);
 }
 
 IDevice& CVulkanCommandBuffer::getDevice()
@@ -290,6 +339,13 @@ IDevice& CVulkanCommandBuffer::getDevice()
 void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth)
 {
 	CVulkanRenderPass& rpass = static_cast<CVulkanRenderPass&> (renderpass);
+
+	m_frame->orphanDescriptorPool(std::move(m_renderpassGlobalPool));
+
+	if (CVulkanDescriptorSet* set = rpass.getDescriptorSet())
+	{
+		m_renderpassGlobalPool = set->createDescriptorPool(1);
+	}
 
 	// initialize data - clear colors, viewport size
 	VkClearValue clearValues[2];

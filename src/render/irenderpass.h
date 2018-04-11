@@ -2,6 +2,12 @@
 #include <stdint.h>
 
 class ITexture;
+struct SDescriptorSet;
+
+struct SRenderPassParams
+{
+	SDescriptorSet* set = nullptr;
+};
 
 class IRenderPass
 {
