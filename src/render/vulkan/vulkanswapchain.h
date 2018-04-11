@@ -46,6 +46,7 @@ class CVulkanSwapchain : public ISwapchain
 
 		void recreate();
 		void cleanup();
+		void onResize(uint32_t newWidth, uint32_t newHeight) override;
 
 		SFrame& getNextFrame();
 

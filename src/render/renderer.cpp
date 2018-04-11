@@ -25,10 +25,10 @@ struct LightUniformBuffer
 };
 
 
-Renderer::Renderer (std::unique_ptr <IDevice> device)
+Renderer::Renderer (std::unique_ptr <IDevice> device, uint32_t width, uint32_t height)
 	: m_device(std::move(device))
 {
-	m_compositor = std::make_unique <CCompositingPipeline>(m_device.get());
+	m_compositor = std::make_unique <CCompositingPipeline>(*m_device, width, height);
 
 	m_cameraUniform = m_device->createGPUBuffer(sizeof(SceneUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);
 	m_lightUniform = m_device->createGPUBuffer(sizeof(LightUniformBuffer), IGPUBuffer::Usage::eAnimatedUniform);

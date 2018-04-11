@@ -108,6 +108,12 @@ void CVulkanSwapchain::cleanup()
 	}
 }
 
+void CVulkanSwapchain::onResize(uint32_t newWidth, uint32_t newHeight)
+{
+	ISwapchain::onResize(newWidth, newHeight);
+	recreate();
+}
+
 void CVulkanSwapchain::swapBuffers()
 {
 	auto& device = CVulkanDevice::get();
@@ -132,7 +138,6 @@ void CVulkanSwapchain::swapBuffers()
 		case VK_SUCCESS:
 			break;
 		case VK_ERROR_OUT_OF_DATE_KHR:
-			recreate();
 			break;
 		case VK_SUBOPTIMAL_KHR:
 			break;

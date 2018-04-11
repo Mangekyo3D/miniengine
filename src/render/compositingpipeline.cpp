@@ -10,9 +10,9 @@
 
 struct SFullScreenData
 {
-	SFullScreenData(IDevice* device)
+	SFullScreenData(IDevice& device)
 	{
-		m_fullScreenTriangle = device->createGPUBuffer(3 * sizeof(VertexFormatV), IGPUBuffer::Usage::eConstantVertex);
+		m_fullScreenTriangle = device.createGPUBuffer(3 * sizeof(VertexFormatV), IGPUBuffer::Usage::eConstantVertex);
 
 		if (auto lock = IGPUBuffer::CAutoLock <VertexFormatV>(*m_fullScreenTriangle))
 		{
@@ -26,10 +26,10 @@ struct SFullScreenData
 	std::unique_ptr <IPipeline>  m_pipeline;
 };
 
-IFullScreenRenderPass::IFullScreenRenderPass(IDevice* device)
+IFullScreenRenderPass::IFullScreenRenderPass(IDevice& device)
 {
 	SRenderPassParams params;
-	m_renderpass = device->createRenderPass(params);
+	m_renderpass = device.createRenderPass(params);
 	m_data = std::make_unique <SFullScreenData> (device);
 }
 
@@ -73,7 +73,7 @@ void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 	cmd.drawArrays(ICommandBuffer::EPrimitiveType::eTriangles, 0, 3);
 }
 
-CSceneRenderPass::CSceneRenderPass(IDevice* device)
+CSceneRenderPass::CSceneRenderPass(IDevice& device)
 {
 	SRenderPassParams params;
 	SDescriptorSet globalSet;
@@ -82,7 +82,7 @@ CSceneRenderPass::CSceneRenderPass(IDevice* device)
 	globalSet.addUniformBlock(eFragmentStage);
 	params.set = &globalSet;
 
-	m_renderpass = device->createRenderPass(params);
+	m_renderpass = device.createRenderPass(params);
 }
 
 CSceneRenderPass::~CSceneRenderPass()
@@ -217,11 +217,12 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 	}
 }
 
-CCompositingPipeline::CCompositingPipeline(IDevice* device)
+CCompositingPipeline::CCompositingPipeline(IDevice& device, uint32_t width, uint32_t height)
 	: m_sceneDrawPass(device)
 	, m_toneMappingPass(device)
-	, m_device(device)
+	, m_device(&device)
 {
+	resize(device, width, height);
 }
 
 CCompositingPipeline::~CCompositingPipeline()

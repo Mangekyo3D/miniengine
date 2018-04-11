@@ -19,7 +19,7 @@ struct SFullScreenData;
 class IFullScreenRenderPass
 {
 	public:
-		IFullScreenRenderPass(IDevice* device);
+		IFullScreenRenderPass(IDevice& device);
 		virtual ~IFullScreenRenderPass();
 		// setup the renderpass with inputs and default framebuffer output.
 		void setupRenderPass(IDevice& device, ITexture** inputs, uint32_t numInputs, ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = nullptr);
@@ -36,7 +36,7 @@ class IFullScreenRenderPass
 class CToneMappingPass : public IFullScreenRenderPass
 {
 	public:
-		CToneMappingPass(IDevice* device) : IFullScreenRenderPass(device) {}
+		CToneMappingPass(IDevice& device) : IFullScreenRenderPass(device) {}
 		~CToneMappingPass();
 
 	private:
@@ -46,7 +46,7 @@ class CToneMappingPass : public IFullScreenRenderPass
 class CSceneRenderPass
 {
 	public:
-		CSceneRenderPass(IDevice* device);
+		CSceneRenderPass(IDevice& device);
 		~CSceneRenderPass();
 
 		void draw(ICommandBuffer&, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);
@@ -61,7 +61,7 @@ class CSceneRenderPass
 class CCompositingPipeline
 {
 	public:
-		CCompositingPipeline(IDevice* device);
+		CCompositingPipeline(IDevice& device, uint32_t width, uint32_t height);
 		~CCompositingPipeline();
 
 		void draw(ICommandBuffer& cmd, std::vector<std::unique_ptr<IBatch> >& batches, IGPUBuffer& cameraData, IGPUBuffer& lightData);

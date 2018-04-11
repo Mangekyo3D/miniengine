@@ -137,6 +137,7 @@ Win32Window::Win32Window()
 {
 	m_hWnd = CreateWindow(m_wndClass.getName(), "Space Pirates",
 						  WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), this);
+	ShowWindow(m_hWnd, SW_SHOW);
 	ShowCursor(false);
 }
 

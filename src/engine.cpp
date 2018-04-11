@@ -16,7 +16,10 @@ Engine::Engine(GameWindow &win, SCommandLineOptions& options)
 {
 	auto device = IDevice::createDevice(win, options.bDebugContext, options.bWithVulkan);
 	m_resourceManager = std::make_unique<ResourceManager> (device.get());
-	m_renderer =  std::make_unique<Renderer>(std::move(device));
+
+	uint32_t width, height;
+	m_gameWindow->getClientSize(width, height);
+	m_renderer =  std::make_unique<Renderer>(std::move(device), width, height);
 
 	m_gameWindow->onResize.connect(this, &Engine::onResizeEvent);
 	m_gameWindow->onKey.connect(this, &Engine::onKeyEvent);

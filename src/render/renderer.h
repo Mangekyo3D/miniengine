@@ -22,7 +22,7 @@ enum EScenePipeline {
 class Renderer
 {
 	public:
-		Renderer(std::unique_ptr<IDevice> device);
+		Renderer(std::unique_ptr<IDevice> device, uint32_t width, uint32_t height);
 		~Renderer();
 		Renderer(const Renderer&) = delete;
 		Renderer& operator = (const Renderer&) = delete;
