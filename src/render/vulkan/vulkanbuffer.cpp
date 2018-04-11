@@ -83,7 +83,7 @@ CVulkanBuffer::~CVulkanBuffer()
 
 VkDescriptorBufferInfo CVulkanBuffer::getDescriptorBufferInfo() const
 {
-	return {m_buffer, 0, m_size};
+	return {m_buffer, m_size * m_frame, m_size};
 }
 
 VkBufferUsageFlags CVulkanBuffer::toVulkanUsageFlags(uint32_t usage)

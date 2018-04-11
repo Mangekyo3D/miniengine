@@ -14,6 +14,8 @@ class CVulkanPipeline : public IPipeline
 		~CVulkanPipeline();
 
 		operator VkPipeline () {return m_pipeline; }
+		VkPipelineLayout getLayout() { return m_pipelineLayout; }
+
 		CVulkanDescriptorSet* getGlobalSet() { return m_globaLayout.get(); }
 		CVulkanDescriptorSet* getPerDrawSet() { return m_perDrawLayout.get(); }
 

@@ -88,7 +88,7 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 			VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 			VK_ATTACHMENT_STORE_OP_DONT_CARE,
 			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 		};
 
 		VkAttachmentReference reference {

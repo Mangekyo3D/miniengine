@@ -9,6 +9,7 @@ class CVulkanBuffer;
 struct SFrame;
 class CDescriptorPool;
 class ISwapchain;
+class CVulkanPipeline;
 
 class CVulkanCommandBuffer : public ICommandBuffer
 {
@@ -35,8 +36,7 @@ class CVulkanCommandBuffer : public ICommandBuffer
 	protected:
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override;
 		virtual void endRenderPass() override;
-		void bindDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources);
-
+		VkDescriptorSet updateDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources);
 
 		CVulkanDevice* m_device;
 		std::unique_ptr <CVulkanBuffer> m_streamingBuffer;
@@ -44,6 +44,12 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		std::unique_ptr <CDescriptorPool> m_pipelineGlobalPool;
 		std::unique_ptr <CDescriptorPool> m_pipelinePerDrawPool;
 		CVulkanSwapchain* m_swapchain;
+		VkPipelineLayout m_currentPipelineLayout;
 		SFrame* m_frame;
 		VkCommandBuffer m_cmd;
+		uint32_t m_pipelineSetIndex;
+		uint32_t m_perDrawSetIndex;
+
+		VkDescriptorSet m_renderPassGlobalSet;
+		VkDescriptorSet m_pipelineGlobalSet;
 };

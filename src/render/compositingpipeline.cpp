@@ -101,8 +101,6 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 		SDescriptorSource{&lightData}
 	};
 
-	cmd.bindGlobalRenderPassDescriptors(descriptorSource.size(), descriptorSource.data());
-
 	auto predicate = [] (const std::unique_ptr<IBatch> &b1, const std::unique_ptr<IBatch> & b2) {
 		return b1->getPipeline() < b2->getPipeline();
 	};
@@ -118,6 +116,7 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 
 		auto end = std::upper_bound(start, batches.end(), *start, predicate);
 		cmd.bindPipeline(pipeline, end - start);
+		cmd.bindGlobalRenderPassDescriptors(descriptorSource.size(), descriptorSource.data());
 
 		while (start != end)
 		{

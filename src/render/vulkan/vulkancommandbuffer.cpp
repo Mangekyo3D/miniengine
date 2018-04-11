@@ -14,7 +14,9 @@ CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 	, m_swapchain(static_cast<CVulkanSwapchain*> (&swapchain))
 	, m_frame(&m_swapchain->getNextFrame())
 	, m_cmd(m_frame->m_commandBuffer)
-	, m_streamingBuffer(nullptr)
+	, m_currentPipelineLayout(VK_NULL_HANDLE)
+	, m_renderPassGlobalSet(VK_NULL_HANDLE)
+	, m_pipelineGlobalSet(VK_NULL_HANDLE)
 {
 	m_device->vkResetCommandBuffer(m_cmd, 0);
 
@@ -201,9 +203,16 @@ void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredD
 	m_frame->orphanDescriptorPool(std::move(m_pipelinePerDrawPool));
 
 	if (CVulkanDescriptorSet* globalSet = pipe->getGlobalSet())
+	{
 		m_pipelineGlobalPool = globalSet->createDescriptorPool(1);
+		++m_perDrawSetIndex;
+	}
 	if (CVulkanDescriptorSet* perDrawSet = pipe->getPerDrawSet())
 		m_pipelinePerDrawPool  = perDrawSet->createDescriptorPool(static_cast <uint32_t> (numRequiredDescriptors));
+
+	m_currentPipelineLayout = pipe->getLayout();
+
+	m_pipelineGlobalSet = VK_NULL_HANDLE;
 }
 
 void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer,  IGPUBuffer* indexBuffer, bool bShortIndex)
@@ -245,20 +254,32 @@ void CVulkanCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint3
 
 void CVulkanCommandBuffer::bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	bindDescriptorsGeneric(m_renderpassGlobalPool.get(), numBindings, sources);
+	if (m_renderPassGlobalSet == VK_NULL_HANDLE)
+	{
+		m_renderPassGlobalSet = updateDescriptorsGeneric(m_renderpassGlobalPool.get(), numBindings, sources);
+	}
+
+	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, 0, 1, &m_renderPassGlobalSet, 0, nullptr);
 }
 
 void CVulkanCommandBuffer::bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	bindDescriptorsGeneric(m_pipelineGlobalPool.get(), numBindings, sources);
+	if (m_pipelineGlobalSet == VK_NULL_HANDLE)
+	{
+		m_pipelineGlobalSet =updateDescriptorsGeneric(m_pipelineGlobalPool.get(), numBindings, sources);
+	}
+
+	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_pipelineSetIndex, 1, &m_pipelineGlobalSet, 0, nullptr);
 }
 
 void CVulkanCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	bindDescriptorsGeneric(m_pipelinePerDrawPool.get(), numBindings, sources);
+	VkDescriptorSet set = updateDescriptorsGeneric(m_pipelinePerDrawPool.get(), numBindings, sources);
+
+	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_perDrawSetIndex, 1, &set, 0, nullptr);
 }
 
-void CVulkanCommandBuffer::bindDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources)
+VkDescriptorSet CVulkanCommandBuffer::updateDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources)
 {
 	struct DescriptorInfo
 	{
@@ -300,7 +321,7 @@ void CVulkanCommandBuffer::bindDescriptorsGeneric(CDescriptorPool* pool, size_t 
 										i,
 										0,
 										1,
-										VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+										VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 										nullptr,
 										&info.back().polymorphic.bufferInfo,
 										nullptr
@@ -329,6 +350,8 @@ void CVulkanCommandBuffer::bindDescriptorsGeneric(CDescriptorPool* pool, size_t 
 	}
 
 	m_device->vkUpdateDescriptorSets(*m_device, static_cast <uint32_t> (writeSets.size()), writeSets.data(), 0, nullptr);
+
+	return set;
 }
 
 IDevice& CVulkanCommandBuffer::getDevice()
@@ -342,9 +365,13 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 
 	m_frame->orphanDescriptorPool(std::move(m_renderpassGlobalPool));
 
+	m_pipelineSetIndex = 0;
+	m_perDrawSetIndex = 0;
 	if (CVulkanDescriptorSet* set = rpass.getDescriptorSet())
 	{
 		m_renderpassGlobalPool = set->createDescriptorPool(1);
+		++m_pipelineSetIndex;
+		++m_perDrawSetIndex;
 	}
 
 	// initialize data - clear colors, viewport size
@@ -432,6 +459,8 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 
 	m_device->vkCmdSetViewport(m_cmd, 0, 1, &viewportBounds);
 	m_device->vkCmdSetScissor(m_cmd, 0, 1, &rect);
+
+	m_renderPassGlobalSet = VK_NULL_HANDLE;
 }
 
 void CVulkanCommandBuffer::endRenderPass()

@@ -59,7 +59,7 @@ VkDescriptorType CVulkanDescriptorSet::descriptorToVulkanType(EDescriptorType de
 	switch (desc)
 	{
 		case eUniformBlock:
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		case eTextureSampler:
 			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	}
