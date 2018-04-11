@@ -64,8 +64,9 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 							for (uint8_t c = 0; c < 3; ++c)
 							{
 								// back convert to srgb and assign to current mipmap
-								lock[index + c + offset] = reader.getData()[readerindex + c];
+								lock[index + c + offset] = reader.getData()[readerindex + 2 - c];
 							}
+							lock[index + offset + 4] = 255;
 						}
 					}
 
@@ -120,6 +121,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 									// back convert to srgb and assign to current mipmap
 									lock[offset + c] = newMipData[c] = static_cast<uint8_t> (colorComponentLinearToSRGB(nC) * 255);
 								}
+								lock[offset + 4] = 255;
 
 								flReq = {
 									req.m_texture,
@@ -152,6 +154,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 										// back convert to srgb and assign to current mipmap
 										lock[offset + index + c] = newMipData[index + c] = static_cast<uint8_t> (colorComponentLinearToSRGB(nC) * 255);
 									}
+									lock[offset + index + 4] = 255;
 								}
 
 								flReq = {
@@ -185,6 +188,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 										// back convert to srgb and assign to current mipmap
 										lock[offset + index + c] = newMipData[index + c] = static_cast<uint8_t> (colorComponentLinearToSRGB(nC) * 255);
 									}
+									lock[offset + index + 4] = 255;
 								}
 
 								flReq = {
@@ -225,6 +229,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 											// back convert to srgb and assign to current mipmap
 											lock[offset + index + c] = newMipData[index + c] = static_cast<uint8_t> (colorComponentLinearToSRGB(nC) * 255);
 										}
+										lock[offset + index + 4] = 255;
 									}
 								}
 

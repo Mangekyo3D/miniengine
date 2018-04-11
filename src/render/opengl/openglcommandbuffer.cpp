@@ -41,7 +41,7 @@ void COpenGLCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset, uint16_
 {
 	COpenGLTexture* glTex = static_cast<COpenGLTexture*> (tex);
 
-	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
+	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
 }
 
 void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)
