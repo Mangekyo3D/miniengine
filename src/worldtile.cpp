@@ -121,7 +121,7 @@ void WorldTile::generateProcedural()
 			m_mesh.m_indices[index_iter++] = (i + 1) * m_resolution + j + 1;
 		}
 
-		m_mesh.m_indices[index_iter++] = 0xFFFF;
+		m_mesh.m_indices[index_iter++] = ~0x0;
 	}
 }
 

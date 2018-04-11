@@ -6,6 +6,7 @@
 #endif
 #include "vulkandevice.h"
 #include "vulkanbuffer.h"
+#include "vulkanpipeline.h"
 
 #include <iostream>
 #include <limits.h>
@@ -376,9 +377,21 @@ SFrame::~SFrame()
 void SFrame::cleanupOrphanedData()
 {
 	m_orphanedBuffers.clear();
+	m_orphanedPools.clear();
 }
 
 void SFrame::orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer)
 {
-	m_orphanedBuffers.push_back(std::move(buffer));
+	if (buffer)
+	{
+		m_orphanedBuffers.push_back(std::move(buffer));
+	}
+}
+
+void SFrame::orphanDescriptorPool(std::unique_ptr<SDescriptorPool> pool)
+{
+	if (pool)
+	{
+		m_orphanedPools.push_back(std::move(pool));
+	}
 }

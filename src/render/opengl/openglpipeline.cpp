@@ -109,10 +109,12 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 	{
 		uint32_t sampler;
 		device.glCreateSamplers(1, &sampler);
-		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		device.glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		device.glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S,samplerParams.bRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, samplerParams.bRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, samplerParams.bLinearFilter ? GL_LINEAR : GL_NEAREST);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, samplerParams.bLinearFilter ?
+									   (samplerParams.bMipmapping ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR ):
+									   GL_NEAREST);
 
 		SamplerInfo samplerInfo = {sampler, -1};
 		m_samplers.push_back(samplerInfo);
@@ -180,7 +182,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	if (m_pipelineFlags & ePrimitiveRestart)
 	{
 		device.glEnable(GL_PRIMITIVE_RESTART);
-		device.glPrimitiveRestartIndex(~0x0);
+		device.glPrimitiveRestartIndex(static_cast <uint16_t> (~0x0));
 	}
 	else
 	{
@@ -196,4 +198,9 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	}
 
 	return m_descriptor.get();
+}
+
+bool COpenGLPipeline::getPrimitiveRestart()
+{
+	return (m_pipelineFlags & ePrimitiveRestart) != 0;
 }

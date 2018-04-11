@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 #include <iostream>
+#include <limits>
 
 CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 	: m_globaLayout(VK_NULL_HANDLE)
@@ -20,19 +21,19 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 			VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 			nullptr,
 			0,
-			VK_FILTER_LINEAR,
-			VK_FILTER_LINEAR,
-			VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			samplerParams.bLinearFilter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST,
+			samplerParams.bLinearFilter ? VK_FILTER_LINEAR : VK_FILTER_NEAREST,
+			samplerParams.bMipmapping ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST,
+			samplerParams.bRepeat ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			samplerParams.bRepeat ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+			samplerParams.bRepeat ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
 			0.0f,
 			VK_FALSE,
 			0.0f,
 			VK_FALSE,
 			VK_COMPARE_OP_ALWAYS,
 			0.0f,
-			100.0f,
+			samplerParams.bMipmapping ? FLT_MAX : 0.25f,
 			VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
 			VK_FALSE
 		};
@@ -248,11 +249,11 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 	uint32_t numLayouts = 0;
 	VkDescriptorSetLayout setLayouts[2];
 
-	if ((setLayouts[numLayouts] = createSet(params.globalSet)) != VK_NULL_HANDLE)
+	if ((setLayouts[numLayouts] = createSetLayout(params.globalSet)) != VK_NULL_HANDLE)
 	{
 		m_globaLayout = setLayouts[numLayouts++];
 	}
-	if ((setLayouts[numLayouts] = createSet(params.perDrawSet)) != VK_NULL_HANDLE)
+	if ((setLayouts[numLayouts] = createSetLayout(params.perDrawSet)) != VK_NULL_HANDLE)
 	{
 		m_perDrawLayout = setLayouts[numLayouts++];
 	}
@@ -331,9 +332,21 @@ CVulkanPipeline::~CVulkanPipeline()
 	}
 }
 
-void CVulkanPipeline::setRequiredPerFrameDescriptors(size_t numDescriptors)
+std::unique_ptr <SDescriptorPool> CVulkanPipeline::createPerFrameDescriptorPool(size_t numDescriptors)
 {
+	if (numDescriptors)
+	{
+		return std::make_unique <SDescriptorPool> (nullptr, 0, static_cast<uint32_t> (numDescriptors));
+	}
+	else
+	{
+		return nullptr;
+	}
+}
 
+std::unique_ptr <SDescriptorPool> CVulkanPipeline::createGlobalPool()
+{
+	return std::make_unique <SDescriptorPool> (nullptr, 0, 1);
 }
 
 VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
@@ -384,7 +397,7 @@ VkDescriptorType CVulkanPipeline::descriptorToVulkanType(EDescriptorType desc)
 	return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 }
 
-VkDescriptorSetLayout CVulkanPipeline::createSet(SDescriptorSet* params)
+VkDescriptorSetLayout CVulkanPipeline::createSetLayout(SDescriptorSet* params)
 {
 	if (params)
 	{
@@ -425,22 +438,15 @@ VkDescriptorSetLayout CVulkanPipeline::createSet(SDescriptorSet* params)
 	return VK_NULL_HANDLE;
 }
 
-SDescriptorPool::SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t numDecr)
+SDescriptorPool::SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t numDecr, uint32_t numSets)
 {
 	auto& device = CVulkanDevice::get();
-
-	std::array <VkDescriptorPoolSize, 1> poolSizes {
-		VkDescriptorPoolSize {
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-			1
-		}
-	};
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo = {
 		VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		nullptr,
 		0,
-		1,
+		numSets,
 		numDecr,
 		perDesrInfo
 	};
@@ -449,7 +455,6 @@ SDescriptorPool::SDescriptorPool(VkDescriptorPoolSize* perDesrInfo, uint32_t num
 	{
 		std::cout << "Error during descriptor pool creation" << std::endl;
 	}
-
 }
 
 SDescriptorPool::~SDescriptorPool()

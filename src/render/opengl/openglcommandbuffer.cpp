@@ -12,6 +12,7 @@ COpenGLCommandBuffer::COpenGLCommandBuffer(uint32_t swapchainWidth, uint32_t swa
 	, m_currentPipeline(nullptr)
 	, m_currentVertexDescriptor(nullptr)
 	, m_bShortIndices(true)
+	, m_bPrimitiveRestart(false)
 	, m_numGlobalBuffers(0)
 	, m_numGlobalTextures(0)
 {
@@ -41,7 +42,7 @@ void COpenGLCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset, uint16_
 	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
 }
 
-void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline)
+void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)
 {
 	COpenGLPipeline* pline = static_cast<COpenGLPipeline*> (pipeline);
 
@@ -55,6 +56,8 @@ void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline)
 	if (pline)
 	{
 		m_currentVertexDescriptor = pline->bind();
+		m_bPrimitiveRestart = pline->getPrimitiveRestart();
+		m_bShortIndices = true;
 	}
 }
 
@@ -110,6 +113,17 @@ void COpenGLCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescripto
 
 void COpenGLCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer, IGPUBuffer* indexBuffer, bool bShortIndices)
 {
+	if (m_bPrimitiveRestart && bShortIndices != m_bShortIndices)
+	{
+		if (bShortIndices)
+		{
+			m_device->glPrimitiveRestartIndex(static_cast <uint16_t> (~0x0));
+		}
+		else
+		{
+			m_device->glPrimitiveRestartIndex(~0x0);
+		}
+	}
 	m_bShortIndices = bShortIndices;
 	m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
 }

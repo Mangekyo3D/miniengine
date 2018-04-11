@@ -56,8 +56,7 @@ void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 {
 	ICommandBuffer::CScopedRenderPass pass(cmd, *m_renderpass);
 
-	cmd.bindPipeline(m_data->m_pipeline.get());
-	m_data->m_pipeline->setRequiredPerFrameDescriptors(1);
+	cmd.bindPipeline(m_data->m_pipeline.get(), 1);
 
 	std::vector <SDescriptorSource> descriptorSource;
 	descriptorSource.reserve(m_inputs.size());
@@ -110,8 +109,7 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 		IPipeline* pipeline = m_pipelines[pipelineNum].get();
 
 		auto end = std::upper_bound(start, batches.end(), *start, predicate);
-		cmd.bindPipeline(pipeline);
-		pipeline->setRequiredPerFrameDescriptors(end - start);
+		cmd.bindPipeline(pipeline, end - start);
 
 		while (start != end)
 		{
@@ -196,6 +194,10 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 	if (!m_data->m_pipeline)
 	{
 		SSamplerParams sampler;
+		sampler.bLinearFilter = false;
+		sampler.bMipmapping = false;
+		sampler.bRepeat = false;
+
 		SDescriptorSet descriptorSet;
 
 		SPipelineParams params;

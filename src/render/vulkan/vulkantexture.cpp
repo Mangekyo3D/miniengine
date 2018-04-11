@@ -161,3 +161,8 @@ size_t CVulkanTexture::getFormatPixelSize()
 
 	return 4;
 }
+
+VkDescriptorImageInfo CVulkanTexture::getDescriptorImageInfo()
+{
+	return {VK_NULL_HANDLE, m_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+}

@@ -62,7 +62,9 @@ struct SVertexBinding
 
 struct SSamplerParams
 {
-
+	bool bRepeat = true;
+	bool bMipmapping = true;
+	bool bLinearFilter = true;
 };
 
 enum EDescriptorType
@@ -125,8 +127,4 @@ class IPipeline
 	public:
 		IPipeline() {}
 		virtual ~IPipeline() {}
-
-		// sets the number of descriptors per set. Input is an array whose size should match the
-		// descriptor sets that are passed
-		virtual void setRequiredPerFrameDescriptors(size_t numDescriptors) = 0;
 };

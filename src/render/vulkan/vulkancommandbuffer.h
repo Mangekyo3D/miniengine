@@ -7,6 +7,7 @@ class CVulkanDevice;
 class CVulkanSwapchain;
 class CVulkanBuffer;
 struct SFrame;
+struct SDescriptorPool;
 class ISwapchain;
 
 class CVulkanCommandBuffer : public ICommandBuffer
@@ -18,7 +19,7 @@ class CVulkanCommandBuffer : public ICommandBuffer
 		virtual IGPUBuffer& createStreamingBuffer(size_t size) override;
 		virtual void copyBufferToTex(ITexture* tex, size_t offset,
 									 uint16_t width, uint16_t height, uint8_t miplevel) override;
-		virtual void bindPipeline(IPipeline* pipeline) override;
+		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) override;
 
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr,  IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) override;
 
@@ -36,6 +37,8 @@ class CVulkanCommandBuffer : public ICommandBuffer
 
 		CVulkanDevice* m_device;
 		std::unique_ptr <CVulkanBuffer> m_streamingBuffer;
+		std::unique_ptr <SDescriptorPool> m_globalPool;
+		std::unique_ptr <SDescriptorPool> m_perDrawPool;
 		CVulkanSwapchain* m_swapchain;
 		SFrame* m_frame;
 		VkCommandBuffer m_cmd;

@@ -109,6 +109,8 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 	}
 
 	m_frame->orphanBuffer(std::move(m_streamingBuffer));
+	m_frame->orphanDescriptorPool(std::move(m_globalPool));
+	m_frame->orphanDescriptorPool(std::move(m_perDrawPool));
 }
 
 IGPUBuffer& CVulkanCommandBuffer::createStreamingBuffer(size_t size)
@@ -187,11 +189,17 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toUse);
 }
 
-void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline)
+void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)
 {
 	CVulkanPipeline* pipe = static_cast <CVulkanPipeline*> (pipeline);
 
 	m_device->vkCmdBindPipeline(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipe);
+
+	m_frame->orphanDescriptorPool(std::move(m_globalPool));
+	m_frame->orphanDescriptorPool(std::move(m_perDrawPool));
+
+	m_globalPool = pipe->createGlobalPool();
+	m_perDrawPool = pipe->createPerFrameDescriptorPool(numRequiredDescriptors);
 }
 
 void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer,  IGPUBuffer* indexBuffer, bool bShortIndex)
@@ -233,16 +241,23 @@ void CVulkanCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint3
 
 void CVulkanCommandBuffer::bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
+	std::vector <VkDescriptorImageInfo> images;
+	std::vector <VkDescriptorBufferInfo> buffers;
+
 	for (uint32_t i = 0; i < numBindings; ++i)
 	{
 		switch (sources[i].type)
 		{
 			case SDescriptorSource::eBuffer:
 			{
+				CVulkanBuffer* buffer = static_cast <CVulkanBuffer*> (sources[i].data.buffer);
+				buffers.push_back(buffer->getDescriptorBufferInfo());
 				break;
 			}
 			case SDescriptorSource::eTexture:
 			{
+				CVulkanTexture* texture = static_cast <CVulkanTexture*> (sources[i].data.texture);
+				images.push_back(texture->getDescriptorImageInfo());
 				break;
 			}
 		}

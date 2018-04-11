@@ -18,7 +18,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 
 		virtual void copyBufferToTex(ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override;
 
-		virtual void bindPipeline(IPipeline* pipeline) override;
+		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) override;
 
 		virtual void bindGlobalDescriptors(size_t numBindings, SDescriptorSource* sources) override;
 		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources) override;
@@ -43,6 +43,7 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		COpenGLPipeline* m_currentPipeline;
 		COpenGLVertexDescriptorInterface* m_currentVertexDescriptor;
 		bool m_bShortIndices;
+		bool m_bPrimitiveRestart;
 		std::unique_ptr <COpenGLBuffer> m_streamingBuffer;
 		uint32_t m_numGlobalBuffers;
 		uint32_t m_numGlobalTextures;

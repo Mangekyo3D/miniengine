@@ -14,6 +14,7 @@ public:
 	VkImageUsageFlags usageFlags();
 	operator VkImage () { return m_image; }
 	virtual size_t getFormatPixelSize() override;
+	VkDescriptorImageInfo getDescriptorImageInfo();
 
 	VkImageView getView() { return m_view; }
 
