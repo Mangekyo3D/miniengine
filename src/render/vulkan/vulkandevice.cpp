@@ -12,7 +12,7 @@
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 #include <windows.h>
 #define LoadProcAddress GetProcAddress
-#define CloseDll CloseHandle
+#define CloseDll FreeLibrary
 #elif defined VK_USE_PLATFORM_XLIB_KHR
 #include <dlfcn.h>
 #define LoadProcAddress dlsym
@@ -430,11 +430,11 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 		VkDebugReportCallbackCreateInfoEXT debugCreateInfo = {
 			VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
 			nullptr,
-			//VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-			//VK_DEBUG_REPORT_DEBUG_BIT_EXT |
+			VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
+			VK_DEBUG_REPORT_DEBUG_BIT_EXT |
 			VK_DEBUG_REPORT_ERROR_BIT_EXT |
 			VK_DEBUG_REPORT_WARNING_BIT_EXT |
-			//VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
 			0,
 			vulkanDebugCallback,
 			nullptr
