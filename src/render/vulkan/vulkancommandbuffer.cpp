@@ -224,16 +224,17 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	CVulkanBuffer* vBuf = static_cast<CVulkanBuffer*> (vertexBuffer);
 	buffers[bindCount] = *vBuf;
 	offsets[bindCount] = vBuf->getAnimatedOffset();
+	++bindCount;
 
 	if (instanceBuffer)
 	{
-		++bindCount;
 		CVulkanBuffer* vInst = static_cast<CVulkanBuffer*> (instanceBuffer);
 		buffers[bindCount] = *vInst;
 		offsets[bindCount] = vInst->getAnimatedOffset();
+		++bindCount;
 	}
 
-	m_device->vkCmdBindVertexBuffers(m_cmd, 0, bindCount + 1, buffers, offsets);
+	m_device->vkCmdBindVertexBuffers(m_cmd, 0, bindCount, buffers, offsets);
 
 	if (indexBuffer)
 	{
@@ -436,11 +437,18 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 
 	VkRect2D rect = {VkOffset2D {0, 0}, extent};
 
+	// depending on whether we have a projection transform, or 3D scene, we need to patch
+	// the viewport transform accordingly
+	bool bIs3DPass = rpass.is3DPass();
+	float fHeight = static_cast <float> (extent.height);
+	float startY = bIs3DPass ? fHeight : 0.0f;
+	float Yoffset = bIs3DPass ? -fHeight : fHeight;
+
 	VkViewport viewportBounds = {
 		0.0f,
-		0.0f,
+		startY,
 		static_cast <float> (extent.width),
-		static_cast <float> (extent.height),
+		Yoffset,
 		1.0f,
 		0.0f
 	};

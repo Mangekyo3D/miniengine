@@ -111,16 +111,20 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 		}
 
 		bool bSupportsSwapchainRendering = false;
+		bool bSupportsMaintainance1 = false;
 		for (VkExtensionProperties& property : deviceExtensions)
 		{
 			if (strcmp(property.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
 			{
 				bSupportsSwapchainRendering = true;
-				break;
+			}
+			else if (strcmp(property.extensionName, VK_KHR_MAINTENANCE1_EXTENSION_NAME) == 0)
+			{
+				bSupportsMaintainance1 = true;
 			}
 		}
 
-		if (!bSupportsSwapchainRendering)
+		if (!(bSupportsSwapchainRendering && bSupportsMaintainance1))
 		{
 			continue;
 		}
@@ -198,7 +202,8 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 			}
 
 			std::vector<const char*> extensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+				VK_KHR_MAINTENANCE1_EXTENSION_NAME
 			};
 
 			VkDeviceCreateInfo deviceCreateInfo =

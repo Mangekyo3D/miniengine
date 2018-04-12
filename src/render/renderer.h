@@ -15,7 +15,7 @@ class IGPUBuffer;
 enum EScenePipeline {
 	eDiffuse = 0,
 	eDiffuseTextured,
-	eDiffuseTexturedPrimRestart,
+	eDiffuseTexturedTriangleStrip,
 	eMaxScenePipelines
 };
 

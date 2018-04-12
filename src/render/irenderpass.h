@@ -7,6 +7,7 @@ struct SDescriptorSet;
 struct SRenderPassParams
 {
 	SDescriptorSet* set = nullptr;
+	bool b3DPass = false;
 };
 
 class IRenderPass

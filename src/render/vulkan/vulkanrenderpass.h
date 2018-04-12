@@ -18,6 +18,7 @@ class CVulkanRenderPass : public IRenderPass
 		uint32_t getHeight() const { return m_height; }
 		operator VkRenderPass () {return m_renderPass; }
 		CVulkanDescriptorSet* getDescriptorSet() { return m_descriptorSet.get(); }
+		bool is3DPass() {return m_b3DPass; }
 
 	private:
 		// setup framebuffers
@@ -30,4 +31,5 @@ class CVulkanRenderPass : public IRenderPass
 		VkFramebuffer m_framebuffer;
 		bool bIsSwapchainPass;
 		std::unique_ptr <CVulkanDescriptorSet> m_descriptorSet;
+		bool m_b3DPass;
 };

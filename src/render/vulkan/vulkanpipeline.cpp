@@ -84,8 +84,8 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 		VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 		nullptr,
 		0,
-		VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-		((params.flags & ePrimitiveRestart) != 0)
+		((params.flags & ePrimitiveTypeTriangleStrip) != 0) ? VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+		((params.flags & ePrimitiveTypeTriangleStrip) != 0)
 	};
 
 	VkPipelineViewportStateCreateInfo viewportInfo = {
@@ -345,6 +345,8 @@ VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
 					return VK_FORMAT_R32G32B32A32_SFLOAT;
 				case 3:
 					return VK_FORMAT_R32G32B32_SFLOAT;
+				case 2:
+					return VK_FORMAT_R32G32_SFLOAT;
 			}
 		case e1010102int:
 			return VK_FORMAT_A2B10G10R10_SNORM_PACK32;

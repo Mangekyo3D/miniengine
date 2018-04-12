@@ -179,7 +179,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 		device.glDisable(GL_CULL_FACE);
 	}
 
-	if (m_pipelineFlags & ePrimitiveRestart)
+	if (m_pipelineFlags & ePrimitiveTypeTriangleStrip)
 	{
 		device.glEnable(GL_PRIMITIVE_RESTART);
 		device.glPrimitiveRestartIndex(static_cast <uint16_t> (~0x0));
@@ -202,5 +202,5 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 
 bool COpenGLPipeline::getPrimitiveRestart()
 {
-	return (m_pipelineFlags & ePrimitiveRestart) != 0;
+	return (m_pipelineFlags & ePrimitiveTypeTriangleStrip) != 0;
 }

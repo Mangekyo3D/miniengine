@@ -23,7 +23,7 @@ void WorldTile::setup_draw_operations(Renderer* renderer, ResourceManager* resou
 	{
 		std::vector <ITexture*> textures;
 		textures.push_back(resourceManager->loadTexture("grass.bmp"));
-		m_batch = renderer->addNewBatch <CIndexedInstancedBatch>(&m_mesh, eDiffuseTexturedPrimRestart, &textures);
+		m_batch = renderer->addNewBatch <CIndexedInstancedBatch>(&m_mesh, eDiffuseTexturedTriangleStrip, &textures);
 	}
 
 	MeshInstanceData data;

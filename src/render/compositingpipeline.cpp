@@ -81,6 +81,7 @@ CSceneRenderPass::CSceneRenderPass(IDevice& device)
 	globalSet.addUniformBlock(eVertexStage);
 	globalSet.addUniformBlock(eFragmentStage);
 	params.set = &globalSet;
+	params.b3DPass = true;
 
 	m_renderpass = device.createRenderPass(params);
 }
@@ -179,8 +180,8 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
 			m_pipelines[eDiffuseTextured] = device.createPipeline(params);
 
-			params.flags |= ePrimitiveRestart;
-			m_pipelines[eDiffuseTexturedPrimRestart] = device.createPipeline(params);
+			params.flags |= ePrimitiveTypeTriangleStrip;
+			m_pipelines[eDiffuseTexturedTriangleStrip] = device.createPipeline(params);
 		}
 	}
 }

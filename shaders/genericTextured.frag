@@ -12,11 +12,7 @@ layout (std140, set = 0, binding = 1) uniform LightingBlock
 	vec3 lightDir;
 } lighting;
 
-#ifdef VULKAN
 layout(set = 1, binding=0) uniform sampler2D diffuseTex;
-#else
-layout(binding=0) uniform sampler2D diffuseTex;
-#endif
 
 out layout(location = 0) vec4 cColor;
 

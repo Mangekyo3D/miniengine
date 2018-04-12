@@ -8,7 +8,7 @@ enum EPipelineFlags
 {
 	eDepthCompareGreater = 1L,
 	eCullBackFace        = (1L << 1),
-	ePrimitiveRestart    = (1L << 2)
+	ePrimitiveTypeTriangleStrip    = (1L << 2)
 };
 
 enum EVertexFormat

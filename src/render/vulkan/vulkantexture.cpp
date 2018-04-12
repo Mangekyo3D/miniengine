@@ -53,7 +53,7 @@ CVulkanTexture::CVulkanTexture(EFormat format, uint32_t usage, uint32_t width, u
 		VkImageSubresourceRange subresourceRange = {
 			static_cast<VkImageAspectFlags> (!isFormatDepth() ? VK_IMAGE_ASPECT_COLOR_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
 			0,
-			1,
+			m_mipLevels,
 			0,
 			1
 		};

@@ -10,6 +10,7 @@ CVulkanRenderPass::CVulkanRenderPass(SRenderPassParams& params)
 	: m_renderPass(VK_NULL_HANDLE)
 	, m_framebuffer(VK_NULL_HANDLE)
 	, bIsSwapchainPass(false)
+	, m_b3DPass(params.b3DPass)
 {
 	if (params.set)
 	{
@@ -100,6 +101,29 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 		attachmentReferences.push_back(reference);
 	}
 
+	std::vector <VkSubpassDependency> dependencies =
+	{
+		VkSubpassDependency {
+			VK_SUBPASS_EXTERNAL,
+			0,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_ACCESS_MEMORY_READ_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_DEPENDENCY_BY_REGION_BIT
+		},
+
+		VkSubpassDependency {
+			0,
+			VK_SUBPASS_EXTERNAL,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_MEMORY_READ_BIT,
+			VK_DEPENDENCY_BY_REGION_BIT
+		},
+	};
+
 	if (depthOut)
 	{
 		CVulkanTexture* tex = static_cast <CVulkanTexture*> (depthOut);
@@ -113,12 +137,12 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 			0,
 			tex->typeToFormat(),
 			VK_SAMPLE_COUNT_1_BIT,
-			VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-			VK_ATTACHMENT_STORE_OP_DONT_CARE,
 			VK_ATTACHMENT_LOAD_OP_CLEAR,
 			storeOp,
+			VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+			VK_ATTACHMENT_STORE_OP_DONT_CARE,
 			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
 		};
 
 		depthReference = {
@@ -127,6 +151,26 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 		};
 
 		attachmentDescription.push_back(description);
+
+		dependencies.push_back(VkSubpassDependency {
+			0,
+			VK_SUBPASS_EXTERNAL,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_DEPENDENCY_BY_REGION_BIT
+		});
+
+		dependencies.push_back(VkSubpassDependency {
+			VK_SUBPASS_EXTERNAL,
+			0,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_DEPENDENCY_BY_REGION_BIT
+		});
 	}
 
 	VkSubpassDescription subpassDescription[] = {
@@ -153,8 +197,8 @@ void CVulkanRenderPass::ensureRenderPass(ITexture** outputs, uint32_t numOutputs
 		attachmentDescription.data(),
 		1,
 		subpassDescription,
-		0,
-		nullptr
+		static_cast <uint32_t> (dependencies.size()),
+		dependencies.data()
 	};
 
 	if (device.vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS)
