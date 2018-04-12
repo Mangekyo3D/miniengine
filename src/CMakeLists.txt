@@ -98,11 +98,6 @@ foreach(SHADER ${SHADERS})
     list(APPEND SHADER_FILES ${SHADER_FILE})
 endforeach()
 
-add_subdirectory(OS)
-add_subdirectory(Util)
-add_subdirectory(render/opengl)
-add_subdirectory(render/vulkan)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set (INC_DIRS)
@@ -121,6 +116,7 @@ elseif (WIN32)
 	list(APPEND LIBS
 		opengl32
 		)
+	add_definitions(-DNOMINMAX)
 endif()
 
 find_package(OpenAL)
@@ -131,6 +127,11 @@ if (OPENAL_FOUND)
 endif()
 
 include_directories(${INC_DIRS})
+
+add_subdirectory(OS)
+add_subdirectory(Util)
+add_subdirectory(render/opengl)
+add_subdirectory(render/vulkan)
 
 add_executable(shooter ${SRC} ${INC} ${SHADER_FILES} ${SHADER_BINARIES})
 

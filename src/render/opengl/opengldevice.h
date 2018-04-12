@@ -1,7 +1,6 @@
 #pragma once
 #include "../idevice.h"
 #define GL_GLEXT_PROTOTYPES
-#define NOMINMAX
 #include "glcorearb.h"
 
 class COpenGLDevice : public IDevice

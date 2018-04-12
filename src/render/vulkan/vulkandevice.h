@@ -1,7 +1,4 @@
 #pragma once
-
-#define NOMINMAX
-
 #include "../idevice.h"
 #include "vulkan/vulkan.h"
 #include <memory>
