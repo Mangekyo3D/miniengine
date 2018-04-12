@@ -32,7 +32,7 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 			VK_FALSE,
 			VK_COMPARE_OP_ALWAYS,
 			0.0f,
-			samplerParams.bMipmapping ? FLT_MAX : 0.25f,
+			samplerParams.bMipmapping ? std::numeric_limits <float>::max() : 0.25f,
 			VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
 			VK_FALSE
 		};

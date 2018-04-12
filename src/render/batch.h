@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "icommandbuffer.h"
+#include "renderer.h"
 #include "../Util/vertex.h"
 
 class ICommandBuffer;

@@ -2,6 +2,7 @@
 #include "Util/vertex.h"
 #include <vector>
 #include <memory>
+#include "render/renderer.h"
 
 class CIndexedInstancedBatch;
 class ITexture;

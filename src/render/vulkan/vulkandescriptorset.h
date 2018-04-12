@@ -2,8 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 #include <vector>
-
-enum EDescriptorType;
+#include "../ipipeline.h"
 
 struct SDescriptorSet;
 
