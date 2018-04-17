@@ -72,6 +72,8 @@ bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 
 	m_width = infoHeader.biWidth;
 	m_height = infoHeader.biHeight;
+
+	size_t padding = (m_width * 3) % 4;
 	size_t length = m_width * m_height * 3;
 
 	if (bOnlySize)
@@ -98,7 +100,25 @@ bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 	}
 
 	//fill the bitmap in the memory
-	file.read(reinterpret_cast<char*> (m_data.get()), length);
+	if (padding == 0)
+	{
+		file.read(reinterpret_cast<char*> (m_data.get()), length);
+	}
+	else
+	{
+		padding = 4 - padding;
+
+		size_t offset = 0;
+		for (uint32_t i = 0; i < m_height; ++i)
+		{
+			file.read(reinterpret_cast<char*> (m_data.get() + offset), m_width * 3);
+			offset += m_width * 3;
+			// push the reader forward by reading into a bogus variable. Width needs to be padded to 4 bytes
+			// so reading into an int should be OK
+			uint32_t stub;
+			file.read(reinterpret_cast<char*> (&stub), padding);
+		}
+	}
 
 	return true;
 }

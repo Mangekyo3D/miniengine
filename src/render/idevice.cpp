@@ -44,15 +44,8 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 					uint16_t width = reader.getWidth();
 					uint16_t height = reader.getHeight();
 					uint8_t currentMipmap = 0;
-					uint8_t  mipLevels = 0;
-					uint16_t maxDim = std::max(width, height);
+					uint8_t  mipLevels = req.m_texture->getNumMipmaps();
 					const size_t bytesPerPixel = req.m_texture->getFormatPixelSize();
-
-					while (maxDim > 0)
-					{
-						maxDim >>= 1;
-						++mipLevels;
-					}
 
 					// store the first level to the buffer
 					for (uint32_t i = 0; i < width; ++i)
