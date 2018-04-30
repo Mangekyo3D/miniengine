@@ -4,6 +4,7 @@ set (SRC
 	vertex.cpp
 	mathutils.cpp
 	colorutils.cpp
+	scopedtimer.cpp
 )
 
 set (INC
@@ -13,6 +14,7 @@ set (INC
 	signal.h
 	mathutils.h
 	colorutils.h
+	scopedtimer.h
 )
 
 add_library (Util STATIC ${SRC} ${INC})
