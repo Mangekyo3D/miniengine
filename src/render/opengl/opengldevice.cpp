@@ -106,7 +106,7 @@ COpenGLDevice::COpenGLDevice(GameWindow& win, bool bDebugContext)
 	INITFUNCTION(glUniform2f)
 	INITFUNCTION(glUniform1f)
 	INITFUNCTION(glShaderBinary)
-	INITFUNCTION(glSpecializeShaderARB)
+	INITFUNCTION(glSpecializeShader)
 
 	INITFUNCTION(glCreateFramebuffers)
 	INITFUNCTION(glDeleteFramebuffers)
