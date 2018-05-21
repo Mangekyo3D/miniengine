@@ -39,5 +39,6 @@ class COpenGLPipeline : public IPipeline {
 			int32_t slot;
 		};
 
-		std::vector <SamplerInfo> m_samplers;
+		std::vector <SamplerInfo> m_samplerInfo;
+		std::vector <uint32_t> m_samplers;
 };

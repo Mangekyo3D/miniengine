@@ -31,7 +31,7 @@ IGPUBuffer& COpenGLCommandBuffer::createStreamingBuffer(size_t size)
 	auto newBuffer = m_device->createGPUBuffer(size, IGPUBuffer::Usage::eStreamSource);
 	m_streamingBuffer.reset(static_cast<COpenGLBuffer*> (newBuffer.release()));
 
-	m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	m_device->glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	m_device->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_streamingBuffer->getID());
 
 	return *m_streamingBuffer;
@@ -41,7 +41,7 @@ void COpenGLCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset, uint16_
 {
 	COpenGLTexture* glTex = static_cast<COpenGLTexture*> (tex);
 
-	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
+	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
 }
 
 void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)

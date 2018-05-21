@@ -48,13 +48,16 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 
 	setupInstanceBuffer(cmd.getDevice());
 
-	std::vector <SDescriptorSource> descriptorSources;
-	std::for_each(m_textures.begin(), m_textures.end(), [&] (ITexture* tex)
+	if (m_textures.size() > 0)
 	{
-		descriptorSources.emplace_back(tex);
-	});
+		std::vector <SDescriptorSource> descriptorSources;
+		std::for_each(m_textures.begin(), m_textures.end(), [&] (ITexture* tex)
+		{
+			descriptorSources.emplace_back(tex);
+		});
 
-	cmd.bindPerDrawDescriptors(descriptorSources.size(), descriptorSources.data());
+		cmd.bindPerDrawDescriptors(descriptorSources.size(), descriptorSources.data());
+	}
 
 	cmd.setVertexStream(m_vertexBuffer.get(), m_instanceBuffer.get(), m_indexBuffer.get(), m_bShortIndices);
 

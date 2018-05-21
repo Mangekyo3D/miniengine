@@ -14,6 +14,7 @@ class IGPUBuffer;
 // pipelines for scene specific materials
 enum EScenePipeline {
 	eDiffuse = 0,
+	eDiffuseTriangleStrip,
 	eDiffuseTextured,
 	eDiffuseTexturedTriangleStrip,
 	eMaxScenePipelines

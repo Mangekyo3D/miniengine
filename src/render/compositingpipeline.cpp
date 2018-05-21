@@ -163,6 +163,10 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
 			params.perDrawBinding = &vertBinding;
 			m_pipelines[eDiffuse] = device.createPipeline(params);
+
+			params.flags |= ePrimitiveTypeTriangleStrip;
+			m_pipelines[eDiffuseTriangleStrip] = device.createPipeline(params);
+			params.flags &= ~ePrimitiveTypeTriangleStrip;
 		}
 
 		{
@@ -182,6 +186,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
 			params.flags |= ePrimitiveTypeTriangleStrip;
 			m_pipelines[eDiffuseTexturedTriangleStrip] = device.createPipeline(params);
+			params.flags &= ~ePrimitiveTypeTriangleStrip;
 		}
 	}
 }

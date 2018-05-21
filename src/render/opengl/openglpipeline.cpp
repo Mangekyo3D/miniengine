@@ -1,6 +1,7 @@
 #include "openglpipeline.h"
 #include "opengldevice.h"
 #include "openglbuffer.h"
+#include <limits>
 
 COpenGLVertexDescriptorInterface::COpenGLVertexDescriptorInterface(SVertexBinding* perVertBinding, SVertexBinding* perInstanceBinding)
 	: m_perVertDataSize(0)
@@ -94,6 +95,7 @@ uint32_t COpenGLVertexDescriptorInterface::formatToGLFormat(EVertexFormat format
 COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenGLVertexDescriptorInterface> descriptor)
 	: m_pipelineFlags(params.flags)
 	, m_descriptor(std::move(descriptor))
+	, m_samplers(params.samplers.size())
 {
 	COpenGLShader fragment_shader(params.shaderModule, EShaderStage::eFragmentStage);
 	COpenGLShader vertex_shader(params.shaderModule, EShaderStage::eVertexStage);
@@ -105,29 +107,35 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 
 	auto& device = COpenGLDevice::get();
 
+	if (params.samplers.size() > 0)
+	{
+		device.glCreateSamplers(static_cast<GLsizei> (params.samplers.size()), m_samplers.data());
+	}
+
+	uint32_t samplerIndex = 0;
 	for (auto& samplerParams : params.samplers)
 	{
-		uint32_t sampler;
-		device.glCreateSamplers(1, &sampler);
+		uint32_t sampler = m_samplers[samplerIndex++];
 		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S,samplerParams.bRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 		device.glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, samplerParams.bRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 		device.glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, samplerParams.bLinearFilter ? GL_LINEAR : GL_NEAREST);
-		device.glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, samplerParams.bLinearFilter ?
-									   (samplerParams.bMipmapping ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR ):
-									   GL_NEAREST);
-
-		SamplerInfo samplerInfo = {sampler, -1};
-		m_samplers.push_back(samplerInfo);
+		device.glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, samplerParams.bMipmapping ?
+									   (samplerParams.bLinearFilter ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST):
+									   (samplerParams.bLinearFilter ? GL_LINEAR : GL_NEAREST));
+		device.glSamplerParameterf(sampler, GL_TEXTURE_MIN_LOD, 0.0f);
+		device.glSamplerParameterf(sampler, GL_TEXTURE_MAX_LOD, samplerParams.bMipmapping ? std::numeric_limits <float>::max() : 0.25f);
+		device.glSamplerParameterf(sampler, GL_TEXTURE_LOD_BIAS, 0.0f);
 	}
 
-	uint32_t textureSlot = 0;
+	int32_t textureSlot = 0;
 	if (params.globalSet)
 	{
 		for (auto& descriptor : params.globalSet->descriptors)
 		{
 			if (descriptor.type == eTextureSampler)
 			{
-				m_samplers[descriptor.sampler].slot = textureSlot++;
+				SamplerInfo samplerInfo = {m_samplers[descriptor.sampler], textureSlot++};
+				m_samplerInfo.push_back(samplerInfo);
 			}
 		}
 	}
@@ -137,7 +145,8 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 		{
 			if (descriptor.type == eTextureSampler)
 			{
-				m_samplers[descriptor.sampler].slot = textureSlot++;
+				SamplerInfo samplerInfo = {m_samplers[descriptor.sampler], textureSlot++};
+				m_samplerInfo.push_back(samplerInfo);
 			}
 		}
 	}
@@ -146,10 +155,7 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 COpenGLPipeline::~COpenGLPipeline()
 {
 	auto& device = COpenGLDevice::get();
-	for (auto& sampler : m_samplers)
-	{
-		device.glDeleteSamplers(1, &sampler.sampler);
-	}
+	device.glDeleteSamplers(static_cast<GLsizei> (m_samplers.size()), m_samplers.data());
 }
 
 COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
@@ -192,7 +198,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 	m_program.use();
 	m_descriptor->bind();
 
-	for (auto& sampler : m_samplers)
+	for (auto& sampler : m_samplerInfo)
 	{
 		device.glBindSampler(sampler.slot, sampler.sampler);
 	}

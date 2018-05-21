@@ -33,16 +33,16 @@ size_t COpenGLTexture::getFormatPixelSize()
 	switch (m_format)
 	{
 		case eRGB8:
-			return 3;
+			return 4;
 		case eRGB16f:
 			return 12;
 		case eDepth32f:
 			return 4;
 		case eSRGB8:
-			return 3;
+			return 4;
 
 		default:
-			return 3;
+			return 4;
 	}
 }
 
