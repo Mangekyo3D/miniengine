@@ -173,6 +173,13 @@ Vec3 Vec3::operator + (const Vec3& v)
 	return result;
 }
 
+Vec2 operator *(const float fac, const Vec2 &v1)
+{
+	Vec2 res = v1;
+	res *= fac;
+	return res;
+}
+
 
 struct Vec3IntegerPack
 {

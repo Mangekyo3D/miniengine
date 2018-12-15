@@ -139,10 +139,7 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 	// check first pipeline for existence. if it exists, we have already run this code
 	if (!m_pipelines[eDiffuse])
 	{
-		SSamplerParams sampler;
-
 		SPipelineParams params;
-		params.addSampler(sampler);
 		params.renderpass = m_renderpass.get();
 		params.flags = eDepthCompareGreater | eCullBackFace;
 
@@ -173,6 +170,8 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 			SDescriptorSet perDrawSet;
 			perDrawSet.addTextureSlot(eFragmentStage, 0);
 
+			SSamplerParams sampler;
+			params.addSampler(sampler);
 			params.shaderModule = "genericTextured";
 			params.perDrawSet = &perDrawSet;
 

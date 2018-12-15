@@ -132,6 +132,10 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 	ReleaseDC(dummyWin, hdc);
 	DestroyWindow(dummyWin);
 	UnregisterClass(dummyclass.lpszClassName, GetModuleHandle(nullptr));
+
+	uint32_t width, height;
+	win.getClientSize(width, height);
+	ISwapchain::onResize(width, height);
 }
 
 COpenGLSwapchainWin32::~COpenGLSwapchainWin32()

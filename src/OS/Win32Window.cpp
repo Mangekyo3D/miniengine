@@ -143,7 +143,10 @@ Win32Window::Win32Window()
 
 void Win32Window::maximize()
 {
-	ShowWindow(m_hWnd, SW_MAXIMIZE);
+	// note, fragile on multimonitor
+	int width = GetSystemMetrics(SM_CXMAXIMIZED);
+	int height = GetSystemMetrics(SM_CYMAXIMIZED);
+	::SetWindowPos(m_hWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW);
 }
 
 Win32Window::~Win32Window()

@@ -109,19 +109,19 @@ void Plane::fire(Engine& engine)
 	// switch the active gun
 	m_gun = !m_gun;
 
-	auto b1 = std::make_unique <Bullet> (m_position + weaponOffset, heading);
-	b1->setEmitter(*this);
+	auto bullet = std::make_unique <Bullet> (m_position + weaponOffset, heading, engine);
+	bullet->setEmitter(*this);
 
 	IAudioDevice& audioDevice = IAudioDevice::get();
 	SAudioInitParams params;
 
-	params.position = b1->getPosition();
+	params.position = bullet->getPosition();
 	params.decayDistance = 0.5f;
 	params.gain = 0.3f;
 
 	audioDevice.playResourceOnce(*s_assets.laserAudio, params);
 
-	engine.addWorldEntity(std::move(b1));
+	engine.addWorldEntity(std::move(bullet));
 
 	m_shootDelay = 3;
 }
@@ -186,7 +186,9 @@ void Plane::pitch(float fpitch)
 
 CDynamicArrayBatch* Bullet::s_batch = nullptr;
 
-Bullet::Bullet(Engine& engine)
+Bullet::Bullet(Vec3 p, Vec3 h, Engine& engine)
+	: WorldEntity(p)
+	, m_heading(h)
 {
 	if (!s_batch)
 	{
@@ -195,30 +197,12 @@ Bullet::Bullet(Engine& engine)
 	}
 }
 
-Bullet::Bullet(Vec3 p, Vec3 h)
-	: WorldEntity(p)
-	, m_heading(h)
-{
-}
-
 Bullet::~Bullet()
 {
 }
 
 void Bullet::draw()
 {
-	float l1pos[] = {m_position.x(), m_position.y(), m_position.z(), 1.0f};
-
-	/*
-	glDisable(GL_LIGHTING);
-	glColor3f(1.0, 0.7, 0.3);
-	glBegin(GL_LINES);
-		Vec3 lastPos = m_position + (heading * 0.5f);
-		glVertex3fv(m_position.getData());
-		glVertex3fv(lastPos.getData());
-	glEnd();
-	glEnable(GL_LIGHTING);
-	glLightfv(GL_LIGHT1, GL_POSITION, l1pos);*/
 }
 
 void Bullet::setEmitter(Plane &p)
@@ -258,6 +242,8 @@ void Bullet::update(Engine& engine)
 	}
 
 	m_position = m_position + 1.0f * m_heading;
+
+	//s_batch->addMeshData();
 }
 
 PlaneAIController::PlaneAIController(Plane* plane)

@@ -63,8 +63,7 @@ class PlanePlayerController : public Controller
 class Bullet : public WorldEntity
 {
 	public:
-		Bullet(Engine& engine);
-		Bullet(Vec3, Vec3);
+		Bullet(Vec3, Vec3, Engine&);
 		~Bullet();
 		void draw();
 		void setEmitter(Plane &);
