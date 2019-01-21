@@ -27,7 +27,7 @@ void WorldEntity::setPosition(Vec3 val)
 	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
 }
 
-Quaternion WorldEntity::getRotation() const
+const Quaternion& WorldEntity::getRotation() const
 {
 	return m_rotation;
 }

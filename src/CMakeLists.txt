@@ -12,14 +12,6 @@ set (SRC
 	worldentity.cpp
 	worldtile.cpp
 	resourcemanager.cpp
-
-	render/batch.cpp
-	render/icommandbuffer.cpp
-	render/itexture.cpp
-	render/idevice.cpp
-	render/compositingpipeline.cpp
-	render/renderer.cpp
-	render/rendergraph.cpp
 	)
 
 set (INC
@@ -34,87 +26,20 @@ set (INC
 	worldtile.h
 	resourcemanager.h
 	controller.h
-
-	render/batch.h
-	render/icommandbuffer.h
-	render/irenderpass.h
-	render/itexture.h
-	render/idevice.h
-	render/igpubuffer.h
-	render/iswapchain.h
-	render/ipipeline.h
-	render/compositingpipeline.h
-	render/renderer.h
-	render/rendergraph.h
 	)
-
-set (SHADERS
-	generic.vert
-	generic.frag
-	genericTextured.vert
-	genericTextured.frag
-	toneMapping.vert
-	toneMapping.frag
-	)
-
-add_custom_target(shaderbindir ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/shaders/
-    COMMENT "Creating shader binary dir")
-get_filename_component(VULKAN_HOME_DIR ${Vulkan_INCLUDE_DIR} DIRECTORY)
-if (WIN32)
-	set(VULKAN_BIN_DIR "${VULKAN_HOME_DIR}/Bin")
-elseif(UNIX)
-	set(VULKAN_BIN_DIR "${VULKAN_HOME_DIR}/bin")
-endif()
-
-# generate spir-v modules from source files
-foreach(SHADER ${SHADERS})
-    set(SHADER_BINARY ${CMAKE_BINARY_DIR}/bin/shaders/${SHADER}.spv)
-    set(SHADER_BINARY_UNOPTIMIZED ${CMAKE_BINARY_DIR}/bin/shaders/${SHADER}_unopt.spv)
-    set(SHADER_FILE ${CMAKE_SOURCE_DIR}/shaders/${SHADER})
-    add_custom_command(OUTPUT ${SHADER_BINARY_UNOPTIMIZED}
-        COMMAND ${VULKAN_BIN_DIR}/glslangValidator -V ${SHADER_FILE} -e main -o ${SHADER_BINARY_UNOPTIMIZED}
-        COMMENT "SPIR-V: Building ${SHADER}"
-        DEPENDS ${CMAKE_SOURCE_DIR}/shaders/${SHADER} shaderbindir)
-    add_custom_command(OUTPUT ${SHADER_BINARY}
-        COMMAND ${VULKAN_BIN_DIR}/spirv-opt
-        --inline-entry-points-exhaustive
-        --convert-local-access-chains
-        --eliminate-local-single-block
-        --eliminate-local-single-store
-        --eliminate-insert-extract
-        --eliminate-dead-code-aggressive
-        --eliminate-dead-branches
-        --merge-blocks
-        --eliminate-local-single-block
-        --eliminate-local-single-store
-        --eliminate-local-multi-store
-        --eliminate-insert-extract
-        --eliminate-dead-code-aggressive
-        --eliminate-common-uniform ${SHADER_BINARY_UNOPTIMIZED} -o ${SHADER_BINARY}
-        COMMENT "SPIR-V: Optimizing ${SHADER}"
-        DEPENDS ${SHADER_BINARY_UNOPTIMIZED})
-    list(APPEND SHADER_BINARIES ${SHADER_BINARY})
-    list(APPEND SHADER_FILES ${SHADER_FILE})
-endforeach()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set (INC_DIRS)
 set(LIBS
-	openglbackend
-	vulkanbackend
-	${Vulkan_LIBRARIES}
-	)
+	render)
 
 if (UNIX)
 	list(APPEND LIBS
 		X11
-		GL
 		)
 elseif (WIN32)
 	list(APPEND LIBS
-		opengl32
 		)
 	add_definitions(-DNOMINMAX)
 endif()
@@ -130,9 +55,8 @@ include_directories(${INC_DIRS})
 
 add_subdirectory(OS)
 add_subdirectory(Util)
-add_subdirectory(render/opengl)
-add_subdirectory(render/vulkan)
+add_subdirectory(render)
 
-add_executable(shooter ${SRC} ${INC} ${SHADER_FILES} ${SHADER_BINARIES})
+add_executable(shooter ${SRC} ${INC})
 
 target_link_libraries(shooter ${LIBS} OS Util)

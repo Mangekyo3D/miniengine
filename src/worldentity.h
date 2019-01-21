@@ -12,14 +12,14 @@ class WorldEntity
 		virtual ~WorldEntity();
 		Vec3 getPosition() const;
 		void setPosition(Vec3 val);
-		Quaternion getRotation() const;
+		const Quaternion& getRotation() const;
 		void setRotation(Quaternion q);
 		void setScale(float scale);
 		Matrix34& getObjectToWorldMatrix();
 		Matrix34& getWorldToObjectMatrix();
 		// this returns false when the entity has died
 		virtual bool getActive() { return (m_flags & eInactive) == 0; }
-		virtual void update(Engine& engine) {}
+		virtual void update(Engine&) {}
 
 	protected:
 		Vec3       m_position;
@@ -30,7 +30,7 @@ class WorldEntity
 		Matrix34   m_worldToObjectMatrix;
 
 
-		enum EEntityFlags
+		enum EEntityFlags : uint32_t
 		{
 			eInvalidWorldTransform        = (1),
 			eInvalidInverseWorldTransform = (1 << 1),
