@@ -1,5 +1,3 @@
-find_package(Vulkan REQUIRED)
-
 set (SRC
 	openalaudio.cpp
 	bitmap.cpp

@@ -3,24 +3,29 @@
 #include "vulkanswapchain.h"
 #include <iostream>
 
+template <class T> T roundToNextMultipleOf(T a, T b)
+{
+	return (a + b - 1) / b * b;
+}
+
 CVulkanBuffer::CVulkanBuffer(size_t size, uint32_t usage)
 	: IGPUBuffer(size, usage)
-	, m_frame(0)
 	, m_buffer(VK_NULL_HANDLE)
+	, m_frame(0)
 	, m_memoryChunk(nullptr)
 {
+	auto& device = CVulkanDevice::get();
+	VkPhysicalDevice vkPhysicalDevice = device.getPhysicalDevice();
+
+	VkPhysicalDeviceProperties properties;
+	device.vkGetPhysicalDeviceProperties(vkPhysicalDevice, &properties);
+
+	// required for flushing mapped ranges
+	m_size = roundToNextMultipleOf(m_size, properties.limits.nonCoherentAtomSize);
+
 	// if our size is less than the uniform offset alignment, make sure it fits
 	if (m_usage == Usage::eAnimatedUniform)
-	{
-		auto& device = CVulkanDevice::get();
-		VkPhysicalDevice vkPhysicalDevice = device.getPhysicalDevice();
-
-		VkPhysicalDeviceProperties properties;
-		device.vkGetPhysicalDeviceProperties(vkPhysicalDevice, &properties);
-
-		m_size = ((m_size + properties.limits.minUniformBufferOffsetAlignment - 1) / properties.limits.minUniformBufferOffsetAlignment)
-				* properties.limits.minUniformBufferOffsetAlignment;
-	}
+		m_size = roundToNextMultipleOf(m_size, properties.limits.minUniformBufferOffsetAlignment);
 
 	create();
 }

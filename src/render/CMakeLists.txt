@@ -31,6 +31,8 @@ set (SHADERS
 	toneMapping.frag
 	)
 
+find_package(Vulkan REQUIRED)
+
 add_custom_target(shaderbindir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/shaders/
     COMMENT "Creating shader binary dir")

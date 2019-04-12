@@ -10,7 +10,7 @@
 #include "vulkanswapchain.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
-#include <windows.h>
+#include <Windows.h>
 #define LoadProcAddress GetProcAddress
 #define CloseDll FreeLibrary
 #elif defined VK_USE_PLATFORM_XLIB_KHR
@@ -20,14 +20,14 @@
 #endif
 
 static VkBool32 VKAPI_PTR vulkanDebugCallback(
-	VkDebugReportFlagsEXT flags,
-	VkDebugReportObjectTypeEXT objectType,
-	uint64_t object,
-	size_t location,
-	int32_t messageCode,
-	const char* pLayerPrefix,
+	VkDebugReportFlagsEXT,
+	VkDebugReportObjectTypeEXT,
+	uint64_t,
+	size_t,
+	int32_t,
+	const char*,
 	const char* pMessage,
-	void* pUserData)
+	void*)
 {
 	std::cout << pMessage << std::endl;
 
@@ -376,7 +376,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 		VK_MAKE_VERSION(1, 0, 0),
 		"Mini Engine",
 		VK_MAKE_VERSION(1, 0, 0),
-		VK_API_VERSION_1_0
+		VK_API_VERSION_1_1
 	};
 
 	std::vector <const char*> enabledLayers;
@@ -444,8 +444,6 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	}
 
 	// create swapchain and device now
-	VkSurfaceKHR windowSurface = VK_NULL_HANDLE;
-
 	auto swapchain = std::make_unique <CVulkanSwapchain> (win);
 	win.assignSwapchain(std::move(swapchain));
 }
