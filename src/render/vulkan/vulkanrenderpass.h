@@ -22,7 +22,7 @@ class CVulkanRenderPass : public IRenderPass
 
 	private:
 		// setup framebuffers
-		void setupFrameBuffer(ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = 0);
+		void setupFrameBuffer(ITexture** outputs = nullptr, uint32_t numOutputs = 0, ITexture* depthOut = nullptr);
 		void ensureRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut);
 
 		uint32_t     m_width;

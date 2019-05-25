@@ -37,14 +37,14 @@ IGPUBuffer& COpenGLCommandBuffer::createStreamingBuffer(size_t size)
 	return *m_streamingBuffer;
 }
 
-void COpenGLCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel)
+void COpenGLCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset, uint32_t width, uint32_t height, uint8_t miplevel)
 {
 	COpenGLTexture* glTex = static_cast<COpenGLTexture*> (tex);
 
-	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ((uint8_t*)nullptr + offset));
+	m_device->glTextureSubImage2D(glTex->getID(), miplevel, 0, 0, static_cast<GLint>(width), static_cast<GLint>(height), GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<uint8_t*>(offset));
 }
 
-void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)
+void COpenGLCommandBuffer::bindPipeline(IPipeline* pipeline, size_t )
 {
 	COpenGLPipeline* pline = static_cast<COpenGLPipeline*> (pipeline);
 
@@ -148,7 +148,7 @@ void COpenGLCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 		}
 		else
 		{
-			m_device->glPrimitiveRestartIndex(~0x0);
+			m_device->glPrimitiveRestartIndex(~0x0u);
 		}
 	}
 	m_bShortIndices = bShortIndices;
@@ -157,13 +157,13 @@ void COpenGLCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 
 void COpenGLCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint32_t count)
 {
-	m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), start, count);
+	m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), static_cast<int>(start), static_cast<int>(count));
 }
 
 void COpenGLCommandBuffer::drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances)
 {
 	m_device->glDrawElementsInstanced(meshPrimitiveToGLPrimitive(type),static_cast <GLint> (numIndices),
-									  m_bShortIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, (static_cast <GLubyte*>(nullptr) + offset),
+									  m_bShortIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, reinterpret_cast <GLubyte*>(offset),
 									  static_cast <GLint> (numInstances));
 }
 
@@ -184,11 +184,11 @@ void COpenGLCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 
 	if (fbobjID == 0)
 	{
-		m_device->glViewport(0, 0, m_swapchainWidth, m_swapchainHeight);
+		m_device->glViewport(0, 0, static_cast<int>(m_swapchainWidth), static_cast<int>(m_swapchainHeight));
 	}
 	else
 	{
-		m_device->glViewport(0, 0, glpass.getWidth(), glpass.getHeight());
+		m_device->glViewport(0, 0, static_cast<int>(glpass.getWidth()), static_cast<int>(glpass.getHeight()));
 	}
 
 	m_device->glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
@@ -205,7 +205,7 @@ void COpenGLCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 		{
 			for (uint32_t i = 0; i < glpass.getNumOutputs(); ++i)
 			{
-				m_device->glClearNamedFramebufferfv(fbobjID, GL_COLOR, i, vClearColor);
+				m_device->glClearNamedFramebufferfv(fbobjID, GL_COLOR, static_cast<GLint>(i), vClearColor);
 			}
 		}
 	}
@@ -237,8 +237,6 @@ uint32_t COpenGLCommandBuffer::meshPrimitiveToGLPrimitive(EPrimitiveType type)
 			return GL_TRIANGLES;
 		case EPrimitiveType::eTriangleStrip:
 			return GL_TRIANGLE_STRIP;
-		default:
-			break;
 	}
 
 	return GL_TRIANGLES;

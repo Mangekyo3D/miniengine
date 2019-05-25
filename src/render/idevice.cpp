@@ -19,8 +19,8 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 	{
 		ITexture* tex;
 		size_t    offset;
-		uint16_t  width;
-		uint16_t  height;
+		uint32_t  width;
+		uint32_t  height;
 		uint8_t mipmap;
 	};
 
@@ -41,8 +41,8 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 
 				if (reader.openFromFile(req.m_filename.c_str(), false))
 				{
-					uint16_t width = reader.getWidth();
-					uint16_t height = reader.getHeight();
+					uint32_t width = reader.getWidth();
+					uint32_t height = reader.getHeight();
 					uint8_t currentMipmap = 0;
 					uint8_t  mipLevels = req.m_texture->getNumMipmaps();
 					const size_t bytesPerPixel = req.m_texture->getFormatPixelSize();
@@ -83,16 +83,16 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 						//This will all
 						uint8_t* highMipData = &lock[requests.back().offset];
 
-						uint16_t oldHeight = height;
-						uint16_t oldWidth = width;
+						uint32_t oldHeight = height;
+						uint32_t oldWidth = width;
 						height >>= 1;
 						width >>= 1;
 
 						while (width > 0 || height > 0)
 						{
 							// we can still define a mipmap as long as one coordinate is still not zero, so clamp to one
-							width = std::max(width, (uint16_t)1);
-							height = std::max(height, (uint16_t)1);
+							width = std::max(width, 1u);
+							height = std::max(height, 1u);
 
 							std::unique_ptr <uint8_t[]> newMipData(new uint8_t [height * width * bytesPerPixel]);
 
@@ -131,7 +131,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 							{
 								for (uint32_t j = 0; j < height; ++j)
 								{
-									float oldCoF = 0.5f + j / (float) (height - 1) * (oldHeight - 2);
+									float oldCoF = 0.5f + j / static_cast<float> (height - 1) * (oldHeight - 2);
 									uint32_t oldCo = static_cast<uint32_t> (oldCoF);
 									float    interpFac = oldCoF - oldCo;
 									size_t index = j * bytesPerPixel;
@@ -165,7 +165,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 							{
 								for (uint32_t i = 0; i < width; ++i)
 								{
-									float oldCoF = 0.5f + i / (float)(width - 1) * (oldWidth - 2);
+									float oldCoF = 0.5f + i / static_cast<float>(width - 1) * (oldWidth - 2);
 									uint32_t oldCo = static_cast<uint32_t> (oldCoF);
 									float    interpFac = oldCoF - oldCo;
 									size_t index = i * bytesPerPixel;
@@ -201,7 +201,7 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 								{
 									for (uint32_t j = 0; j < height; ++j)
 									{
-										float oldCoF[2] = { 0.5f + i / (float)(width - 1) * (oldWidth - 2), 0.5f + j / (float) (height - 1) * (oldHeight - 2)};
+										float oldCoF[2] = { 0.5f + i / static_cast<float>(width - 1) * (oldWidth - 2), 0.5f + j / static_cast<float>(height - 1) * (oldHeight - 2)};
 										uint32_t oldCo[2] = { static_cast<uint32_t> (oldCoF[0]), static_cast<uint32_t> (oldCoF[1])};
 										float    interpFac[2] = { oldCoF[0] - oldCo[0], oldCoF[1] - oldCo[1]};
 										size_t index =(i * height + j) * bytesPerPixel;
@@ -278,8 +278,8 @@ size_t TextureStreamRequest::calculateSize() const
 {
 	size_t size = 0;
 	uint8_t numMipMaps = m_texture->getNumMipmaps();
-	uint16_t width = m_texture->getWidth();
-	uint16_t height = m_texture->getHeight();
+	uint32_t width = m_texture->getWidth();
+	uint32_t height = m_texture->getHeight();
 	const size_t bytesPerPixel = m_texture->getFormatPixelSize();
 
 	for (int i = numMipMaps; i > 0; --i)
@@ -287,8 +287,8 @@ size_t TextureStreamRequest::calculateSize() const
 		size += bytesPerPixel * static_cast<size_t> (width) * static_cast<size_t> (height);
 		width >>= 1;
 		height >>= 1;
-		width = std::max((uint16_t)1, width);
-		height = std::max((uint16_t)1, height);
+		width = std::max(1u, width);
+		height = std::max(1u, height);
 	}
 
 	return size;

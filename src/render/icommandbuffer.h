@@ -59,7 +59,7 @@ class ICommandBuffer
 
 		virtual IGPUBuffer& createStreamingBuffer(size_t size) = 0;
 		virtual void copyBufferToTex(ITexture* tex, size_t offset,
-									 uint16_t width, uint16_t height, uint8_t miplevel) = 0;
+									 uint32_t width, uint32_t height, uint8_t miplevel) = 0;
 		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) = 0;
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr, IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) = 0;
 		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) = 0;

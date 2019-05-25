@@ -8,7 +8,7 @@ class CVulkanTexture : public ITexture
 {
 public:
 	CVulkanTexture(EFormat type, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped);
-	~CVulkanTexture();
+	~CVulkanTexture() override;
 
 	VkFormat typeToFormat();
 	VkImageUsageFlags usageFlags();

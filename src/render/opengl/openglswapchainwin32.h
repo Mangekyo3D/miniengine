@@ -1,6 +1,6 @@
 #pragma once
 #include "../iswapchain.h"
-#include <windows.h>
+#include <Windows.h>
 
 class GameWindow;
 
@@ -13,7 +13,7 @@ class COpenGLSwapchainWin32 : public ISwapchain
 		COpenGLSwapchainWin32(const COpenGLSwapchainWin32&) = delete;
 		COpenGLSwapchainWin32& operator = (const COpenGLSwapchainWin32&) = delete;
 
-		~COpenGLSwapchainWin32();
+		~COpenGLSwapchainWin32() override;
 		virtual void swapBuffers() override;
 
 	private:

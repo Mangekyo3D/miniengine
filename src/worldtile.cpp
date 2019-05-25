@@ -40,18 +40,18 @@ void WorldTile::generateProcedural()
 	m_mesh.m_primType = ICommandBuffer::EPrimitiveType::eTriangleStrip;
 	m_mesh.m_bEnablePrimRestart = true;
 
-	for (int i = 0; i < m_resolution; ++i)
+	for (uint16_t i = 0; i < m_resolution; ++i)
 	{
-		for (int j = 0; j < m_resolution; ++j)
+		for (uint16_t j = 0; j < m_resolution; ++j)
 		{
-			unsigned int index = i * m_resolution + j;
+			uint16_t index = i * m_resolution + j;
 
 			float fHeight = 0.0f;
-			uint16_t divisor = m_resolution / 2;
+			uint32_t divisor = m_resolution / 2;
 
 			while (divisor > 0)
 			{
-				fHeight += static_cast <float> (0.25f * divisor * Perlin::noise(static_cast <float> (i) / divisor, static_cast <float> (j) / divisor, 0));
+				fHeight += 0.25f * divisor * static_cast <float> (Perlin::noise(static_cast <double> (i) / divisor, static_cast <double> (j) / divisor, 0));
 				divisor >>= 1;
 			}
 
@@ -61,7 +61,7 @@ void WorldTile::generateProcedural()
 	}
 
 	// initialize the sides of the grid first
-	for (int i = 0; i < m_resolution; ++i)
+	for (uint16_t i = 0; i < m_resolution; ++i)
 	{
 		Vec3 normal(0.0f, 0.0f, 1.0f);
 		unsigned int index = i * m_resolution;
@@ -74,11 +74,11 @@ void WorldTile::generateProcedural()
 		m_mesh.m_vertices[i + m_resolution * (m_resolution - 1)].normal = normal;
 	}
 
-	for (int i = 1; i < m_resolution-1; ++i)
+	for (uint16_t i = 1; i < m_resolution-1; ++i)
 	{
-		for (int j = 1; j < m_resolution-1; ++j)
+		for (uint16_t j = 1; j < m_resolution-1; ++j)
 		{
-			unsigned int index = i * m_resolution + j;
+			uint32_t index = i * m_resolution + j;
 			Vec3 normal;
 
 			Vec3 c = m_mesh.m_vertices[i * m_resolution + j].vertex;
@@ -108,20 +108,20 @@ void WorldTile::generateProcedural()
 		}
 	}
 
-	int index_iter = 0;
+	uint16_t index_iter = 0;
 
-	for (int i = 0; i < m_resolution - 1; ++i)
+	for (uint16_t i = 0; i < m_resolution - 1; ++i)
 	{
 		m_mesh.m_indices[index_iter++] = i * m_resolution;
 		m_mesh.m_indices[index_iter++] = (i + 1) * m_resolution;
 
-		for (int j = 0; j < m_resolution - 1; ++j)
+		for (uint16_t j = 0; j < m_resolution - 1; ++j)
 		{
 			m_mesh.m_indices[index_iter++] = i * m_resolution + j + 1;
 			m_mesh.m_indices[index_iter++] = (i + 1) * m_resolution + j + 1;
 		}
 
-		m_mesh.m_indices[index_iter++] = ~0x0;
+		m_mesh.m_indices[index_iter++] = static_cast<uint16_t>(~0x0);
 	}
 }
 
@@ -138,7 +138,7 @@ float WorldTile::getHeightAt(float x, float y)
 		gx = m_resolution - 2;
 		dx = 1.0f;
 	}
-	else if (gx < 0)
+	else if (x < 0.0f)
 	{
 		gx = 0;
 		dx = 0;
@@ -149,7 +149,7 @@ float WorldTile::getHeightAt(float x, float y)
 		gy = m_resolution - 2;
 		dy = 1.0f;
 	}
-	else if (gy < 0)
+	else if (y < 0.0f)
 	{
 		gy = 0;
 		dy = 0;

@@ -6,8 +6,7 @@ class BmpReader
 {
 	public:
 		BmpReader()
-			: m_data(0)
-			, m_width(0)
+			: m_width(0)
 			, m_height(0)
 		{}
 		bool openFromFile(const char *, bool bOnlySize);

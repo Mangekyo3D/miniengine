@@ -12,11 +12,11 @@ class COpenGLCommandBuffer :public ICommandBuffer
 {
 	public:
 		COpenGLCommandBuffer(uint32_t swapchainWidth, uint32_t swapchainHeight);
-		~COpenGLCommandBuffer();
+		~COpenGLCommandBuffer() override;
 
 		IGPUBuffer& createStreamingBuffer(size_t size) override;
 
-		virtual void copyBufferToTex(ITexture* tex, size_t offset, uint16_t width, uint16_t height, uint8_t miplevel) override;
+		virtual void copyBufferToTex(ITexture* tex, size_t offset, uint32_t width, uint32_t height, uint8_t miplevel) override;
 
 		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) override;
 

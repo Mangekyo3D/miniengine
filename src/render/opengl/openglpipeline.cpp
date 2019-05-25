@@ -127,7 +127,7 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 		device.glSamplerParameterf(sampler, GL_TEXTURE_LOD_BIAS, 0.0f);
 	}
 
-	int32_t textureSlot = 0;
+	uint32_t textureSlot = 0;
 	if (params.globalSet)
 	{
 		for (auto& descriptor : params.globalSet->descriptors)
@@ -200,7 +200,7 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 
 	for (auto& sampler : m_samplerInfo)
 	{
-		device.glBindSampler(sampler.slot, sampler.sampler);
+		device.glBindSampler(static_cast<GLuint>(sampler.slot), sampler.sampler);
 	}
 
 	return m_descriptor.get();

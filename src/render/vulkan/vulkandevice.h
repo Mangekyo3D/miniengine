@@ -48,14 +48,14 @@ class CVulkanDevice : public IDevice
 {
 public:
 	CVulkanDevice(GameWindow& win, bool bDebugContext);
-	~CVulkanDevice();
+	~CVulkanDevice() override;
 	static CVulkanDevice& get();
 
-	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain);
+	virtual std::unique_ptr<ICommandBuffer> beginFrame(ISwapchain& currentSwapchain) override;
 	virtual std::unique_ptr<IRenderPass> createRenderPass(SRenderPassParams&) override;
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) override;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params) override;
-	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped) override;
+	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped) override;
 	virtual void finishJobs() override;
 
 	VkPhysicalDevice getPhysicalDevice();
@@ -72,7 +72,7 @@ public:
 
 	bool getSupportsImage(VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags);
 
-	VkCommandPool getGraphicsCommandPool(int nFrame) { return m_graphicsCommandPool; }
+	VkCommandPool getGraphicsCommandPool(int) { return m_graphicsCommandPool; }
 
 	uint32_t getGraphicsQueueIndex() { return m_graphicsQueueIndex; }
 	uint32_t getPresentQueueIndex() { return m_presentQueueIndex; }
@@ -125,7 +125,7 @@ private:
 	VkQueue m_presentQueue;
 
 	// memory allocator specific
-	std::map <int, SMemoryHeap::Ptr> m_memoryHeaps;
+	std::map <uint32_t, SMemoryHeap::Ptr> m_memoryHeaps;
 
 	static CVulkanDevice* s_device;
 };

@@ -4,5 +4,5 @@
 class Win32PathUtils : public OSUtils
 {
 public:
-	virtual std::string getRootPath() const override;
+	std::string getRootPath() const override;
 };

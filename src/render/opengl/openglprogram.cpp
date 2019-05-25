@@ -64,7 +64,7 @@ bool COpenGLProgram::link()
 
 		if (logSize > 0)
 		{
-			char* log = new char [logSize];
+			char* log = new char [static_cast<size_t>(logSize)];
 
 			int readSize;
 			device.glGetProgramInfoLog(m_ID, logSize, &readSize, log);

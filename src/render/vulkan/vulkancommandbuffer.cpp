@@ -12,9 +12,9 @@
 CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 	: m_device(&CVulkanDevice::get())
 	, m_swapchain(static_cast<CVulkanSwapchain*> (&swapchain))
+	, m_currentPipelineLayout(VK_NULL_HANDLE)
 	, m_frame(&m_swapchain->getNextFrame())
 	, m_cmd(m_frame->m_commandBuffer)
-	, m_currentPipelineLayout(VK_NULL_HANDLE)
 	, m_renderPassGlobalSet(VK_NULL_HANDLE)
 	, m_pipelineGlobalSet(VK_NULL_HANDLE)
 {
@@ -125,7 +125,7 @@ IGPUBuffer& CVulkanCommandBuffer::createStreamingBuffer(size_t size)
 }
 
 void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
-										   uint16_t width, uint16_t height, uint8_t miplevel)
+										   uint32_t width, uint32_t height, uint8_t miplevel)
 {
 	CVulkanTexture* vkTex = static_cast<CVulkanTexture*> (tex);
 
@@ -243,12 +243,12 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	}
 }
 
-void CVulkanCommandBuffer::drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances)
+void CVulkanCommandBuffer::drawIndexedInstanced(EPrimitiveType, size_t numIndices, size_t offset, size_t numInstances)
 {
-	m_device->vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<uint32_t> (offset), 0);
+	m_device->vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<int32_t> (offset), 0);
 }
 
-void CVulkanCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint32_t count)
+void CVulkanCommandBuffer::drawArrays(EPrimitiveType, uint32_t start, uint32_t count)
 {
 	m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
 }

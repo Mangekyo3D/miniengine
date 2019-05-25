@@ -41,7 +41,7 @@ class CVulkanSwapchain : public ISwapchain
 {
 	public:
 		CVulkanSwapchain(GameWindow& win);
-		~CVulkanSwapchain();
+		~CVulkanSwapchain() override;
 		void swapBuffers() override;
 
 		void recreate();

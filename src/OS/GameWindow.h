@@ -38,8 +38,8 @@ struct KeyEvent
 	{
 	}
 
-	EType type;
 	EKey  key;
+	EType type;
 };
 
 struct MouseWheelEvent

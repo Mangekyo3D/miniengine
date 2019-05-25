@@ -37,7 +37,7 @@ class CToneMappingPass : public IFullScreenRenderPass
 {
 	public:
 		CToneMappingPass(IDevice& device) : IFullScreenRenderPass(device) {}
-		~CToneMappingPass();
+		~CToneMappingPass() override;
 
 	private:
 		virtual void setupPipelines(IDevice& device) override;

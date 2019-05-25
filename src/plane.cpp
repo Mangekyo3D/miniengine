@@ -15,7 +15,7 @@ struct SAssets {
 	bool bInitialized;
 };
 
-SAssets Plane::s_assets = {0};
+SAssets Plane::s_assets = {nullptr, nullptr, nullptr, false};
 
 Plane::Plane(Vec3 initPos, Engine& engine)
 {
@@ -109,8 +109,7 @@ void Plane::fire(Engine& engine)
 	// switch the active gun
 	m_gun = !m_gun;
 
-	auto bullet = std::make_unique <Bullet> (m_position + weaponOffset, heading, engine);
-	bullet->setEmitter(*this);
+	auto bullet = std::make_unique <Bullet> (*this, m_position + weaponOffset, heading, engine);
 
 	IAudioDevice& audioDevice = IAudioDevice::get();
 	SAudioInitParams params;
@@ -186,9 +185,10 @@ void Plane::pitch(float fpitch)
 
 CDynamicArrayBatch* Bullet::s_batch = nullptr;
 
-Bullet::Bullet(Vec3 p, Vec3 h, Engine& engine)
-	: WorldEntity(p)
-	, m_heading(h)
+Bullet::Bullet(WorldEntity& emitter, Vec3 position, Vec3 heading, Engine& engine)
+	: WorldEntity(position)
+	, m_heading(heading)
+	, m_emitter(&emitter)
 {
 	if (!s_batch)
 	{
@@ -205,25 +205,17 @@ void Bullet::draw()
 {
 }
 
-void Bullet::setEmitter(Plane &p)
-{
-	m_emitter = &p;
-}
-
 void Bullet::update(Engine& engine)
 {
 	auto& tile = engine.getWorld();
 	uint16_t resolution = tile.getResolution();
 
-	auto& entities = engine.getEnities();
+	auto& entities = engine.getEntities();
 
 	for (auto& entity : entities)
 	{
-		if (entity.get() == m_emitter)
-		{
+		if (entity.get() == m_emitter || entity.get() == this)
 			continue;
-		}
-		Vec3 t = entity->getPosition();
 
 		if(m_position.x() > resolution || m_position.x() < 0 ||
 		   m_position.y() > resolution || m_position.y() < 0 ||
@@ -232,11 +224,11 @@ void Bullet::update(Engine& engine)
 			m_flags |= eInactive;
 		}
 
-		t = t - m_position;
-		if (cross(t, m_heading).length() <= 0.05 && t.length() < 1.0f)
+		Vec3 t = entity->getPosition() - m_position;
+		if (cross(t, m_heading).length() <= 0.05f && t.length() < 1.0f)
 		{
 			m_flags |= eInactive;
-			auto effect = std::make_unique <Explosion> (entity->getPosition());
+			auto effect = std::make_unique <Explosion> (m_position);
 			engine.addEffect(std::move(effect));
 		}
 	}

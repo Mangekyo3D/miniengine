@@ -40,6 +40,7 @@ class OSUtils
 
 	static const OSUtils& get();
 
+	virtual ~OSUtils() {};
 	protected:
 		virtual std::string getRootPath() const = 0;
 		OSUtils() {}

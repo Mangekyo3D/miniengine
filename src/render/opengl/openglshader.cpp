@@ -6,7 +6,7 @@
 #include "opengldevice.h"
 #include "../../OS/OSFactory.h"
 
-int COpenGLShader::shaderTypeToGLType(EShaderStage type)
+static GLenum shaderTypeToGLType(EShaderStage type)
 {
 	switch (type)
 	{
@@ -22,8 +22,6 @@ int COpenGLShader::shaderTypeToGLType(EShaderStage type)
 			return GL_TESS_EVALUATION_SHADER;
 		case EShaderStage::eTesselationControlStage:
 			return GL_TESS_CONTROL_SHADER;
-		default:
-			break;
 	}
 
 	return 0;
@@ -42,6 +40,8 @@ COpenGLShader::COpenGLShader(std::string filename, EShaderStage type)
 			break;
 		case EShaderStage::eVertexStage:
 			filename += ".vert.spv";
+			break;
+		default:
 			break;
 	}
 
@@ -79,12 +79,12 @@ bool COpenGLShader::compile()
 		std::string source;
 
 		file.seekg(0, std::ios::end);
-		source.reserve(file.tellg());
+		source.reserve(static_cast<size_t>(file.tellg()));
 		file.seekg(0, std::ios::beg);
 
 		source.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-		int shaderType = shaderTypeToGLType(m_type);
+		GLenum shaderType = shaderTypeToGLType(m_type);
 
 		m_ID = device.glCreateShader(shaderType);
 
@@ -103,7 +103,7 @@ bool COpenGLShader::compile()
 
 			if (logSize > 0)
 			{
-				std::unique_ptr<char[]> log(new char [logSize]);
+				std::unique_ptr<char[]> log(new char [static_cast<size_t> (logSize)]);
 
 				int readSize;
 				device.glGetShaderInfoLog(m_ID, logSize, &readSize, log.get());

@@ -18,7 +18,7 @@ class WorldEntity
 		Matrix34& getObjectToWorldMatrix();
 		Matrix34& getWorldToObjectMatrix();
 		// this returns false when the entity has died
-		virtual bool getActive() { return (m_flags & eInactive) == 0; }
+		bool getActive() { return (m_flags & eInactive) == 0; }
 		virtual void update(Engine&) {}
 
 	protected:

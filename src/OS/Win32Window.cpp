@@ -7,8 +7,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		case WM_CREATE:
 		{
-			CREATESTRUCT* cs = (CREATESTRUCT*) lParam;
-			SetWindowLongPtr(hWnd, 0, (LONG_PTR) cs->lpCreateParams);
+			CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*> (lParam);
+			SetWindowLongPtr(hWnd, 0, reinterpret_cast<LONG_PTR> (cs->lpCreateParams));
 			break;
 		}
 
@@ -46,7 +46,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 					break;
 			}
 
-			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			Win32Window* window = reinterpret_cast<Win32Window*> (GetWindowLongPtr(hWnd, 0));
 			window->onKey(event);
 			break;
 		}
@@ -58,7 +58,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			MouseWheelEvent wheelEvent;
 			wheelEvent.ticks = ticks;
 
-			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			Win32Window* window = reinterpret_cast<Win32Window*> (GetWindowLongPtr(hWnd, 0));
 			window->onMouseWheel(wheelEvent);
 			break;
 		}
@@ -69,7 +69,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			KeyEvent evt;
 			evt.key = KeyEvent::EKey::eLeftMouse;
 			evt.type = (msg == WM_LBUTTONDOWN) ? KeyEvent::EType::ePress : KeyEvent::EType::eRelease;
-			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			Win32Window* window = reinterpret_cast<Win32Window*> (GetWindowLongPtr(hWnd, 0));
 			window->onKey(evt);
 			break;
 		}
@@ -80,7 +80,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 			KeyEvent evt;
 			evt.key = KeyEvent::EKey::eRightMouse;
 			evt.type = (msg == WM_RBUTTONDOWN) ? KeyEvent::EType::ePress : KeyEvent::EType::eRelease;
-			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			Win32Window* window = reinterpret_cast<Win32Window*> (GetWindowLongPtr(hWnd, 0));
 			window->onKey(evt);
 			break;
 		}
@@ -91,7 +91,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 		case WM_SIZE:
 		{
-			Win32Window* window = (Win32Window*) (GetWindowLongPtr(hWnd, 0));
+			Win32Window* window = reinterpret_cast<Win32Window*> (GetWindowLongPtr(hWnd, 0));
 			uint32_t width = LOWORD(lParam);
 			uint32_t height = HIWORD(lParam);
 			ResizeEvent event = {width, height};
@@ -119,7 +119,7 @@ Win32Window::CWindowClass::CWindowClass()
 	m_class.cbWndExtra = sizeof(Win32Window*);
 	m_class.hInstance = GetModuleHandle(nullptr);
 	m_class.hIcon = nullptr;
-	m_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+	m_class.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	m_class.hbrBackground = nullptr;
 	m_class.lpszMenuName = nullptr;
 	m_class.lpszClassName = "SpacePiratesCls";
@@ -164,8 +164,8 @@ void Win32Window::getClientSize(uint32_t& width, uint32_t& height)
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
 
-	width = rect.right - rect.left;
-	height = rect.bottom - rect.top;
+	width = static_cast<uint32_t> (rect.right - rect.left);
+	height = static_cast<uint32_t> (rect.bottom - rect.top);
 }
 
 void Win32Window::handleOSEvents()
@@ -179,7 +179,6 @@ void Win32Window::handleOSEvents()
 	}
 }
 
-void Win32Window::getMouseState(int& x, int& y)
+void Win32Window::getMouseState(int&, int&)
 {
-
 }

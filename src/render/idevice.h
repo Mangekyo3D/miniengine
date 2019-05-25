@@ -40,7 +40,7 @@ public:
 	virtual std::unique_ptr<IGPUBuffer> createGPUBuffer(size_t size, uint32_t usage) = 0;
 	virtual std::unique_ptr<IRenderPass> createRenderPass(SRenderPassParams& params) = 0;
 	virtual std::unique_ptr<IPipeline> createPipeline(SPipelineParams& params) = 0;
-	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped = false) = 0;
+	virtual std::unique_ptr<ITexture> createTexture(ITexture::EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped = false) = 0;
 	virtual void finishJobs() = 0;
 
 	void addTextureStreamRequest(TextureStreamRequest req);

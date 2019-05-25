@@ -12,7 +12,7 @@ ITexture::ITexture(EFormat format, uint32_t usage, uint32_t width, uint32_t heig
 {
 	if (bMipmapped)
 	{
-		uint16_t maxDim = std::max(m_width, m_height);
+		uint32_t maxDim = std::max(m_width, m_height);
 
 		m_mipLevels = 0;
 

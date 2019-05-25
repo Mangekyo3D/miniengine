@@ -116,7 +116,7 @@ void CSceneRenderPass::draw(ICommandBuffer& cmd, std::vector <std::unique_ptr<IB
 		IPipeline* pipeline = m_pipelines[pipelineNum].get();
 
 		auto end = std::upper_bound(start, batches.end(), *start, predicate);
-		cmd.bindPipeline(pipeline, end - start);
+		cmd.bindPipeline(pipeline, static_cast <size_t>(end - start));
 		cmd.bindGlobalRenderPassDescriptors(descriptorSource.size(), descriptorSource.data());
 
 		while (start != end)

@@ -21,7 +21,7 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 	dummyclass.cbWndExtra = 0;
 	dummyclass.hInstance = GetModuleHandle(nullptr);
 	dummyclass.hIcon = nullptr;
-	dummyclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	dummyclass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 	dummyclass.hbrBackground = nullptr;
 	dummyclass.lpszMenuName = nullptr;
 	dummyclass.lpszClassName = "DummyCls";
@@ -33,7 +33,8 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 								 WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 	m_hdc = GetDC(m_hWnd);
 
-	PIXELFORMATDESCRIPTOR pfd = {0};
+	PIXELFORMATDESCRIPTOR pfd;
+	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
 
 	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
@@ -101,7 +102,9 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 
 		if (wglChoosePixelFormatARB(m_hdc, attribList, nullptr, 1, &pixelFormat, &numFormats))
 		{
-			PIXELFORMATDESCRIPTOR pfdtmp = {0};
+			PIXELFORMATDESCRIPTOR pfdtmp;
+			memset(&pfdtmp, 0, sizeof(PIXELFORMATDESCRIPTOR));
+
 			SetPixelFormat(m_hdc, pixelFormat, &pfdtmp);
 
 			int contexAttribs[] =
@@ -140,7 +143,7 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 
 COpenGLSwapchainWin32::~COpenGLSwapchainWin32()
 {
-	wglMakeCurrent(0, 0);
+	wglMakeCurrent(nullptr, nullptr);
 
 	wglDeleteContext(m_hrc);
 	m_hrc = nullptr;

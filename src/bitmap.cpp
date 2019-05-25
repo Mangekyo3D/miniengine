@@ -31,7 +31,7 @@ typedef struct tagBITMAPINFOHEADER{
 	DWORD	biClrImportant;
 } BITMAPINFOHEADER,*LPBITMAPINFOHEADER,*PBITMAPINFOHEADER;
 #else
-#include <windows.h>
+#include <Windows.h>
 #endif
 
 
@@ -70,8 +70,8 @@ bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 	READMEMBER(infoHeader.biClrUsed)
 	READMEMBER(infoHeader.biClrImportant)
 
-	m_width = infoHeader.biWidth;
-	m_height = infoHeader.biHeight;
+	m_width = static_cast<uint32_t> (infoHeader.biWidth);
+	m_height = static_cast<uint32_t> (infoHeader.biHeight);
 
 	size_t padding = (m_width * 3) % 4;
 	size_t length = m_width * m_height * 3;
@@ -102,7 +102,7 @@ bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 	//fill the bitmap in the memory
 	if (padding == 0)
 	{
-		file.read(reinterpret_cast<char*> (m_data.get()), length);
+		file.read(reinterpret_cast<char*> (m_data.get()), static_cast<std::streamsize> (length));
 	}
 	else
 	{
@@ -116,7 +116,7 @@ bool BmpReader::openFromFile(const char *fileName, bool bOnlySize)
 			// push the reader forward by reading into a bogus variable. Width needs to be padded to 4 bytes
 			// so reading into an int should be OK
 			uint32_t stub;
-			file.read(reinterpret_cast<char*> (&stub), padding);
+			file.read(reinterpret_cast<char*> (&stub), static_cast<std::streamsize> (padding));
 		}
 	}
 

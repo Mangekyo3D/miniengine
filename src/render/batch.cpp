@@ -9,11 +9,11 @@
 
 CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
 	: IBatch(pipeline)
-	, m_numInstances(0)
+	, m_bEnablePrimRestart(m->m_bEnablePrimRestart)
 	, m_numIndices(m->getNumIndices())
 	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
 	, m_primType(m->m_primType)
-	, m_bEnablePrimRestart(m->m_bEnablePrimRestart)
+	, m_numInstances(0)
 {
 	if (textures)
 	{
@@ -92,7 +92,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(IDevice& device, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(IDevice&, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
 	: IBatch(pipeline)
 {
 	if (textures)

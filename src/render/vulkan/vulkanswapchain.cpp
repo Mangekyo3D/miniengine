@@ -302,13 +302,12 @@ void CVulkanSwapchain::recreate()
 }
 
 SFrame::SFrame()
-	: m_swapchainImage(VK_NULL_HANDLE)
+	: m_swapchainImageAvailableSemaphore(VK_NULL_HANDLE)
+	, m_renderingFinishedSemaphore(VK_NULL_HANDLE)
+	, m_swapchainImage(VK_NULL_HANDLE)
 	, m_imageView(VK_NULL_HANDLE)
 	, m_framebuffer(VK_NULL_HANDLE)
 	, m_fence(VK_NULL_HANDLE)
-	, m_swapchainImageAvailableSemaphore(VK_NULL_HANDLE)
-	, m_renderingFinishedSemaphore(VK_NULL_HANDLE)
-
 {
 	auto& device = CVulkanDevice::get();
 

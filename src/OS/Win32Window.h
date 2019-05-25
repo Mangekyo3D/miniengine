@@ -1,12 +1,12 @@
 #include "GameWindow.h"
-#include <windows.h>
+#include <Windows.h>
 #include <memory>
 
 class Win32Window : public GameWindow
 {
 public:
 	Win32Window();
-	~Win32Window();
+	~Win32Window() override;
 
 	virtual void getClientSize(uint32_t& width, uint32_t& height) override;
 

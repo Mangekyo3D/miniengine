@@ -34,7 +34,7 @@ const Matrix44& Camera::getProjectionMatrix()
 	if (m_invalidPerspMatrix)
 	{
 		m_invalidPerspMatrix = false;
-		m_perspectiveMatrix = Matrix44::generatePerspective(m_nearPlane, m_farPlane, m_width / (float)m_height, m_fov);
+		m_perspectiveMatrix = Matrix44::generatePerspective(m_nearPlane, m_farPlane, m_width / static_cast<float>(m_height), m_fov);
 	}
 	return m_perspectiveMatrix;
 }

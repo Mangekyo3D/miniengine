@@ -33,9 +33,9 @@ int Perlin::p[] = { 151,160,137,91,90,15,
 
 double Perlin::noise(double x, double y, double z)
 {
-	int X = (int)floor(x) & 255,
-	  	Y = (int)floor(y) & 255,
-	   	Z = (int)floor(z) & 255;
+	int X = static_cast<int>(floor(x)) & 255,
+		Y = static_cast<int>(floor(y)) & 255,
+		Z = static_cast<int>(floor(z)) & 255;
 	x -= floor(x);
 	y -= floor(y);
 	z -= floor(z);

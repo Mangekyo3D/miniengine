@@ -6,7 +6,7 @@ class COpenGLRenderPass : public IRenderPass
 {
 	public:
 		COpenGLRenderPass();
-		~COpenGLRenderPass();
+		~COpenGLRenderPass() override;
 
 		// setup the renderpass with inputs and outputs.
 		virtual void setupRenderPass(ITexture** outputs, uint32_t numOutputs, ITexture* depthOut) override;
@@ -18,13 +18,13 @@ class COpenGLRenderPass : public IRenderPass
 		uint32_t getHeight() { return m_height; }
 
 	protected:
+		// framebuffer object of this renderpass
+		uint32_t m_framebufferObject;
+
 		uint32_t m_numOutputs;
 		bool     m_bDepthOutput;
 
 		// width and height, used when we render to default framebuffer
 		uint32_t                m_width;
 		uint32_t                m_height;
-
-		// framebuffer object of this renderpass
-		uint32_t m_framebufferObject;
 };

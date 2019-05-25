@@ -11,7 +11,7 @@ COpenGLTexture::COpenGLTexture(EFormat format, uint32_t usage, uint16_t width, u
 {
 	auto& device = COpenGLDevice::get();
 	device.glCreateTextures(GL_TEXTURE_2D, 1, &m_id);
-	device.glTextureStorage2D(m_id, m_mipLevels, formatToGLFormat(), m_width, m_height);
+	device.glTextureStorage2D(m_id, m_mipLevels, formatToGLFormat(), static_cast<GLint> (m_width), static_cast<GLint> (m_height));
 }
 
 COpenGLTexture::~COpenGLTexture()
@@ -21,7 +21,7 @@ COpenGLTexture::~COpenGLTexture()
 	device.glDeleteTextures(1, &m_id);
 }
 
-void COpenGLTexture::bind(uint8_t unit)
+void COpenGLTexture::bind(uint32_t unit)
 {
 	auto& device = COpenGLDevice::get();
 
@@ -40,10 +40,8 @@ size_t COpenGLTexture::getFormatPixelSize()
 			return 16;
 		case EFormat::eDepth32f:
 			return 4;
-
-		default:
-			return 4;
 	}
+	return 4;
 }
 
 uint32_t COpenGLTexture::formatToGLFormat()
@@ -58,8 +56,6 @@ uint32_t COpenGLTexture::formatToGLFormat()
 			return GL_DEPTH_COMPONENT32F;
 		case eSRGB8:
 			return GL_SRGB8_ALPHA8;
-
-		default:
-			return GL_RGBA8;
 	}
+	return GL_RGBA8;
 }

@@ -8,7 +8,7 @@ class CVulkanBuffer : public IGPUBuffer
 {
 public:
 	CVulkanBuffer(size_t size, uint32_t usage);
-	~CVulkanBuffer();
+	~CVulkanBuffer() override;
 
 	VkDeviceSize getAnimatedOffset() const { return static_cast <uint32_t>(m_frame * m_size); }
 	VkDescriptorBufferInfo getDescriptorBufferInfo() const;

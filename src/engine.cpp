@@ -11,8 +11,8 @@
 #include "render/idevice.h"
 
 Engine::Engine(GameWindow &win, SCommandLineOptions& options)
-	: m_currentWorldTile(64)
-	, m_gameWindow(&win)
+	: m_gameWindow(&win)
+	, m_currentWorldTile(64)
 {
 	auto device = IDevice::createDevice(win, options.bDebugContext, options.bWithVulkan);
 	m_resourceManager = std::make_unique<ResourceManager> (device.get());
@@ -59,6 +59,8 @@ void Engine::onKeyEvent(KeyEvent& event)
 		case KeyEvent::EKey::eEscape:
 			m_inputState.menuPressed = pressed;
 			break;
+		default:
+			break;
 	}
 }
 
@@ -75,7 +77,7 @@ void Engine::onResizeEvent(ResizeEvent& event)
 
 void Engine::enterGameLoop()
 {
-	unsigned int time = 0;
+	clock_t time = 0;
 
 	IAudioDevice& audioDevice = IAudioDevice::get();
 
@@ -104,8 +106,9 @@ void Engine::enterGameLoop()
 			controller->update(*this);
 		}
 
-		for(int i = static_cast<int> (m_worldEntities.size()) - 1; i >= 0; --i)
-		{
+		size_t i = m_worldEntities.size();
+		while (i != 0) {
+			--i;
 			if (m_worldEntities[i]->getActive())
 			{
 				m_worldEntities[i]->update(*this);
@@ -117,8 +120,10 @@ void Engine::enterGameLoop()
 			}
 		}
 
-		for(int i = static_cast<int> (m_effects.size()) - 1; i >= 0; --i)
+		i = m_effects.size();
+		while (i != 0)
 		{
+			--i;
 			if(m_effects[i]->getActive())
 			{
 				m_effects[i]->update();
@@ -129,7 +134,6 @@ void Engine::enterGameLoop()
 				m_effects.pop_back();
 			}
 		}
-
 		// set up camera for the frame
 		/* startup, create world */
 		m_currentWorldTile.setup_draw_operations(m_renderer.get(), m_resourceManager.get());

@@ -39,6 +39,7 @@ struct IMesh
 		, m_bEnablePrimRestart(false)
 	{
 	}
+	virtual ~IMesh(){}
 
 	virtual size_t getVertexSize() = 0;
 	virtual size_t getNumVertices() = 0;
@@ -92,7 +93,7 @@ class CIndexedInstancedBatch : public IBatch
 {
 	public:
 		CIndexedInstancedBatch(IDevice& device, IMesh *, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
-		~CIndexedInstancedBatch();
+		~CIndexedInstancedBatch() override;
 
 		void draw(ICommandBuffer&) override;
 
@@ -121,7 +122,7 @@ class CDynamicArrayBatch : public IBatch
 {
 	public:
 		CDynamicArrayBatch(IDevice& device, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
-		~CDynamicArrayBatch();
+		~CDynamicArrayBatch() override;
 
 		void draw(ICommandBuffer&) override;
 

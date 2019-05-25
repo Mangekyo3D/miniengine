@@ -33,7 +33,7 @@ void CVulkanShaderModule::load()
 	{
 		// classic trick to get length of file, seek to end, get
 		file.seekg(0, std::ios_base::end);
-		m_data.reserve(file.tellg());
+		m_data.reserve(static_cast<size_t>(file.tellg()));
 		file.seekg(0, std::ios_base::beg);
 
 		m_data.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

@@ -1,5 +1,5 @@
 #include "Win32PathUtils.h"
-#include <windows.h>
+#include <Windows.h>
 #include <array>
 
 std::string Win32PathUtils::getRootPath() const

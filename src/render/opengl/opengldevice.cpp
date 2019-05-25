@@ -16,7 +16,7 @@
 
 COpenGLDevice* COpenGLDevice::s_device = nullptr;
 
-static void APIENTRY debugCallback(GLenum source,GLenum type,GLuint id,GLenum severity, GLsizei length,const GLchar *message,const void *userParam)
+static void APIENTRY debugCallback(GLenum ,GLenum type,GLuint ,GLenum , GLsizei ,const GLchar *message,const void *)
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
 	{
@@ -179,7 +179,7 @@ std::unique_ptr<IPipeline> COpenGLDevice::createPipeline(SPipelineParams& params
 	return std::make_unique <COpenGLPipeline> (params, std::move(vertexDescriptor));
 }
 
-std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
+std::unique_ptr<ITexture> COpenGLDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped)
 {
 	return std::make_unique <COpenGLTexture>(format, usage, width, height, bMipmapped);
 }

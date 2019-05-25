@@ -268,9 +268,9 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 }
 
 CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
-	: m_device(VK_NULL_HANDLE)
-	, m_instance(VK_NULL_HANDLE)
+	: m_instance(VK_NULL_HANDLE)
 	, m_debugHandle(VK_NULL_HANDLE)
+	, m_device(VK_NULL_HANDLE)
 {
 	m_bDebugInstance = bDebugContext;
 	s_device = this;
@@ -398,7 +398,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	};
 
 	// Create vulkan instance
-	if (vkCreateInstance(&instanceInfo, 0, &m_instance) != VK_SUCCESS)
+	if (vkCreateInstance(&instanceInfo, nullptr, &m_instance) != VK_SUCCESS)
 	{
 		std::cout << "Vulkan Instance creation failed" << std::endl;
 		return;
@@ -562,7 +562,7 @@ bool CVulkanDevice::getSwapchainCreationParameters(VkSurfaceKHR windowSurface, V
 	VkExtent2D finalExtent = surfaceCapabilities.currentExtent;
 
 	// use an arbitrary extent in case of invalid values
-	if (finalExtent.width == -1 && finalExtent.height == -1)
+	if (finalExtent.width == ~0x0u && finalExtent.height == ~0x0u)
 	{
 		finalExtent.width = 800;
 		finalExtent.width = 600;
@@ -714,7 +714,7 @@ std::unique_ptr<IPipeline> CVulkanDevice::createPipeline(SPipelineParams& params
 	return std::make_unique <CVulkanPipeline>(params);
 }
 
-std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint16_t width, uint16_t height, bool bMipmapped)
+std::unique_ptr<ITexture> CVulkanDevice::createTexture(ITexture::EFormat format, uint32_t usage, uint32_t width, uint32_t height, bool bMipmapped)
 {
 	return std::make_unique <CVulkanTexture> (format, usage, width, height, bMipmapped);
 }
@@ -793,7 +793,8 @@ bool SMemoryChunk::allocateBlock(size_t size, size_t alignment, size_t& offset)
 						false
 					};
 
-					auto iter = m_blocks.begin() + index + 1;
+					auto iter = m_blocks.begin();
+					std::advance(iter, index + 1);
 					m_blocks.insert(iter, newBlock);
 
 					// reset block, since it may have been changed after the insertion
@@ -825,7 +826,8 @@ void SMemoryChunk::freeBlock(size_t offset)
 			block->m_bUsed = false;
 
 			// attempt to coalesce adjacent blocks
-			auto mergeStartIter = m_blocks.begin() + index;
+			auto mergeStartIter = m_blocks.begin();
+			std::advance(mergeStartIter, index);
 			auto mergeEndIter = mergeStartIter + 1;
 			bool bMerged = false;
 

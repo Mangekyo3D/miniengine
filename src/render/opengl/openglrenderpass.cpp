@@ -5,10 +5,10 @@
 
 COpenGLRenderPass::COpenGLRenderPass()
 	: m_framebufferObject(0)
-	, m_width(0)
-	, m_height(0)
 	, m_numOutputs(0)
 	, m_bDepthOutput(false)
+	, m_width(0)
+	, m_height(0)
 {
 }
 

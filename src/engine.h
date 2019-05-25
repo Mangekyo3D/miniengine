@@ -40,7 +40,7 @@ public:
 	void setPlayerEntity(WorldEntity* entity);
 	WorldEntity& getPlayerEntity() { return *m_playerEntity; }
 	WorldTile& getWorld() { return m_currentWorldTile; }
-	std::vector <std::unique_ptr<WorldEntity> >& getEnities() { return m_worldEntities; }
+	std::vector <std::unique_ptr<WorldEntity> >& getEntities() { return m_worldEntities; }
 	const SUserInputState& getInputState() {return m_inputState; }
 	Renderer* getRenderer() { return m_renderer.get(); }
 	ResourceManager* getResourceManager() { return m_resourceManager.get(); }

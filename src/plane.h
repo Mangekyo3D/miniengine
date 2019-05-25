@@ -13,7 +13,7 @@ class Plane : public WorldEntity
 {
 	public:
 		Plane(Vec3, Engine& engine);
-		~Plane();
+		~Plane() override;
 
 		void stopSound();
 		void setColor(float *);
@@ -63,14 +63,13 @@ class PlanePlayerController : public Controller
 class Bullet : public WorldEntity
 {
 	public:
-		Bullet(Vec3, Vec3, Engine&);
-		~Bullet();
+		Bullet(WorldEntity&, Vec3 position, Vec3 heading, Engine&);
+		~Bullet() override;
 		void draw();
-		void setEmitter(Plane &);
 		virtual void update(Engine& engine) override;
 
 	private:
 		Vec3 m_heading;
-		Plane* m_emitter;
+		const WorldEntity* m_emitter;
 		static CDynamicArrayBatch* s_batch;
 };

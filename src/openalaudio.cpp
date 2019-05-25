@@ -154,7 +154,7 @@ public:
 
 				// data has been read, time to generate the openAL buffer
 				alGenBuffers(1, &m_buffer);
-				alBufferData(m_buffer, alFormat, soundData.get(), dataSize, samplingRate);
+				alBufferData(m_buffer, alFormat, soundData.get(), static_cast<ALsizei>(dataSize), static_cast<ALsizei>(samplingRate));
 			}
 		}
 		else
@@ -185,7 +185,7 @@ public:
 
 		alGenSources(1, &m_source);
 
-		alSourcei(m_source, AL_BUFFER, alResource.getHandle());
+		alSourcei(m_source, AL_BUFFER, static_cast<ALsizei>(alResource.getHandle()));
 		alSourcefv(m_source, AL_POSITION, params.position.data());
 		alSourcefv(m_source, AL_VELOCITY, params.velocity.data());
 		alSourcef(m_source, AL_REFERENCE_DISTANCE, params.decayDistance);
@@ -247,14 +247,14 @@ class OpenALDevice : public IAudioDevice
 
 	public:
 		OpenALDevice();
-		~OpenALDevice();
+		~OpenALDevice() override;
 
 		virtual bool checkStatus() override;
-		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename);
-		virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&);
-		virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&);
-		virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity);
-		virtual void deleteResource(IAudioInstance*);
+		virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) override;
+		virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&) override;
+		virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&) override;
+		virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) override;
+		virtual void deleteResource(IAudioInstance*) override;
 };
 
 OpenALDevice::OpenALDevice()
@@ -405,7 +405,7 @@ public:
 	virtual std::unique_ptr <IAudioResource> createAudioResource(std::string& filename) override { return std::make_unique<NullAudioResource> (filename); }
 	virtual void playResourceOnce(const IAudioResource&, const SAudioInitParams&) override {}
 	virtual IAudioInstance* loopResource(const IAudioResource&, const SAudioInitParams&) override { return &m_dummyResource;}
-	virtual void updateListener(Vec3 position, Vec3 orientation, Vec3 velocity) override {}
+	virtual void updateListener(Vec3, Vec3, Vec3) override {}
 	virtual void deleteResource(IAudioInstance*) override {}
 
 private:
