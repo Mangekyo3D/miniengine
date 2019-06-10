@@ -89,14 +89,14 @@ void Engine::enterGameLoop()
 	while (true)
 	{
 		std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - lastTime);
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - lastTime);
 		lastTime = currentTime;
 
 		const long long millisecondsPerFrame = 33;
 		// 30 fps timing
 		if (duration.count() < millisecondsPerFrame)
 		{
-			std::chrono::microseconds sleepDuration(millisecondsPerFrame - duration.count());
+			std::chrono::milliseconds sleepDuration(millisecondsPerFrame - duration.count());
 			std::this_thread::sleep_for(sleepDuration);
 		}
 
