@@ -1,7 +1,8 @@
 #include "engine.h"
 #include "effect.h"
 #include "audiointerface.h"
-#include <ctime>
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include "worldentity.h"
 #include <cmath>
@@ -77,7 +78,7 @@ void Engine::onResizeEvent(ResizeEvent& event)
 
 void Engine::enterGameLoop()
 {
-	clock_t time = 0;
+	std::chrono::high_resolution_clock::time_point lastTime = std::chrono::high_resolution_clock::now();
 
 	IAudioDevice& audioDevice = IAudioDevice::get();
 
@@ -87,10 +88,17 @@ void Engine::enterGameLoop()
 
 	while (true)
 	{
-		// 60 fps timing
-		while ((clock() - time) / static_cast<double> (CLOCKS_PER_SEC) < 0.033)
-			;
-		time = clock();
+		std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - lastTime);
+		lastTime = currentTime;
+
+		const long long millisecondsPerFrame = 33;
+		// 30 fps timing
+		if (duration.count() < millisecondsPerFrame)
+		{
+			std::chrono::microseconds sleepDuration(millisecondsPerFrame - duration.count());
+			std::this_thread::sleep_for(sleepDuration);
+		}
 
 		m_inputState.reset();
 		m_gameWindow->handleOSEvents();
