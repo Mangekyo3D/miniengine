@@ -24,8 +24,8 @@ class CVulkanCommandBuffer : public ICommandBuffer
 
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr,  IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) override;
 
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override;
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) override;
+        virtual void drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances) override;
+        virtual void drawArrays(uint32_t start, uint32_t count) override;
 
 		virtual void bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource*) override;
 		virtual void bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource*) override;

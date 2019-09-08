@@ -65,7 +65,6 @@ class Bullet : public WorldEntity
 	public:
 		Bullet(WorldEntity&, Vec3 position, Vec3 heading, Engine&);
 		~Bullet() override;
-		void draw();
 		virtual void update(Engine& engine) override;
 
 	private:

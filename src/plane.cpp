@@ -201,10 +201,6 @@ Bullet::~Bullet()
 {
 }
 
-void Bullet::draw()
-{
-}
-
 void Bullet::update(Engine& engine)
 {
 	auto& tile = engine.getWorld();
@@ -235,7 +231,10 @@ void Bullet::update(Engine& engine)
 
 	m_position = m_position + 1.0f * m_heading;
 
-	//s_batch->addMeshData();
+    if (s_batch)
+    {
+        s_batch->addMeshData();
+    }
 }
 
 PlaneAIController::PlaneAIController(Plane* plane)

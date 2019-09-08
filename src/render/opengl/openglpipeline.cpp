@@ -208,5 +208,10 @@ COpenGLVertexDescriptorInterface* COpenGLPipeline::bind()
 
 bool COpenGLPipeline::getPrimitiveRestart()
 {
-	return (m_pipelineFlags & ePrimitiveTypeTriangleStrip) != 0;
+    return (m_pipelineFlags & ePrimitiveRestart) != 0;
+}
+
+uint32_t COpenGLPipeline::getPrimitiveType()
+{
+    return ((m_pipelineFlags & ePrimitiveTypeTriangleStrip) != 0) ? GL_TRIANGLE_STRIP : GL_TRIANGLES;
 }

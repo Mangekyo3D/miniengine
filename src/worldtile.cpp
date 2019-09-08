@@ -37,9 +37,6 @@ void WorldTile::setup_draw_operations(Renderer* renderer, ResourceManager* resou
 
 void WorldTile::generateProcedural()
 {
-	m_mesh.m_primType = ICommandBuffer::EPrimitiveType::eTriangleStrip;
-	m_mesh.m_bEnablePrimRestart = true;
-
 	for (uint16_t i = 0; i < m_resolution; ++i)
 	{
 		for (uint16_t j = 0; j < m_resolution; ++j)

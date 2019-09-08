@@ -34,11 +34,6 @@ struct VertexFormatV
 
 struct IMesh
 {
-	IMesh()
-		: m_primType(ICommandBuffer::EPrimitiveType::eTriangles)
-		, m_bEnablePrimRestart(false)
-	{
-	}
 	virtual ~IMesh(){}
 
 	virtual size_t getVertexSize() = 0;
@@ -47,9 +42,6 @@ struct IMesh
 	virtual size_t getNumIndices() = 0;
 	virtual void* getIndices() = 0;
 	virtual size_t getIndexSize() = 0;
-
-	ICommandBuffer::EPrimitiveType m_primType;
-	bool m_bEnablePrimRestart;
 };
 
 template <class T, class I = uint16_t> struct Mesh : public IMesh {
@@ -104,10 +96,8 @@ class CIndexedInstancedBatch : public IBatch
 
 		std::vector <MeshInstanceData> m_instanceData;
 		std::vector <ITexture*> m_textures;
-		bool m_bEnablePrimRestart;
 		size_t m_numIndices;
 		bool   m_bShortIndices;
-		ICommandBuffer::EPrimitiveType m_primType;
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
 		std::unique_ptr<IGPUBuffer> m_indexBuffer;
 		// attributes that are specific to a certain instance
@@ -126,13 +116,12 @@ class CDynamicArrayBatch : public IBatch
 
 		void draw(ICommandBuffer&) override;
 
-		void addMeshData();
+        void addMeshData();
 
 	private:
 		std::vector <ITexture*> m_textures;
-		ICommandBuffer::EPrimitiveType m_primType;
 
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
-		uint32_t m_bufferSize;
+        uint32_t m_bufferSize;
 };

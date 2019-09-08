@@ -155,14 +155,14 @@ void COpenGLCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	m_currentVertexDescriptor->setVertexStream(vertexBuffer, indexBuffer, instanceBuffer);
 }
 
-void COpenGLCommandBuffer::drawArrays(EPrimitiveType type, uint32_t start, uint32_t count)
+void COpenGLCommandBuffer::drawArrays(uint32_t start, uint32_t count)
 {
-	m_device->glDrawArrays(meshPrimitiveToGLPrimitive(type), static_cast<int>(start), static_cast<int>(count));
+    m_device->glDrawArrays(static_cast<GLenum>(m_currentPipeline->getPrimitiveType()), static_cast<int>(start), static_cast<int>(count));
 }
 
-void COpenGLCommandBuffer::drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances)
+void COpenGLCommandBuffer::drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances)
 {
-	m_device->glDrawElementsInstanced(meshPrimitiveToGLPrimitive(type),static_cast <GLint> (numIndices),
+    m_device->glDrawElementsInstanced(static_cast<GLenum>(m_currentPipeline->getPrimitiveType()),static_cast <GLint> (numIndices),
 									  m_bShortIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, reinterpret_cast <GLubyte*>(offset),
 									  static_cast <GLint> (numInstances));
 }
@@ -227,17 +227,4 @@ void COpenGLCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 void COpenGLCommandBuffer::endRenderPass()
 {
 
-}
-
-uint32_t COpenGLCommandBuffer::meshPrimitiveToGLPrimitive(EPrimitiveType type)
-{
-	switch (type)
-	{
-		case EPrimitiveType::eTriangles:
-			return GL_TRIANGLES;
-		case EPrimitiveType::eTriangleStrip:
-			return GL_TRIANGLE_STRIP;
-	}
-
-	return GL_TRIANGLES;
 }

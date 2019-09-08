@@ -70,7 +70,7 @@ void IFullScreenRenderPass::draw(ICommandBuffer& cmd)
 
 	cmd.setVertexStream(m_data->m_fullScreenTriangle.get());
 
-	cmd.drawArrays(ICommandBuffer::EPrimitiveType::eTriangles, 0, 3);
+    cmd.drawArrays(0, 3);
 }
 
 CSceneRenderPass::CSceneRenderPass(IDevice& device)
@@ -161,9 +161,10 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 			params.perDrawBinding = &vertBinding;
 			m_pipelines[eDiffuse] = device.createPipeline(params);
 
-			params.flags |= ePrimitiveTypeTriangleStrip;
+            int64_t oldFlags = params.flags;
+            params.flags |= ePrimitiveTypeTriangleStrip;
 			m_pipelines[eDiffuseTriangleStrip] = device.createPipeline(params);
-			params.flags &= ~ePrimitiveTypeTriangleStrip;
+            params.flags = oldFlags;
 		}
 
 		{
@@ -183,9 +184,10 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
 			m_pipelines[eDiffuseTextured] = device.createPipeline(params);
 
-			params.flags |= ePrimitiveTypeTriangleStrip;
+            int64_t oldFlags = params.flags;
+            params.flags |= ePrimitiveTypeTriangleStrip | ePrimitiveRestart;
 			m_pipelines[eDiffuseTexturedTriangleStrip] = device.createPipeline(params);
-			params.flags &= ~ePrimitiveTypeTriangleStrip;
+            params.flags = oldFlags;
 		}
 	}
 }

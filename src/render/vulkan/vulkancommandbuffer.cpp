@@ -218,7 +218,7 @@ void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredD
 void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer,  IGPUBuffer* indexBuffer, bool bShortIndex)
 {
 	uint32_t bindCount = 0;
-	VkBuffer buffers[2] = {0};
+    VkBuffer buffers[2] = {nullptr, nullptr};
 	VkDeviceSize offsets[2] = {0};
 
 	CVulkanBuffer* vBuf = static_cast<CVulkanBuffer*> (vertexBuffer);
@@ -243,12 +243,12 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 	}
 }
 
-void CVulkanCommandBuffer::drawIndexedInstanced(EPrimitiveType, size_t numIndices, size_t offset, size_t numInstances)
+void CVulkanCommandBuffer::drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances)
 {
 	m_device->vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<int32_t> (offset), 0);
 }
 
-void CVulkanCommandBuffer::drawArrays(EPrimitiveType, uint32_t start, uint32_t count)
+void CVulkanCommandBuffer::drawArrays(uint32_t start, uint32_t count)
 {
 	m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
 }

@@ -6,9 +6,10 @@ class IRenderPass;
 
 enum EPipelineFlags
 {
-	eDepthCompareGreater = 1L,
-	eCullBackFace        = (1L << 1),
-	ePrimitiveTypeTriangleStrip    = (1L << 2)
+	eDepthCompareGreater           = 1L,
+	eCullBackFace                  = (1L << 1),
+	ePrimitiveTypeTriangleStrip    = (1L << 2),
+	ePrimitiveRestart              = (1L << 3)
 };
 
 enum EVertexFormat

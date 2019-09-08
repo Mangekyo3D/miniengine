@@ -9,10 +9,8 @@
 
 CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
 	: IBatch(pipeline)
-	, m_bEnablePrimRestart(m->m_bEnablePrimRestart)
 	, m_numIndices(m->getNumIndices())
 	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
-	, m_primType(m->m_primType)
 	, m_numInstances(0)
 {
 	if (textures)
@@ -61,7 +59,7 @@ void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 
 	cmd.setVertexStream(m_vertexBuffer.get(), m_instanceBuffer.get(), m_indexBuffer.get(), m_bShortIndices);
 
-	cmd.drawIndexedInstanced(m_primType, m_numIndices, 0, m_instanceData.size());
+    cmd.drawIndexedInstanced(m_numIndices, 0, m_instanceData.size());
 
 	m_instanceData.clear();
 }
@@ -106,6 +104,11 @@ CDynamicArrayBatch::~CDynamicArrayBatch()
 }
 
 void CDynamicArrayBatch::draw(ICommandBuffer&)
+{
+
+}
+
+void CDynamicArrayBatch::addMeshData()
 {
 
 }

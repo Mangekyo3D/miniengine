@@ -25,9 +25,9 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		virtual void bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources) override;
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer, IGPUBuffer* indexBuffer, bool bShortIndices) override;
 
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) override;
+        virtual void drawArrays(uint32_t start, uint32_t count) override;
 
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) override;
+        virtual void drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances) override;
 
 		virtual IDevice& getDevice() override;
 
@@ -35,8 +35,6 @@ class COpenGLCommandBuffer :public ICommandBuffer
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override;
 
 		virtual void endRenderPass() override;
-
-		uint32_t meshPrimitiveToGLPrimitive(EPrimitiveType type);
 
 	private:
 		uint32_t m_swapchainWidth, m_swapchainHeight;

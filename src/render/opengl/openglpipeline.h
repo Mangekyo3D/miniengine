@@ -27,6 +27,7 @@ class COpenGLPipeline : public IPipeline {
 		~COpenGLPipeline();
 		COpenGLVertexDescriptorInterface* bind();
 		bool getPrimitiveRestart();
+        uint32_t getPrimitiveType();
 
 	private:
 		int64_t       m_pipelineFlags;

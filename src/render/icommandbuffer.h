@@ -49,12 +49,6 @@ class ICommandBuffer
 				ICommandBuffer* m_cmd;
 		};
 
-		enum class EPrimitiveType
-		{
-			eTriangles,
-			eTriangleStrip
-		};
-
 		virtual ~ICommandBuffer() {}
 
 		virtual IGPUBuffer& createStreamingBuffer(size_t size) = 0;
@@ -62,8 +56,8 @@ class ICommandBuffer
 									 uint32_t width, uint32_t height, uint8_t miplevel) = 0;
 		virtual void bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors) = 0;
 		virtual void setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer* instanceBuffer = nullptr, IGPUBuffer* indexBuffer = nullptr, bool bShortIndex = true) = 0;
-		virtual void drawIndexedInstanced(EPrimitiveType type, size_t numIndices, size_t offset, size_t numInstances) = 0;
-		virtual void drawArrays(EPrimitiveType type, uint32_t start, uint32_t count) = 0;
+        virtual void drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances) = 0;
+        virtual void drawArrays(uint32_t start, uint32_t count) = 0;
 
 		virtual void bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource*) = 0;
 		virtual void bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource*) = 0;

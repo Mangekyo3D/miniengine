@@ -81,14 +81,14 @@ bool SMDModel::openFromFile(ResourceManager* resourceManager, const char *filena
 
 	uint32_t numOfIndices;
 
-	inputFile.read((char *)&numOfIndices, sizeof(numOfIndices));
+    inputFile.read(reinterpret_cast<char *>(&numOfIndices), sizeof(numOfIndices));
 
 	m_indexData.reserve(numOfIndices);
 	for(uint32_t i = 0; i < numOfIndices; ++i)
 	{
-		uint32_t data;
+        uint32_t data;
 		inputFile.read(reinterpret_cast<char *> (&data), sizeof(uint32_t));
-		m_indexData.push_back(data);
+        m_indexData.push_back(static_cast<uint16_t>(data));
 	}
 
 	inputFile.close();
@@ -131,7 +131,7 @@ std::unique_ptr<IMesh> SMDModel::createMesh()
 		}
 
 		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
-		return mesh;
+        return std::move(mesh);
 	}
 	else
 	{
@@ -147,6 +147,6 @@ std::unique_ptr<IMesh> SMDModel::createMesh()
 
 		mesh->m_indices.assign(m_indexData.begin(), m_indexData.end());
 
-		return mesh;
+        return std::move(mesh);
 	}
 }
