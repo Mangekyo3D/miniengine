@@ -54,20 +54,7 @@ foreach(SHADER ${SHADERS})
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/shaders/${SHADER} shaderbindir)
     add_custom_command(OUTPUT ${SHADER_BINARY}
         COMMAND ${VULKAN_BIN_DIR}/spirv-opt
-        --inline-entry-points-exhaustive
-        --convert-local-access-chains
-        --eliminate-local-single-block
-        --eliminate-local-single-store
-        --eliminate-insert-extract
-        --eliminate-dead-code-aggressive
-        --eliminate-dead-branches
-        --merge-blocks
-        --eliminate-local-single-block
-        --eliminate-local-single-store
-        --eliminate-local-multi-store
-        --eliminate-insert-extract
-        --eliminate-dead-code-aggressive
-        --eliminate-common-uniform ${SHADER_BINARY_UNOPTIMIZED} -o ${SHADER_BINARY}
+		-O ${SHADER_BINARY_UNOPTIMIZED} -o ${SHADER_BINARY}
         COMMENT "SPIR-V: Optimizing ${SHADER}"
         DEPENDS ${SHADER_BINARY_UNOPTIMIZED})
     list(APPEND SHADER_BINARIES ${SHADER_BINARY})
