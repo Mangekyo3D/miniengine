@@ -26,14 +26,14 @@ struct SUserInputState
 
 		std::cout << std::endl;
 
-		DEBUGUSERSTATE(firePressed);
-		DEBUGUSERSTATE(accelaratePressed);
-		DEBUGUSERSTATE(deccelaratePressed);
-		DEBUGUSERSTATE(leftPressed);
-		DEBUGUSERSTATE(rightPressed);
-		DEBUGUSERSTATE(upPressed);
-		DEBUGUSERSTATE(downPressed);
-		DEBUGUSERSTATE(menuPressed);
+        DEBUGUSERSTATE(firePressed)
+        DEBUGUSERSTATE(accelaratePressed)
+        DEBUGUSERSTATE(deccelaratePressed)
+        DEBUGUSERSTATE(leftPressed)
+        DEBUGUSERSTATE(rightPressed)
+        DEBUGUSERSTATE(upPressed)
+        DEBUGUSERSTATE(downPressed)
+        DEBUGUSERSTATE(menuPressed)
 
 		std::cout << std::endl;
 	}

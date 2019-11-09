@@ -16,8 +16,9 @@ enum EScenePipeline {
 	eDiffuse = 0,
 	eDiffuseTriangleStrip,
 	eDiffuseTextured,
-	eDiffuseTexturedTriangleStrip,
-	eMaxScenePipelines
+    eTerrainPipeline,
+    eBulletPipeline,
+    eMaxScenePipelines
 };
 
 class Renderer

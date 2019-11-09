@@ -103,12 +103,19 @@ CDynamicArrayBatch::~CDynamicArrayBatch()
 {
 }
 
-void CDynamicArrayBatch::draw(ICommandBuffer&)
+void CDynamicArrayBatch::draw(ICommandBuffer& commandBuffer)
 {
+    IDevice& device = commandBuffer.getDevice();
+    std::unique_ptr<IGPUBuffer> buffer = device.createGPUBuffer(myData.size() * sizeof(float), IGPUBuffer::eConstantVertex);
+
 
 }
 
-void CDynamicArrayBatch::addMeshData()
+void CDynamicArrayBatch::addMeshData(float *data, uint32_t numFloats)
 {
-
+    myData.reserve(myData.size() + numFloats);
+    for (uint32_t i = 0; i < numFloats; ++i)
+    {
+        myData.push_back(data[i]);
+    }
 }

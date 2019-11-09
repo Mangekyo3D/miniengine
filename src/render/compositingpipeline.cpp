@@ -186,10 +186,26 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
             int64_t oldFlags = params.flags;
             params.flags |= ePrimitiveTypeTriangleStrip | ePrimitiveRestart;
-			m_pipelines[eDiffuseTexturedTriangleStrip] = device.createPipeline(params);
+            m_pipelines[eTerrainPipeline] = device.createPipeline(params);
             params.flags = oldFlags;
 		}
-	}
+
+        {
+            SDescriptorSet perDrawSet;
+            perDrawSet.addTextureSlot(eFragmentStage, 0);
+
+            SSamplerParams sampler;
+            params.addSampler(sampler);
+            params.shaderModule = "genericTextured";
+            params.perDrawSet = &perDrawSet;
+
+            SVertexBinding vertBinding(sizeof(VertexFormatV));
+            vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
+            params.perDrawBinding = &vertBinding;
+
+            m_pipelines[eBulletPipeline] = device.createPipeline(params);
+        }
+    }
 }
 
 CToneMappingPass::~CToneMappingPass()

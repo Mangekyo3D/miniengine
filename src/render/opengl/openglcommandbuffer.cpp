@@ -210,18 +210,10 @@ void COpenGLCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 		}
 	}
 
-	if (clearDepth)
-	{
-		// exception for zero framebuffer, it will have no outputs attached in OpenGL
-		if (fbobjID == 0)
-		{
-			m_device->glClearNamedFramebufferfi(0, GL_DEPTH_STENCIL, 0, *clearDepth, 0);
-		}
-		else if (glpass.hasDepthOutput())
-		{
-			m_device->glClearNamedFramebufferfi(fbobjID, GL_DEPTH_STENCIL, 0, *clearDepth, 0);
-		}
-	}
+    if (clearDepth && (glpass.hasDepthOutput() || fbobjID == 0))
+    {
+        m_device->glClearNamedFramebufferfi(fbobjID, GL_DEPTH_STENCIL, 0, *clearDepth, 0);
+    }
 }
 
 void COpenGLCommandBuffer::endRenderPass()

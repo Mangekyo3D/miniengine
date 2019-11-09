@@ -193,7 +193,7 @@ Bullet::Bullet(WorldEntity& emitter, Vec3 position, Vec3 heading, Engine& engine
 	if (!s_batch)
 	{
 		Renderer* renderer = engine.getRenderer();
-		s_batch = renderer->addNewBatch <CDynamicArrayBatch>(eDiffuseTextured);
+        s_batch = renderer->addNewBatch <CDynamicArrayBatch>(eBulletPipeline);
 	}
 }
 
@@ -233,7 +233,7 @@ void Bullet::update(Engine& engine)
 
     if (s_batch)
     {
-        s_batch->addMeshData();
+        s_batch->addMeshData(nullptr, 0);
     }
 }
 

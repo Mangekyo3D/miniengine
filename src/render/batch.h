@@ -116,7 +116,7 @@ class CDynamicArrayBatch : public IBatch
 
 		void draw(ICommandBuffer&) override;
 
-        void addMeshData();
+        void addMeshData(float* data, uint32_t numFloats);
 
 	private:
 		std::vector <ITexture*> m_textures;
@@ -124,4 +124,5 @@ class CDynamicArrayBatch : public IBatch
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
         uint32_t m_bufferSize;
+        std::vector<float> myData;
 };
