@@ -46,7 +46,7 @@ public:
 	Vec3 operator *(float fac);
 	Vec3 operator + (const Vec3& v);
 
-	operator uint32_t ();
+	operator uint32_t () const;
 
 	float normalize();
 	Vec3 getNormalized();

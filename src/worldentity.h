@@ -15,6 +15,7 @@ class WorldEntity
 		const Quaternion& getRotation() const;
 		void setRotation(Quaternion q);
 		void setScale(float scale);
+		void setScale(float scale[3]);
 		Matrix34& getObjectToWorldMatrix();
 		Matrix34& getWorldToObjectMatrix();
 		// this returns false when the entity has died
@@ -24,7 +25,7 @@ class WorldEntity
 	protected:
 		Vec3       m_position;
 		Quaternion m_rotation;
-		float      m_scale = 1.0f;
+		float      m_scale[3] = {1.0f, 1.0f, 1.0f};
 
 		Matrix34   m_objectToWorldMatrix;
 		Matrix34   m_worldToObjectMatrix;

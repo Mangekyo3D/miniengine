@@ -10,6 +10,8 @@
 #include <limits>
 
 CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
+	: m_pipeline(VK_NULL_HANDLE)
+	, m_pipelineLayout(VK_NULL_HANDLE)
 {
 	auto& device = CVulkanDevice::get();
 
@@ -53,9 +55,14 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 		m_perDrawLayout = std::make_unique <CVulkanDescriptorSet> (*params.perDrawSet, m_samplers.data());
 	}
 
-	std::string filename = params.shaderModule;
-	CVulkanShaderModule fragmentShader(filename + ".frag.spv");
-	CVulkanShaderModule vertexShader(filename + ".vert.spv");
+    std::string fragmentFilename = params.fragmentShaderModule;
+    std::string vertexFilename = params.vertexShaderModule;
+    auto fragmentShader = CVulkanShaderModule::create(fragmentFilename + ".frag.spv");
+    auto vertexShader = CVulkanShaderModule::create(vertexFilename + ".vert.spv");
+
+	if (!fragmentShader || !vertexShader)
+		return;
+
 	CVulkanRenderPass& rpass = static_cast <CVulkanRenderPass&> (*params.renderpass);
 
 	VkPipelineShaderStageCreateInfo pipelineShaderStages[] =
@@ -65,7 +72,7 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 			nullptr,
 			0,
 			VK_SHADER_STAGE_VERTEX_BIT,
-			vertexShader.getModule(),
+			vertexShader.value().getModule(),
 			"main",
 			nullptr
 		},
@@ -74,7 +81,7 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 			nullptr,
 			0,
 			VK_SHADER_STAGE_FRAGMENT_BIT,
-			fragmentShader.getModule(),
+			fragmentShader.value().getModule(),
 			"main",
 			nullptr
 		}
@@ -258,17 +265,11 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 	VkDescriptorSetLayout setLayouts[3];
 
 	if (CVulkanDescriptorSet* renderpassSet = rpass.getDescriptorSet())
-	{
 		setLayouts[numLayouts++] = *renderpassSet;
-	}
 	if (m_globaLayout)
-	{
 		setLayouts[numLayouts++] = *m_globaLayout;
-	}
 	if (m_perDrawLayout)
-	{
 		setLayouts[numLayouts++] = *m_perDrawLayout;
-	}
 
 	VkPipelineLayoutCreateInfo layoutInfo = {
 		VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -309,7 +310,7 @@ CVulkanPipeline::CVulkanPipeline(SPipelineParams& params)
 
 	if (device.vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
 	{
-		std::cout << "Error during " << params.shaderModule << " pipeline creation" << std::endl;
+		std::cout << "Error during " << params.fragmentShaderModule << " pipeline creation" << std::endl;
 	}
 
 }
@@ -338,7 +339,7 @@ VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
 {
 	switch (p.format)
 	{
-		case eFloat:
+		case EVertexFormat::eFloat:
 			switch (p.components)
 			{
 				case 4:
@@ -347,8 +348,11 @@ VkFormat CVulkanPipeline::attributeParamToVertFormat(SVertexAttribParams& p)
 					return VK_FORMAT_R32G32B32_SFLOAT;
 				case 2:
 					return VK_FORMAT_R32G32_SFLOAT;
+				default:
+					break;
 			}
-		case e1010102int:
+			break;
+		case EVertexFormat::e1010102int:
 			return VK_FORMAT_A2B10G10R10_SNORM_PACK32;
 	}
 

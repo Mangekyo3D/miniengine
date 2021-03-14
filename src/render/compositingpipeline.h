@@ -46,6 +46,16 @@ class CToneMappingPass : public IFullScreenRenderPass
 class CSceneRenderPass
 {
 	public:
+		// pipelines for scene specific materials
+		enum EScenePipeline {
+			eDiffuse = 0,
+			eDiffuseTriangleStrip,
+			eDiffuseTextured,
+			eTerrainPipeline,
+			eBulletPipeline,
+			eMaxScenePipelines
+		};
+
 		CSceneRenderPass(IDevice& device);
 		~CSceneRenderPass();
 

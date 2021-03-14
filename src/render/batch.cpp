@@ -7,30 +7,22 @@
 #include <cstring>
 #include <algorithm>
 
-CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMesh *m, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
+CIndexedInstancedBatch::CIndexedInstancedBatch(IDevice& device, IMeshAdapter& m, enum CSceneRenderPass::EScenePipeline pipeline, const std::vector<ITexture *> *textures)
 	: IBatch(pipeline)
-	, m_numIndices(m->getNumIndices())
-	, m_bShortIndices(m->getIndexSize() == sizeof(uint16_t))
+	, m_numIndices(m.getNumIndices())
+	, m_bShortIndices(m.getIndexSize() == sizeof(uint16_t))
 	, m_numInstances(0)
 {
 	if (textures)
-	{
 		 m_textures = *textures;
-	}
 
-	m_vertexBuffer = device.createGPUBuffer(m->getVertexSize() * m->getNumVertices(), IGPUBuffer::Usage::eConstantVertex);
+	m_vertexBuffer = device.createGPUBuffer(m.getVertexSize() * m.getNumVertices(), IGPUBuffer::Usage::eConstantVertex);
 	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_vertexBuffer))
-	{
-		uint8_t* ptr = lock;
-		memcpy(ptr, m->getVertices(), m->getVertexSize() * m->getNumVertices());
-	}
+		m.fillVertices(lock);
 
-	m_indexBuffer = device.createGPUBuffer(m->getIndexSize() * m->getNumIndices(), IGPUBuffer::Usage::eIndex);
+	m_indexBuffer = device.createGPUBuffer(m.getIndexSize() * m.getNumIndices(), IGPUBuffer::Usage::eIndex);
 	if (auto lock = IGPUBuffer::CAutoLock<uint8_t>(*m_indexBuffer))
-	{
-		uint8_t* ptr = lock;
-		memcpy(ptr, m->getIndices(), m->getIndexSize() * m->getNumIndices());
-	}
+		m.fillIndices(lock);
 }
 
 CIndexedInstancedBatch::~CIndexedInstancedBatch()
@@ -40,19 +32,16 @@ CIndexedInstancedBatch::~CIndexedInstancedBatch()
 void CIndexedInstancedBatch::draw(ICommandBuffer& cmd)
 {
 	if (m_instanceData.size() == 0)
-	{
 		return;
-	}
 
 	setupInstanceBuffer(cmd.getDevice());
 
 	if (m_textures.size() > 0)
 	{
 		std::vector <SDescriptorSource> descriptorSources;
-		std::for_each(m_textures.begin(), m_textures.end(), [&] (ITexture* tex)
-		{
+		descriptorSources.reserve(m_textures.size());
+		for (ITexture* tex : m_textures)
 			descriptorSources.emplace_back(tex);
-		});
 
 		cmd.bindPerDrawDescriptors(descriptorSources.size(), descriptorSources.data());
 	}
@@ -73,9 +62,7 @@ void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 {
 	// storage is immutable, so we have to reallocate
 	if (m_instanceData.size() > m_numInstances)
-	{
 		m_instanceBuffer.reset();
-	}
 
 	if (!m_instanceBuffer)
 	{
@@ -90,32 +77,44 @@ void CIndexedInstancedBatch::setupInstanceBuffer(IDevice& device)
 	}
 }
 
-CDynamicArrayBatch::CDynamicArrayBatch(IDevice&, enum EScenePipeline pipeline, const std::vector<ITexture *> *textures)
+CDynamicArrayBatch::CDynamicArrayBatch(IDevice&, enum CSceneRenderPass::EScenePipeline pipeline, const std::vector<ITexture *> *textures)
 	: IBatch(pipeline)
 {
 	if (textures)
-	{
 		m_textures = *textures;
-	}
 }
 
 CDynamicArrayBatch::~CDynamicArrayBatch()
 {
 }
 
-void CDynamicArrayBatch::draw(ICommandBuffer& commandBuffer)
+void CDynamicArrayBatch::draw(ICommandBuffer& cmd)
 {
-    IDevice& device = commandBuffer.getDevice();
+    if (myData.size() == 0)
+        return;
+
+    IDevice& device = cmd.getDevice();
     std::unique_ptr<IGPUBuffer> buffer = device.createGPUBuffer(myData.size() * sizeof(float), IGPUBuffer::eConstantVertex);
 
+    if (m_textures.size() > 0)
+    {
+        std::vector <SDescriptorSource> descriptorSources;
+        std::for_each(m_textures.begin(), m_textures.end(), [&] (ITexture* tex)
+        {
+            descriptorSources.emplace_back(tex);
+        });
 
+        cmd.bindPerDrawDescriptors(descriptorSources.size(), descriptorSources.data());
+    }
+
+    cmd.setVertexStream(buffer.get(), nullptr, nullptr, true);
+
+ //   cmd.drawArrays(0, );
 }
 
 void CDynamicArrayBatch::addMeshData(float *data, uint32_t numFloats)
 {
     myData.reserve(myData.size() + numFloats);
     for (uint32_t i = 0; i < numFloats; ++i)
-    {
         myData.push_back(data[i]);
-    }
 }

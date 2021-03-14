@@ -10,7 +10,6 @@ class X11Window : public GameWindow
 
 		virtual void getClientSize(uint32_t& width, uint32_t& height) override;
 		virtual void handleOSEvents() override;
-		virtual void getMouseState(int& x, int& y) override {}
 		virtual void maximize() override;
 
 		Display* getDisplay(){return m_display;}

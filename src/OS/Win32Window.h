@@ -11,8 +11,8 @@ public:
 	virtual void getClientSize(uint32_t& width, uint32_t& height) override;
 
 	virtual void handleOSEvents() override;
-	virtual void getMouseState(int& x, int& y) override;
 	virtual void maximize() override;
+	virtual void getXBoxControllerInput(XBoxInput&) override;
 
 	HWND getHandle() {return m_hWnd;}
 	const char* getWndClassName() const { return m_wndClass.getName(); }

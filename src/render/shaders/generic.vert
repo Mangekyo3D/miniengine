@@ -22,6 +22,6 @@ void main()
 	vec4 vViewPos = transform.mViewFromWorld * vWorldPos;
 
 	gl_Position = transform.mClipFromView * vViewPos;
-	// multiplying by the world matrix only works with uniform scaling
+	// multiplying by the world matrix only works with uniform scaling but we pre-multiply normals by the inverse scale finst
 	vs_out.vNormal = transform.mNormal * (mat3(imWorldFromModel) * ivNormal);
 }

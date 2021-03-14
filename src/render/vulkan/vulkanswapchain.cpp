@@ -14,6 +14,12 @@
 CVulkanSwapchain::CVulkanSwapchain(GameWindow& w)
 	: m_swapchain(VK_NULL_HANDLE)
 	, m_surface(VK_NULL_HANDLE)
+	, m_availableSemaphores(0)
+	, m_currentFrameIndex(0)
+	, m_currentSwapchainImage(0)
+	, m_extent(VkExtent2D{0,0})
+	, m_nextAvailableSemaphore(0)
+	, m_numSwapchainImages(0)
 {
 	auto& device = CVulkanDevice::get();
 
@@ -392,10 +398,11 @@ void SFrame::orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer)
 	}
 }
 
-void SFrame::orphanDescriptorPool(std::unique_ptr<CDescriptorPool> pool)
+void SFrame::orphanDescriptorPool(std::optional<CDescriptorPool>&& pool)
 {
-	if (pool)
-	{
-		m_orphanedPools.push_back(std::move(pool));
-	}
+	if (!pool)
+		return;
+
+	m_orphanedPools.push_back(std::move(*pool));
+	pool.reset();
 }

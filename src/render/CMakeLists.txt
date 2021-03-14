@@ -29,6 +29,8 @@ set (SHADERS
 	genericTextured.frag
 	toneMapping.vert
 	toneMapping.frag
+	bullet.vert
+	texturedNoNormal.frag
 	)
 
 find_package(Vulkan REQUIRED)

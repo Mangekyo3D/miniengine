@@ -3,6 +3,8 @@
 #include <vector>
 #include "vulkan/vulkan.h"
 #include <memory>
+#include <optional>
+
 class GameWindow;
 class CVulkanBuffer;
 class CDescriptorPool;
@@ -17,7 +19,7 @@ struct SFrame
 
 	void cleanupOrphanedData();
 	void orphanBuffer(std::unique_ptr<CVulkanBuffer> buffer);
-	void orphanDescriptorPool(std::unique_ptr<CDescriptorPool> pool);
+	void orphanDescriptorPool(std::optional<CDescriptorPool>&& pool);
 
 	VkSemaphore m_swapchainImageAvailableSemaphore;
 	VkSemaphore m_renderingFinishedSemaphore;
@@ -34,7 +36,7 @@ struct SFrame
 
 	// blocks that should be deleted once the frame has finished executing
 	std::vector<std::unique_ptr <CVulkanBuffer> > m_orphanedBuffers;
-	std::vector<std::unique_ptr <CDescriptorPool> > m_orphanedPools;
+	std::vector<CDescriptorPool> m_orphanedPools;
 };
 
 class CVulkanSwapchain : public ISwapchain

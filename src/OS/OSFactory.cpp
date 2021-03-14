@@ -34,7 +34,7 @@ const OSUtils& OSUtils::get()
 		#else
 		auto newutils = std::make_unique<X11PathUtils> ();
 		#endif
-
+		newutils->initialize();
 		s_utils = std::move(newutils);
 	}
 

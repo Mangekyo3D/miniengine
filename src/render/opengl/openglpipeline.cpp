@@ -83,9 +83,9 @@ uint32_t COpenGLVertexDescriptorInterface::formatToGLFormat(EVertexFormat format
 {
 	switch(format)
 	{
-		case eFloat:
+		case EVertexFormat::eFloat:
 			return  GL_FLOAT;
-		case e1010102int:
+		case EVertexFormat::e1010102int:
 			return GL_INT_2_10_10_10_REV;
 	}
 
@@ -97,8 +97,8 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 	, m_descriptor(std::move(descriptor))
 	, m_samplers(params.samplers.size())
 {
-	COpenGLShader fragment_shader(params.shaderModule, EShaderStage::eFragmentStage);
-	COpenGLShader vertex_shader(params.shaderModule, EShaderStage::eVertexStage);
+	COpenGLShader fragment_shader(params.fragmentShaderModule, EShaderStage::eFragmentStage);
+    COpenGLShader vertex_shader(params.vertexShaderModule, EShaderStage::eVertexStage);
 
 	m_program.attach(vertex_shader);
 	m_program.attach(fragment_shader);
@@ -132,7 +132,7 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 	{
 		for (auto& descriptor : params.globalSet->descriptors)
 		{
-			if (descriptor.type == eTextureSampler)
+			if (descriptor.type == EDescriptorType::eTextureSampler)
 			{
 				SamplerInfo samplerInfo = {m_samplers[descriptor.sampler], textureSlot++};
 				m_samplerInfo.push_back(samplerInfo);
@@ -143,7 +143,7 @@ COpenGLPipeline::COpenGLPipeline(SPipelineParams& params, std::unique_ptr<COpenG
 	{
 		for (auto& descriptor : params.perDrawSet->descriptors)
 		{
-			if (descriptor.type == eTextureSampler)
+			if (descriptor.type == EDescriptorType::eTextureSampler)
 			{
 				SamplerInfo samplerInfo = {m_samplers[descriptor.sampler], textureSlot++};
 				m_samplerInfo.push_back(samplerInfo);

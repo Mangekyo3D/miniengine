@@ -10,7 +10,7 @@
 #include <iostream>
 
 CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
-	: m_device(&CVulkanDevice::get())
+	: m_device(CVulkanDevice::get())
 	, m_swapchain(static_cast<CVulkanSwapchain*> (&swapchain))
 	, m_currentPipelineLayout(VK_NULL_HANDLE)
 	, m_frame(&m_swapchain->getNextFrame())
@@ -18,7 +18,7 @@ CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 	, m_renderPassGlobalSet(VK_NULL_HANDLE)
 	, m_pipelineGlobalSet(VK_NULL_HANDLE)
 {
-	m_device->vkResetCommandBuffer(m_cmd, 0);
+	m_device.vkResetCommandBuffer(m_cmd, 0);
 
 	VkCommandBufferBeginInfo cmdBufferBeginInfo = {
 		VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -27,12 +27,12 @@ CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 		nullptr
 	};
 
-	if (m_device->vkBeginCommandBuffer(m_cmd, &cmdBufferBeginInfo) != VK_SUCCESS)
+	if (m_device.vkBeginCommandBuffer(m_cmd, &cmdBufferBeginInfo) != VK_SUCCESS)
 	{
 		std::cout << "Command Buffer Failed to initialize" << std::endl;
 	}
 
-	if (m_device->getGraphicsQueue() != m_device->getPresentQueue())
+	if (m_device.getGraphicsQueue() != m_device.getPresentQueue())
 	{
 		VkImageSubresourceRange subresourceRange = {
 			VK_IMAGE_ASPECT_COLOR_BIT,
@@ -49,19 +49,19 @@ CVulkanCommandBuffer::CVulkanCommandBuffer(ISwapchain& swapchain)
 			VK_ACCESS_MEMORY_READ_BIT,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-			m_device->getPresentQueueIndex(),
-			m_device->getGraphicsQueueIndex(),
+			m_device.getPresentQueueIndex(),
+			m_device.getGraphicsQueueIndex(),
 			m_frame->m_swapchainImage,
 			subresourceRange
 		};
 
-		m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toClear);
+		m_device.vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toClear);
 	}
 }
 
 CVulkanCommandBuffer::~CVulkanCommandBuffer()
 {
-	if (m_device->getGraphicsQueue() != m_device->getPresentQueue())
+	if (m_device.getGraphicsQueue() != m_device.getPresentQueue())
 	{
 		VkImageSubresourceRange subresourceRange = {
 			VK_IMAGE_ASPECT_COLOR_BIT,
@@ -78,16 +78,16 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 			VK_ACCESS_MEMORY_READ_BIT,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-			m_device->getGraphicsQueueIndex(),
-			m_device->getPresentQueueIndex(),
+			m_device.getGraphicsQueueIndex(),
+			m_device.getPresentQueueIndex(),
 			m_frame->m_swapchainImage,
 			subresourceRange
 		};
 
-		m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &toPresent);
+		m_device.vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &toPresent);
 	}
 
-	if (m_device->vkEndCommandBuffer(m_cmd) != VK_SUCCESS)
+	if (m_device.vkEndCommandBuffer(m_cmd) != VK_SUCCESS)
 	{
 		std::cout << "Command Buffer Failed to record" << std::endl;
 	}
@@ -106,7 +106,7 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 	};
 
 	// submit all commands in queue
-	if (m_device->vkQueueSubmit(m_device->getGraphicsQueue(), 1, &submitInfo, m_frame->m_fence) != VK_SUCCESS)
+	if (m_device.vkQueueSubmit(m_device.getGraphicsQueue(), 1, &submitInfo, m_frame->m_fence) != VK_SUCCESS)
 	{
 		std::cout << "Error during queue submit" << std::endl;
 	}
@@ -119,7 +119,7 @@ CVulkanCommandBuffer::~CVulkanCommandBuffer()
 
 IGPUBuffer& CVulkanCommandBuffer::createStreamingBuffer(size_t size)
 {
-	auto newBuf = m_device->createGPUBuffer(size, IGPUBuffer::Usage::eStreamSource);
+	auto newBuf = m_device.createGPUBuffer(size, IGPUBuffer::Usage::eStreamSource);
 	m_streamingBuffer.reset(static_cast<CVulkanBuffer*> (newBuf.release()));
 	return *m_streamingBuffer;
 }
@@ -144,8 +144,8 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 		VK_ACCESS_TRANSFER_WRITE_BIT,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		m_device->getGraphicsQueueIndex(),
-		m_device->getGraphicsQueueIndex(),
+		m_device.getGraphicsQueueIndex(),
+		m_device.getGraphicsQueueIndex(),
 		*vkTex,
 		subresourceRange
 	};
@@ -157,13 +157,13 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 		VK_ACCESS_SHADER_READ_BIT,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-		m_device->getGraphicsQueueIndex(),
-		m_device->getGraphicsQueueIndex(),
+		m_device.getGraphicsQueueIndex(),
+		m_device.getGraphicsQueueIndex(),
 		*vkTex,
 		subresourceRange
 	};
 
-	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFill);
+	m_device.vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toFill);
 
 	VkImageSubresourceLayers subresource = {
 		VK_IMAGE_ASPECT_COLOR_BIT,
@@ -183,21 +183,21 @@ void CVulkanCommandBuffer::copyBufferToTex(ITexture* tex, size_t offset,
 		imageExtent
 	};
 
-	m_device->vkCmdCopyBufferToImage(m_cmd,
+	m_device.vkCmdCopyBufferToImage(m_cmd,
 				*m_streamingBuffer,
 				*vkTex,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				1,
 				&copy);
 
-	m_device->vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toUse);
+	m_device.vkCmdPipelineBarrier(m_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &toUse);
 }
 
 void CVulkanCommandBuffer::bindPipeline(IPipeline* pipeline, size_t numRequiredDescriptors)
 {
 	CVulkanPipeline* pipe = static_cast <CVulkanPipeline*> (pipeline);
 
-	m_device->vkCmdBindPipeline(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipe);
+	m_device.vkCmdBindPipeline(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipe);
 
 	m_frame->orphanDescriptorPool(std::move(m_pipelineGlobalPool));
 	m_frame->orphanDescriptorPool(std::move(m_pipelinePerDrawPool));
@@ -234,53 +234,48 @@ void CVulkanCommandBuffer::setVertexStream(IGPUBuffer* vertexBuffer, IGPUBuffer*
 		++bindCount;
 	}
 
-	m_device->vkCmdBindVertexBuffers(m_cmd, 0, bindCount, buffers, offsets);
+	m_device.vkCmdBindVertexBuffers(m_cmd, 0, bindCount, buffers, offsets);
 
 	if (indexBuffer)
 	{
 		CVulkanBuffer* vInd = static_cast<CVulkanBuffer*> (indexBuffer);
-		m_device->vkCmdBindIndexBuffer(m_cmd, *vInd, 0, bShortIndex ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+		m_device.vkCmdBindIndexBuffer(m_cmd, *vInd, 0, bShortIndex ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 	}
 }
 
 void CVulkanCommandBuffer::drawIndexedInstanced(size_t numIndices, size_t offset, size_t numInstances)
 {
-	m_device->vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<int32_t> (offset), 0);
+	m_device.vkCmdDrawIndexed(m_cmd, static_cast<uint32_t> (numIndices), static_cast<uint32_t> (numInstances), 0, static_cast<int32_t> (offset), 0);
 }
 
 void CVulkanCommandBuffer::drawArrays(uint32_t start, uint32_t count)
 {
-	m_device->vkCmdDraw(m_cmd, count, 1, start, 0);
+	m_device.vkCmdDraw(m_cmd, count, 1, start, 0);
 }
 
 void CVulkanCommandBuffer::bindGlobalRenderPassDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
 	if (m_renderPassGlobalSet == VK_NULL_HANDLE)
-	{
-		m_renderPassGlobalSet = updateDescriptorsGeneric(m_renderpassGlobalPool.get(), numBindings, sources);
-	}
+		m_renderPassGlobalSet = updateDescriptorsGeneric(*m_renderpassGlobalPool, numBindings, sources);
 
-	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, 0, 1, &m_renderPassGlobalSet, 0, nullptr);
+	m_device.vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, 0, 1, &m_renderPassGlobalSet, 0, nullptr);
 }
 
 void CVulkanCommandBuffer::bindGlobalPipelineDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
 	if (m_pipelineGlobalSet == VK_NULL_HANDLE)
-	{
-		m_pipelineGlobalSet =updateDescriptorsGeneric(m_pipelineGlobalPool.get(), numBindings, sources);
-	}
+		m_pipelineGlobalSet = updateDescriptorsGeneric(*m_pipelineGlobalPool, numBindings, sources);
 
-	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_pipelineSetIndex, 1, &m_pipelineGlobalSet, 0, nullptr);
+	m_device.vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_pipelineSetIndex, 1, &m_pipelineGlobalSet, 0, nullptr);
 }
 
 void CVulkanCommandBuffer::bindPerDrawDescriptors(size_t numBindings, SDescriptorSource* sources)
 {
-	VkDescriptorSet set = updateDescriptorsGeneric(m_pipelinePerDrawPool.get(), numBindings, sources);
-
-	m_device->vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_perDrawSetIndex, 1, &set, 0, nullptr);
+	VkDescriptorSet set = updateDescriptorsGeneric(*m_pipelinePerDrawPool, numBindings, sources);
+	m_device.vkCmdBindDescriptorSets(m_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipelineLayout, m_perDrawSetIndex, 1, &set, 0, nullptr);
 }
 
-VkDescriptorSet CVulkanCommandBuffer::updateDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources)
+VkDescriptorSet CVulkanCommandBuffer::updateDescriptorsGeneric(CDescriptorPool& pool, size_t numBindings, SDescriptorSource* sources)
 {
 	struct DescriptorInfo
 	{
@@ -300,7 +295,7 @@ VkDescriptorSet CVulkanCommandBuffer::updateDescriptorsGeneric(CDescriptorPool* 
 		} polymorphic;
 	};
 
-	VkDescriptorSet set = pool->allocate();
+	VkDescriptorSet set = pool.allocate();
 
 	std::vector <DescriptorInfo> info;
 	info.reserve(numBindings);
@@ -350,14 +345,14 @@ VkDescriptorSet CVulkanCommandBuffer::updateDescriptorsGeneric(CDescriptorPool* 
 		}
 	}
 
-	m_device->vkUpdateDescriptorSets(*m_device, static_cast <uint32_t> (writeSets.size()), writeSets.data(), 0, nullptr);
+	m_device.vkUpdateDescriptorSets(m_device, static_cast <uint32_t> (writeSets.size()), writeSets.data(), 0, nullptr);
 
 	return set;
 }
 
 IDevice& CVulkanCommandBuffer::getDevice()
 {
-	return *m_device;
+	return m_device;
 }
 
 void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth)
@@ -365,7 +360,6 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 	CVulkanRenderPass& rpass = static_cast<CVulkanRenderPass&> (renderpass);
 
 	m_frame->orphanDescriptorPool(std::move(m_renderpassGlobalPool));
-
 	m_pipelineSetIndex = 0;
 	m_perDrawSetIndex = 0;
 	if (CVulkanDescriptorSet* set = rpass.getDescriptorSet())
@@ -404,7 +398,7 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 
 		if (m_frame->m_framebuffer != VK_NULL_HANDLE)
 		{
-			m_device->vkDestroyFramebuffer(*m_device, m_frame->m_framebuffer, nullptr);
+			m_device.vkDestroyFramebuffer(m_device, m_frame->m_framebuffer, nullptr);
 			m_frame->m_framebuffer = VK_NULL_HANDLE;
 		}
 
@@ -420,7 +414,7 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 			1
 		};
 
-		if (m_device->vkCreateFramebuffer(*m_device, &framebufferCreateInfo, nullptr, &m_frame->m_framebuffer) != VK_SUCCESS)
+		if (m_device.vkCreateFramebuffer(m_device, &framebufferCreateInfo, nullptr, &m_frame->m_framebuffer) != VK_SUCCESS)
 		{
 			std::cout << "Failed to create framebuffer" << std::endl;
 		}
@@ -463,10 +457,10 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 		clearValues
 	};
 
-	m_device->vkCmdBeginRenderPass(m_cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	m_device.vkCmdBeginRenderPass(m_cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	m_device->vkCmdSetViewport(m_cmd, 0, 1, &viewportBounds);
-	m_device->vkCmdSetScissor(m_cmd, 0, 1, &rect);
+	m_device.vkCmdSetViewport(m_cmd, 0, 1, &viewportBounds);
+	m_device.vkCmdSetScissor(m_cmd, 0, 1, &rect);
 
 	m_renderPassGlobalSet = VK_NULL_HANDLE;
 }
@@ -474,6 +468,6 @@ void CVulkanCommandBuffer::beginRenderPass(IRenderPass& renderpass, const float 
 void CVulkanCommandBuffer::endRenderPass()
 {
 	// the end. Submit and chill
-	m_device->vkCmdEndRenderPass(m_cmd);
+	m_device.vkCmdEndRenderPass(m_cmd);
 }
 

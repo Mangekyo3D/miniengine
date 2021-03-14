@@ -40,7 +40,20 @@ void WorldEntity::setRotation(Quaternion q)
 
 void WorldEntity::setScale(float scale)
 {
-	m_scale = scale;
+	for (int i = 0; i < 3; ++i)
+	{
+		m_scale[i] = scale;
+	}
+	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
+}
+
+
+void WorldEntity::setScale(float scale[3])
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		m_scale[i] = scale[i];
+	}
 	m_flags |= eInvalidWorldTransform | eInvalidInverseWorldTransform;
 }
 
@@ -64,7 +77,9 @@ Matrix34& WorldEntity::getWorldToObjectMatrix()
 		Matrix33 rotationPart(invQuat);
 		Vec3 invPos = rotationPart * m_position;
 
-		m_worldToObjectMatrix = Matrix34(invQuat, 1.0f / m_scale, -invPos);
+		float invScale[3] = {1.0f / m_scale[0], 1.0f / m_scale[1], 1.0f / m_scale[2]};
+
+		m_worldToObjectMatrix = Matrix34(invQuat, invScale, -invPos);
 		m_flags &= ~eInvalidInverseWorldTransform;
 	}
 

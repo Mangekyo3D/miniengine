@@ -39,7 +39,7 @@ if (UNIX)
 elseif (WIN32)
 	list(APPEND LIBS
 		)
-	add_definitions(-DNOMINMAX)
+	add_definitions(-DNOMINMAX -D_HAS_STD_BYTE=0)
 endif()
 
 find_package(OpenAL)
@@ -56,5 +56,10 @@ add_subdirectory(Util)
 add_subdirectory(render)
 
 add_executable(shooter ${SRC} ${INC})
+
+if (WIN32)
+	target_link_options(shooter PRIVATE /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup)
+	target_link_libraries(shooter Xinput.lib)
+endif()
 
 target_link_libraries(shooter ${LIBS} OS Util)

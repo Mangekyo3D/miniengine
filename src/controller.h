@@ -15,9 +15,15 @@ struct SUserInputState
 	bool downPressed = false;
 	bool menuPressed = false;
 
+	float left_right_value = 0.0f;
+	float up_down_value = 0.0f;
+
+
 	void reset()
 	{
 		accelarateTick = 0;
+		left_right_value = 0.0f;
+		up_down_value = 0.0f;
 	}
 
 	void printDebug()

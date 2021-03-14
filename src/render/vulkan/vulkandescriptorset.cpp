@@ -19,7 +19,7 @@ CVulkanDescriptorSet::CVulkanDescriptorSet(SDescriptorSet& params, VkSampler* sa
 						type,
 						1,
 						stageFlagsToVulkanFlags(descriptor.shaderStages),
-						(descriptor.type == eTextureSampler && samplers) ? &samplers[descriptor.sampler] : nullptr
+						(descriptor.type == EDescriptorType::eTextureSampler && samplers) ? &samplers[descriptor.sampler] : nullptr
 					});
 
 		m_descriptorPoolConfig.push_back({type, 1});
@@ -49,18 +49,18 @@ CVulkanDescriptorSet::~CVulkanDescriptorSet()
 	}
 }
 
-std::unique_ptr <CDescriptorPool> CVulkanDescriptorSet::createDescriptorPool(uint32_t numDescriptors)
+CDescriptorPool CVulkanDescriptorSet::createDescriptorPool(uint32_t numDescriptors)
 {
-	return std::make_unique <CDescriptorPool> (m_setLayout, m_descriptorPoolConfig.data(), static_cast <uint32_t> (m_descriptorPoolConfig.size()), numDescriptors);
+	return CDescriptorPool(m_setLayout, m_descriptorPoolConfig.data(), static_cast <uint32_t> (m_descriptorPoolConfig.size()), numDescriptors);
 }
 
 VkDescriptorType CVulkanDescriptorSet::descriptorToVulkanType(EDescriptorType desc)
 {
 	switch (desc)
 	{
-		case eUniformBlock:
+		case EDescriptorType::eUniformBlock:
 			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		case eTextureSampler:
+		case EDescriptorType::eTextureSampler:
 			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	}
 
@@ -90,12 +90,10 @@ CDescriptorPool::CDescriptorPool(VkDescriptorSetLayout setLayout, VkDescriptorPo
 
 CDescriptorPool::~CDescriptorPool()
 {
+	if (m_pool == VK_NULL_HANDLE)
+		return;
 	auto& device = CVulkanDevice::get();
-
-	if (m_pool)
-	{
-		device.vkDestroyDescriptorPool(device, m_pool, nullptr);
-	}
+	device.vkDestroyDescriptorPool(device, m_pool, nullptr);
 }
 
 VkDescriptorSet CDescriptorPool::allocate()
@@ -110,7 +108,8 @@ VkDescriptorSet CDescriptorPool::allocate()
 
 	auto& device = CVulkanDevice::get();
 	VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
-	if (device.vkAllocateDescriptorSets(device, &allocateInfo, &descriptorSet) != VK_SUCCESS)
+	VkResult result = device.vkAllocateDescriptorSets(device, &allocateInfo, &descriptorSet);
+	if (result != VK_SUCCESS)
 	{
 		std::cout << "Error during descriptor set allocation" << std::endl;
 	}

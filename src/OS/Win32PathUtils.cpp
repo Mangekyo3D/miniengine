@@ -10,13 +10,13 @@ std::string Win32PathUtils::getRootPath() const
 	GetModuleFileName(module, path.data(), static_cast <DWORD> (path.size()));
 
 	std::string pathStr(path.data());
-	size_t pos = pathStr.find_last_of('\\');
-
+	size_t pos = pathStr.rfind('\\');
 	// no directory found, just return root
-	if (pos == std::string::npos)
-	{
+	if (pos == std::string::npos || pos == 0)
 		return "\\";
-	}
+	pos = pathStr.rfind('\\', pos - 1);
+	if (pos == std::string::npos)
+		return "\\";
 
 	return pathStr.substr(0, pos);
 }

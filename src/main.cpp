@@ -6,13 +6,13 @@
 
 void interpretCommandLineOptions(int argc, char** argv, SCommandLineOptions& options)
 {
-	for (int i = 0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i, argv++)
 	{
-		if (strcmp(argv[i], "--debug-gpu") == 0)
+		if (strcmp(*argv, "--debug-gpu") == 0)
 		{
 			options.bDebugContext = true;
 		}
-		if (strcmp(argv[i], "--with-vulkan") == 0)
+		if (strcmp(*argv, "--with-vulkan") == 0)
 		{
 			options.bWithVulkan = true;
 		}

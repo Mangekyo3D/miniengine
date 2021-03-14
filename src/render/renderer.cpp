@@ -63,18 +63,18 @@ void Renderer::updateFrameUniforms(Camera& camera)
 
 		for (int i = 0; i < 16; ++i)
 		{
-			pBuffer->modelViewMatrix[i] = viewmat.getData()[i];
+			pBuffer->modelViewMatrix[i] = viewmat.data()[i];
 		}
 		for (int i = 0; i < 16; ++i)
 		{
-			pBuffer->projectionMatrix[i] = projmat.getData()[i];
+			pBuffer->projectionMatrix[i] = projmat.data()[i];
 		}
 
 		for (int i = 0; i < 3; ++i)
 		{
-			pBuffer->normalMatrix[i] = normalMat.getData()[i];
-			pBuffer->normalMatrix[i + 4] = normalMat.getData()[i + 3];
-			pBuffer->normalMatrix[i + 8] = normalMat.getData()[i + 6];
+			pBuffer->normalMatrix[i] = normalMat.data()[i];
+			pBuffer->normalMatrix[i + 4] = normalMat.data()[i + 3];
+			pBuffer->normalMatrix[i + 8] = normalMat.data()[i + 6];
 		}
 	}
 

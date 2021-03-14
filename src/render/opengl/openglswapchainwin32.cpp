@@ -32,7 +32,7 @@ COpenGLSwapchainWin32::COpenGLSwapchainWin32(GameWindow& win, bool bDebugContext
 	HWND dummyWin = CreateWindow("DummyCls", "Dummy Window",
 								 WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 	m_hdc = GetDC(m_hWnd);
-
+	m_hrc = NULL;
 	PIXELFORMATDESCRIPTOR pfd;
 	memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
 

@@ -37,13 +37,13 @@ Quaternion::Quaternion(Vec3 axis, float angle)
 // we assume that m is orthogonal
 Quaternion::Quaternion(Matrix33& m)
 {
-	float T = sqrtf (std::max(0.0f, 1.0f + m.getData() [0] + m.getData() [4] + m.getData() [8]));
+	float T = sqrtf (std::max(0.0f, 1.0f + m.data() [0] + m.data() [4] + m.data() [8]));
 	float S = 0.5f / T;
 
 	m_w = T * 0.5f;
-	m_x = (m.getData() [5] - m.getData() [7]) * S;
-	m_y = (m.getData() [6] - m.getData() [2]) * S;
-	m_z = (m.getData() [1] - m.getData() [3]) * S;
+	m_x = (m.data() [5] - m.data() [7]) * S;
+	m_y = (m.data() [6] - m.data() [2]) * S;
+	m_z = (m.data() [1] - m.data() [3]) * S;
 
 	normalize();
 }
@@ -124,7 +124,7 @@ Matrix44::Matrix44(const Matrix34 &m)
 	m_data[15] = 1.0f;
 }
 
-void Matrix44::getData(float* rdata) const
+void Matrix44::copyData(float* rdata) const
 {
 	for (int i = 0; i < 16; ++i)
 	{
@@ -144,7 +144,7 @@ Matrix34::Matrix34(const Matrix33& m)
 {
 	for (int i = 0; i < 9; ++i)
 	{
-		m_data[i] = m.getData()[i];
+		m_data[i] = m.data()[i];
 	}
 
 	m_data[9] = m_data[10] = m_data[11] = 0.0f;
@@ -172,7 +172,7 @@ Matrix34::Matrix34(const Quaternion& q, const Vec3& position)
 	position.getData(m_data + 9);
 }
 
-Matrix34::Matrix34(const Quaternion& q, float scale, const Vec3& position)
+Matrix34::Matrix34(const Quaternion& q, float scale[3], const Vec3& position)
 	: Matrix34(Matrix33(q, scale))
 {
 	position.getData(m_data + 9);
@@ -239,14 +239,16 @@ Matrix33::Matrix33(const Quaternion& q)
 	m_data[8] = 1.0f - 2.0f * xx - 2.0f * yy;
 }
 
-Matrix33::Matrix33(float scale)
+Matrix33::Matrix33(float scale[3])
 {
-	m_data[0] = m_data[4] = m_data[8] = scale;
+	m_data[0] = scale[0];
+	m_data[4] = scale[1];
+	m_data[8] = scale[2];
 	m_data[1] = m_data[2] = m_data[3] =
 	m_data[5] = m_data[6] = m_data[7] = 0.0f;
 }
 
-Matrix33::Matrix33(const Quaternion& q, float scale)
+Matrix33::Matrix33(const Quaternion& q, float scale[3])
 {
 	float xw = q.x() * q.w();
 	float yw = q.y() * q.w();
@@ -260,17 +262,17 @@ Matrix33::Matrix33(const Quaternion& q, float scale)
 	float xx = q.x() * q.x();
 	float zz = q.z() * q.z();
 
-	m_data[0] = scale * (1.0f - 2.0f * yy - 2.0f * zz);
-	m_data[1] = scale * (2.0f * xy + 2.0f * zw);
-	m_data[2] = scale * (2.0f * xz - 2.0f * yw);
+	m_data[0] = scale[0] * (1.0f - 2.0f * yy - 2.0f * zz);
+	m_data[1] = scale[0] * (2.0f * xy + 2.0f * zw);
+	m_data[2] = scale[0] * (2.0f * xz - 2.0f * yw);
 
-	m_data[3] = scale * (2.0f * xy - 2.0f * zw);
-	m_data[4] = scale * (1.0f - 2.0f * xx - 2.0f * zz);
-	m_data[5] = scale * (2.0f * zy + 2.0f * xw);
+	m_data[3] = scale[1] * (2.0f * xy - 2.0f * zw);
+	m_data[4] = scale[1] * (1.0f - 2.0f * xx - 2.0f * zz);
+	m_data[5] = scale[1] * (2.0f * zy + 2.0f * xw);
 
-	m_data[6] = scale * (2.0f * xz + 2.0f * yw);
-	m_data[7] = scale * (2.0f * zy - 2.0f * xw);
-	m_data[8] = scale * (1.0f - 2.0f * xx - 2.0f * yy);
+	m_data[6] = scale[2] * (2.0f * xz + 2.0f * yw);
+	m_data[7] = scale[2] * (2.0f * zy - 2.0f * xw);
+	m_data[8] = scale[2] * (1.0f - 2.0f * xx - 2.0f * yy);
 }
 
 Vec3 Matrix33::getColumn(int column) const
@@ -280,17 +282,17 @@ Vec3 Matrix33::getColumn(int column) const
 
 Matrix33::Matrix33(const Matrix44& m)
 {
-	m_data[0] = m.getData()[0];
-	m_data[1] = m.getData()[1];
-	m_data[2] = m.getData()[2];
+	m_data[0] = m.data()[0];
+	m_data[1] = m.data()[1];
+	m_data[2] = m.data()[2];
 
-	m_data[3] = m.getData()[4];
-	m_data[4] = m.getData()[5];
-	m_data[5] = m.getData()[6];
+	m_data[3] = m.data()[4];
+	m_data[4] = m.data()[5];
+	m_data[5] = m.data()[6];
 
-	m_data[6] = m.getData()[8];
-	m_data[7] = m.getData()[9];
-	m_data[8] = m.getData()[10];
+	m_data[6] = m.data()[8];
+	m_data[7] = m.data()[9];
+	m_data[8] = m.data()[10];
 }
 
 void Matrix33::factorZYX(float &z, float &y, float &x)
@@ -365,24 +367,6 @@ Matrix34 Matrix34::generateTranslation(float x, float y, float z)
 	m.m_data[9] = x;
 	m.m_data[10] = y;
 	m.m_data[11] = z;
-
-	return m;
-}
-
-Matrix33 Matrix33::generateRotation(float angle, Vec3 axis)
-{
-	Matrix33 m;
-
-	return m;
-}
-
-Matrix33 Matrix33::generateScale(float x, float y, float z)
-{
-	Matrix33 m;
-
-	m.m_data[0] = x;
-	m.m_data[4] = y;
-	m.m_data[8] = z;
 
 	return m;
 }

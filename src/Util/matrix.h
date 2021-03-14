@@ -46,8 +46,8 @@ class Matrix44
 public:
 	Matrix44();
 	Matrix44(const Matrix34& m);
-	const float* getData() const {return m_data;}
-	void getData(float* rdata) const;
+	const float* data() const {return m_data;}
+	void copyData(float* rdata) const;
 
 	static Matrix44 generatePerspective(float nearPlane, float farPlane, float aspect, float fov);
 
@@ -63,10 +63,10 @@ public:
 	Matrix34(const Matrix33& m);
 	Matrix34(const Matrix34& m);
 	Matrix34(const Quaternion& q, const Vec3& position);
-	Matrix34(const Quaternion& q, float scale, const Vec3& position);
+	Matrix34(const Quaternion& q, float scale[3], const Vec3& position);
 
 	const float* getConstData() const {return m_data;}
-	float* getData() {return m_data;}
+	float* data() {return m_data;}
 	Vec3 getColumn(int column) const;
 
 	static Matrix34 generateTranslation(float x, float y, float z);
@@ -84,10 +84,10 @@ public:
 	Matrix33(const Matrix44& m);
 	Matrix33(const Matrix34& m);
 	Matrix33(const Quaternion& q);
-	Matrix33(float scale);
-	Matrix33(const Quaternion& q, float scale);
+	Matrix33(float scale[3]);
+	Matrix33(const Quaternion& q, float scale[3]);
 
-	const float* getData() const { return m_data; }
+	const float* data() const { return m_data; }
 	Vec3 getColumn(int column) const;
 
 	// factor as rotation between z, y and x angles
@@ -98,9 +98,6 @@ public:
 
 	Vec3 operator * (const Vec3& v);
 	Matrix33 operator * (const Matrix33& m);
-
-	static Matrix33 generateRotation(float angle, Vec3 axis);
-	static Matrix33 generateScale(float x, float y, float z);
 
 private:
 	float m_data[9];

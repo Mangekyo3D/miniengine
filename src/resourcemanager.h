@@ -2,6 +2,7 @@
 #include <map>
 #include <memory>
 #include <array>
+#include <string>
 
 class SMDModel;
 class IPipeline;
@@ -21,7 +22,7 @@ class ResourceManager
 		IAudioResource* loadAudio(std::string audioName);
 
 	private:
-		std::map <std::string, std::unique_ptr<SMDModel> > m_models;
+		std::map <std::string, std::unique_ptr<SMDModel>> m_models;
 		std::map <std::string, std::unique_ptr<ITexture> > m_textures;
 		std::map <std::string, std::unique_ptr<IAudioResource> > m_audio;
 

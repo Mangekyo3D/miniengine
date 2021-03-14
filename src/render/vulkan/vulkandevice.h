@@ -80,15 +80,15 @@ public:
 	VkQueue getPresentQueue() { return m_presentQueue; }
 
 #if !defined(VK_INSTANCE_DEBUG_FUNCTION)
-#define VK_INSTANCE_DEBUG_FUNCTION( fun) PFN_##fun fun;
+#define VK_INSTANCE_DEBUG_FUNCTION( fun) PFN_##fun fun = nullptr;
 #endif
 
 #if !defined(VK_INSTANCE_FUNCTION)
-#define VK_INSTANCE_FUNCTION( fun) PFN_##fun fun;
+#define VK_INSTANCE_FUNCTION( fun) PFN_##fun fun = nullptr;
 #endif
 
 #if !defined(VK_DEVICE_FUNCTION)
-#define VK_DEVICE_FUNCTION( fun) PFN_##fun fun;
+#define VK_DEVICE_FUNCTION( fun) PFN_##fun fun = nullptr;
 #endif
 
 #include "VulkanFunctions.inl"

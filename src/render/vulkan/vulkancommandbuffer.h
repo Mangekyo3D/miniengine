@@ -1,13 +1,14 @@
 #pragma once
 #include "../icommandbuffer.h"
+#include "vulkandescriptorset.h"
 #include <vulkan/vulkan.h>
 #include <memory>
+#include <optional>
 
 class CVulkanDevice;
 class CVulkanSwapchain;
 class CVulkanBuffer;
 struct SFrame;
-class CDescriptorPool;
 class ISwapchain;
 class CVulkanPipeline;
 
@@ -36,13 +37,13 @@ class CVulkanCommandBuffer : public ICommandBuffer
 	protected:
 		virtual void beginRenderPass(IRenderPass& renderpass, const float vClearColor[4], const float* clearDepth) override;
 		virtual void endRenderPass() override;
-		VkDescriptorSet updateDescriptorsGeneric(CDescriptorPool* pool, size_t numBindings, SDescriptorSource* sources);
+		VkDescriptorSet updateDescriptorsGeneric(CDescriptorPool& pool, size_t numBindings, SDescriptorSource* sources);
 
-		CVulkanDevice* m_device;
+		CVulkanDevice& m_device;
 		std::unique_ptr <CVulkanBuffer> m_streamingBuffer;
-		std::unique_ptr <CDescriptorPool> m_renderpassGlobalPool;
-		std::unique_ptr <CDescriptorPool> m_pipelineGlobalPool;
-		std::unique_ptr <CDescriptorPool> m_pipelinePerDrawPool;
+		std::optional<CDescriptorPool> m_renderpassGlobalPool;
+		std::optional<CDescriptorPool> m_pipelineGlobalPool;
+		std::optional<CDescriptorPool> m_pipelinePerDrawPool;
 		CVulkanSwapchain* m_swapchain;
 		VkPipelineLayout m_currentPipelineLayout;
 		SFrame* m_frame;

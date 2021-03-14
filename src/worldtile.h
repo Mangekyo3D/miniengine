@@ -1,6 +1,7 @@
 #pragma once
 
 #include "render/batch.h"
+#include <vector>
 
 class Renderer;
 class ResourceManager;
@@ -16,7 +17,9 @@ class WorldTile {
 		uint16_t getResolution() { return m_resolution; }
 
 	private:
+		class MeshAdapter;
 		uint16_t m_resolution;
-		Mesh <VertexFormatVNT> m_mesh;
+		std::vector<VertexFormatVNT> m_vertices;
+		std::vector<uint16_t> m_indices;
 		CIndexedInstancedBatch* m_batch = nullptr;
 };

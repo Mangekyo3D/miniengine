@@ -103,6 +103,12 @@ void Engine::enterGameLoop()
 		m_inputState.reset();
 		m_gameWindow->handleOSEvents();
 
+		XBoxInput controllerInput;
+		m_gameWindow->getXBoxControllerInput(controllerInput);
+		m_inputState.left_right_value = controllerInput.leftRightAxis;
+		m_inputState.up_down_value = controllerInput.upDownAxis;
+
+
 		if (m_inputState.menuPressed)
 		{
 			break;

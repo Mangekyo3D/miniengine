@@ -189,7 +189,7 @@ struct Vec3IntegerPack
 	int w : 2;
 };
 
-Vec3::operator uint32_t ()
+Vec3::operator uint32_t () const
 {
 	uint32_t v = 0;
 

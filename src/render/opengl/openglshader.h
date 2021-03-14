@@ -5,7 +5,7 @@
 class COpenGLShader
 {
 public:
-	COpenGLShader(std::string filename, EShaderStage type);
+    COpenGLShader(const char* filename, EShaderStage type);
 	~COpenGLShader();
 
 	bool compile();

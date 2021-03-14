@@ -4,6 +4,7 @@
 #include <memory>
 #include "icommandbuffer.h"
 #include "renderer.h"
+#include "compositingpipeline.h"
 #include "../Util/vertex.h"
 
 class ICommandBuffer;
@@ -32,36 +33,15 @@ struct VertexFormatV
 };
 
 
-struct IMesh
+struct IMeshAdapter
 {
-	virtual ~IMesh(){}
-
 	virtual size_t getVertexSize() = 0;
 	virtual size_t getNumVertices() = 0;
-	virtual void* getVertices() = 0;
 	virtual size_t getNumIndices() = 0;
-	virtual void* getIndices() = 0;
 	virtual size_t getIndexSize() = 0;
+	virtual void fillVertices(uint8_t* buffer) = 0;
+	virtual void fillIndices(uint8_t* buffer) = 0;
 };
-
-template <class T, class I = uint16_t> struct Mesh : public IMesh {
-		size_t getVertexSize() override {return sizeof(T);}
-		size_t getNumVertices() override {return m_vertices.size(); }
-		void* getVertices() override {return m_vertices.data(); }
-		size_t getNumIndices() override {return m_indices.size(); }
-		void* getIndices() override {return m_indices.data(); }
-		size_t getIndexSize() override {return sizeof(I);}
-
-		Mesh(uint32_t nov, uint32_t noi)
-			: m_vertices(nov)
-			, m_indices(noi)
-		{
-		}
-
-		std::vector <T> m_vertices;
-		std::vector <I> m_indices;
-};
-
 
 struct MeshInstanceData {
 	float modelMatrix[16];
@@ -72,19 +52,19 @@ struct MeshInstanceData {
 class IBatch
 {
 	public:
-		IBatch(enum EScenePipeline pipeline) : m_pipeline (pipeline) {}
+		IBatch(enum CSceneRenderPass::EScenePipeline pipeline) : m_pipeline (pipeline) {}
 		virtual ~IBatch() {}
 		virtual void draw(ICommandBuffer&) = 0;
-		enum EScenePipeline getPipeline() {return m_pipeline; }
+		enum CSceneRenderPass::EScenePipeline getPipeline() {return m_pipeline; }
 
 	protected:
-		enum EScenePipeline m_pipeline;
+		enum CSceneRenderPass::EScenePipeline m_pipeline;
 };
 
 class CIndexedInstancedBatch : public IBatch
 {
 	public:
-		CIndexedInstancedBatch(IDevice& device, IMesh *, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
+		CIndexedInstancedBatch(IDevice& device, IMeshAdapter&, enum CSceneRenderPass::EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
 		~CIndexedInstancedBatch() override;
 
 		void draw(ICommandBuffer&) override;
@@ -111,10 +91,10 @@ class CIndexedInstancedBatch : public IBatch
 class CDynamicArrayBatch : public IBatch
 {
 	public:
-		CDynamicArrayBatch(IDevice& device, enum EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
+		CDynamicArrayBatch(IDevice& device, enum CSceneRenderPass::EScenePipeline, const std::vector<ITexture*> *textures = nullptr);
 		~CDynamicArrayBatch() override;
 
-		void draw(ICommandBuffer&) override;
+        void draw(ICommandBuffer& cmd) override;
 
         void addMeshData(float* data, uint32_t numFloats);
 
@@ -123,6 +103,5 @@ class CDynamicArrayBatch : public IBatch
 
 		// current buffer
 		std::unique_ptr<IGPUBuffer> m_vertexBuffer;
-        uint32_t m_bufferSize;
         std::vector<float> myData;
 };

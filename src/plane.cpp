@@ -7,6 +7,7 @@
 #include <cmath>
 #include "engine.h"
 #include "resourcemanager.h"
+#include "render/compositingpipeline.h"
 
 struct SAssets {
 	CIndexedInstancedBatch* batch;
@@ -18,6 +19,7 @@ struct SAssets {
 SAssets Plane::s_assets = {nullptr, nullptr, nullptr, false};
 
 Plane::Plane(Vec3 initPos, Engine& engine)
+	: m_health(1)
 {
 	m_position = initPos;
 
@@ -33,7 +35,7 @@ Plane::Plane(Vec3 initPos, Engine& engine)
 	if (!s_assets.bInitialized)
 	{
 		ResourceManager* resourceManager = engine.getResourceManager();
-		SMDModel* model = resourceManager->loadModel("plane2.smd");
+		auto model = resourceManager->loadModel("plane2.smd");
 		if (model)
 		{
 			Renderer* renderer = engine.getRenderer();
@@ -99,7 +101,7 @@ void Plane::fire(Engine& engine)
 		return;
 	}
 
-	auto worldMat = getObjectToWorldMatrix();
+	const auto& worldMat = getObjectToWorldMatrix();
 
 	Vec3 xDir = worldMat.getColumn(0).getNormalized();
 	Vec3 heading = worldMat.getColumn(1).getNormalized();
@@ -131,7 +133,7 @@ void Plane::update(Engine& engine)
 	uint16_t resolution = tile.getResolution();
 	float ground = tile.getHeightAt(m_position.x(), m_position.y());
 
-	auto worldMat = getObjectToWorldMatrix();
+	const auto& worldMat = getObjectToWorldMatrix();
 	Vec3 heading = worldMat.getColumn(1).getNormalized();
 
 	Vec3 position = m_position + m_speed * heading;
@@ -164,7 +166,7 @@ void Plane::update(Engine& engine)
 	{
 		MeshInstanceData data;
 		Matrix44 modelMatrix = getObjectToWorldMatrix();
-		modelMatrix.getData(data.modelMatrix);
+		modelMatrix.copyData(data.modelMatrix);
 		s_assets.batch->addMeshInstance(data);
 	}
 }
@@ -193,7 +195,7 @@ Bullet::Bullet(WorldEntity& emitter, Vec3 position, Vec3 heading, Engine& engine
 	if (!s_batch)
 	{
 		Renderer* renderer = engine.getRenderer();
-        s_batch = renderer->addNewBatch <CDynamicArrayBatch>(eBulletPipeline);
+        s_batch = renderer->addNewBatch <CDynamicArrayBatch>(CSceneRenderPass::eBulletPipeline);
 	}
 }
 
@@ -245,7 +247,7 @@ PlaneAIController::PlaneAIController(Plane* plane)
 void PlaneAIController::update(Engine& engine)
 {
 	//find other plane and chase it
-	auto worldMat = m_plane->getObjectToWorldMatrix();
+	const auto& worldMat = m_plane->getObjectToWorldMatrix();
 
 	auto& target = engine.getPlayerEntity();
 
@@ -264,14 +266,14 @@ void PlaneAIController::update(Engine& engine)
 	float throttle = 1;
 	if(dj < 0.0f && l < 5.0f)
 	{
-		throttle = pow(1.1f, 1);
+		throttle = powf(1.1f, 1);
 	}
 	else if(dj < 0.95f && l < 4.0f)
 	{
-		throttle = pow(1.1f, -1);
+		throttle = powf(1.1f, -1);
 	}
 	else {
-		throttle = pow(1.1f, 1);
+		throttle = powf(1.1f, 1);
 	}
 	m_plane->accelerate(throttle);
 
@@ -340,7 +342,15 @@ void PlanePlayerController::update(Engine& engine)
 	}
 	if (inputState.accelarateTick != 0)
 	{
-		float throttle = pow(1.1f, inputState.accelarateTick);
+		float throttle = powf(1.1f, static_cast<float> (inputState.accelarateTick));
 		m_plane->accelerate(throttle);
+	}
+	if (fabs(inputState.left_right_value) > 0.1f)
+	{
+		m_plane->roll(inputState.left_right_value * fRollSpeed);
+	}
+	if (fabs(inputState.up_down_value) > 0.1f)
+	{
+		m_plane->pitch(-inputState.up_down_value * fRollSpeed);
 	}
 }

@@ -56,7 +56,6 @@ void IDevice::flushPendingStreamRequests(ICommandBuffer& cmd)
 							size_t readerindex = (i * height + j) * 3;
 							for (uint8_t c = 0; c < 3; ++c)
 							{
-								// back convert to srgb and assign to current mipmap
 								lock[index + c + offset] = reader.getData()[readerindex + 2 - c];
 							}
 							lock[index + offset + 4] = 255;

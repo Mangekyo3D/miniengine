@@ -12,7 +12,7 @@ enum EPipelineFlags
 	ePrimitiveRestart              = (1L << 3)
 };
 
-enum EVertexFormat
+enum class EVertexFormat
 {
 	eFloat,
 	e1010102int
@@ -29,10 +29,6 @@ enum EShaderStage {
 
 struct SVertexAttribParams
 {
-	SVertexAttribParams()
-	{
-	}
-
 	SVertexAttribParams(uint32_t ofs, EVertexFormat fmt,uint8_t comp)
 		: offset(ofs)
 		, format(fmt)
@@ -68,7 +64,7 @@ struct SSamplerParams
 	bool bLinearFilter = true;
 };
 
-enum EDescriptorType
+enum class EDescriptorType
 {
 	eUniformBlock,
 	eTextureSampler
@@ -85,7 +81,7 @@ struct SDescriptorLayout
 	{
 	}
 
-	EDescriptorType type = eUniformBlock;
+	EDescriptorType type = EDescriptorType::eUniformBlock;
 	uint32_t shaderStages = 0;
 	uint32_t sampler = 0;
 };
@@ -94,12 +90,12 @@ struct SDescriptorSet
 {
 	void addUniformBlock(uint32_t stages)
 	{
-		descriptors.emplace_back(eUniformBlock, stages);
+		descriptors.emplace_back(EDescriptorType::eUniformBlock, stages);
 	}
 
 	void addTextureSlot(uint32_t stages, uint32_t sampler)
 	{
-		descriptors.emplace_back(eTextureSampler, stages, sampler);
+		descriptors.emplace_back(EDescriptorType::eTextureSampler, stages, sampler);
 	}
 
 	std::vector <SDescriptorLayout> descriptors;
@@ -110,8 +106,9 @@ struct SPipelineParams
 	IRenderPass* renderpass = nullptr;
 	SVertexBinding* perDrawBinding = nullptr;
 	SVertexBinding* perInstanceBinding= nullptr;
-	const char*     shaderModule = nullptr;
-	int64_t         flags = 0;
+    const char*     fragmentShaderModule = nullptr;
+    const char*     vertexShaderModule = nullptr;
+    int64_t         flags = 0;
 
 	SDescriptorSet* perDrawSet = nullptr;
 	SDescriptorSet* globalSet = nullptr;

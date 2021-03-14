@@ -29,7 +29,12 @@ static VkBool32 VKAPI_PTR vulkanDebugCallback(
 	const char* pMessage,
 	void*)
 {
-	std::cout << pMessage << std::endl;
+#ifdef WIN32
+	OutputDebugStringA(pMessage);
+	OutputDebugStringA("\n");
+#else
+	std::cerr << pMessage << std::endl;
+#endif
 
 	return VK_TRUE;
 }
@@ -77,18 +82,17 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 	}
 
 	// now that we have our devices, let's check which one supports rendering
-	for (uint32_t deviceIndex = 0; deviceIndex < physDevices.size(); ++deviceIndex)
+	for (VkPhysicalDevice& physDevice : physDevices)
 	{
-		VkPhysicalDevice& physDevice  = physDevices[deviceIndex];
 		unsigned int numQueueFamilies;
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties(physDevice, &properties);
 
 		if (m_bDebugInstance)
 		{
+			// need OutputDebugString on windows
 			std::cout << "Device: " << properties.deviceName << std::endl;
 		}
-
 		// get extension properties for this device
 		uint32_t numExtensionProps;
 		if (vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &numExtensionProps, nullptr) != VK_SUCCESS)
@@ -99,9 +103,7 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 
 		// no extensions, however we need support for swapchain rendering, so continue to the next device
 		if (numExtensionProps == 0)
-		{
 			continue;
-		}
 
 		std::vector<VkExtensionProperties> deviceExtensions(numExtensionProps);
 		if (vkEnumerateDeviceExtensionProperties(physDevice, nullptr, &numExtensionProps, &deviceExtensions[0]) != VK_SUCCESS)
@@ -125,9 +127,7 @@ bool CVulkanDevice::ensureDevice(VkSurfaceKHR surface)
 		}
 
 		if (!(bSupportsSwapchainRendering && bSupportsMaintainance1))
-		{
 			continue;
-		}
 
 		vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &numQueueFamilies, nullptr);
 
@@ -271,6 +271,12 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	: m_instance(VK_NULL_HANDLE)
 	, m_debugHandle(VK_NULL_HANDLE)
 	, m_device(VK_NULL_HANDLE)
+	, m_graphicsCommandPool(VK_NULL_HANDLE)
+	, m_graphicsQueueIndex(0)
+	, m_physicalDevice(VK_NULL_HANDLE)
+	, m_presentQueue(VK_NULL_HANDLE)
+	, m_presentQueueIndex(0)
+	, m_graphicsQueue(VK_NULL_HANDLE)
 {
 	m_bDebugInstance = bDebugContext;
 	s_device = this;
@@ -297,9 +303,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	#include "VulkanFunctions.inl"
 
 	if (!bInstanceFunctionsLoaded)
-	{
 		return;
-	}
 
 	#undef VK_EXPORTED_FUNCTION
 
@@ -315,9 +319,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	#undef VK_GLOBAL_FUNCTION
 
 	if (!bInstanceFunctionsLoaded)
-	{
 		return;
-	}
 
 
 	// check if extensions are supported by the implementation
@@ -340,9 +342,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 	};
 
 	if (m_bDebugInstance)
-	{
 		requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-	}
 
 	if (vkEnumerateInstanceExtensionProperties(nullptr, &numExtensions, availableExtensions.data()) != VK_SUCCESS)
 	{
@@ -381,9 +381,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 
 	std::vector <const char*> enabledLayers;
 	if (m_bDebugInstance)
-	{
-		enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-	}
+		enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 
 	VkInstanceCreateInfo instanceInfo =
 	{
@@ -431,7 +429,7 @@ CVulkanDevice::CVulkanDevice(GameWindow& win, bool bDebugContext)
 			VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
 			nullptr,
 //			VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
-            VK_DEBUG_REPORT_DEBUG_BIT_EXT |
+//          VK_DEBUG_REPORT_DEBUG_BIT_EXT |
 			VK_DEBUG_REPORT_ERROR_BIT_EXT |
 			VK_DEBUG_REPORT_WARNING_BIT_EXT |
 //			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |

@@ -27,25 +27,24 @@ static GLenum shaderTypeToGLType(EShaderStage type)
 	return 0;
 }
 
-COpenGLShader::COpenGLShader(std::string filename, EShaderStage type)
+COpenGLShader::COpenGLShader(const char* filename, EShaderStage type)
 	: m_ID (0)
 	, m_type(type)
 {
 	auto& utils =  OSUtils::get();
+    m_filename = utils.getShaderPath() + filename;
 
 	switch(type)
 	{
 		case EShaderStage::eFragmentStage:
-			filename += ".frag.spv";
+            m_filename += ".frag.spv";
 			break;
 		case EShaderStage::eVertexStage:
-			filename += ".vert.spv";
+            m_filename += ".vert.spv";
 			break;
 		default:
 			break;
 	}
-
-	m_filename = utils.getShaderPath() + filename;
 }
 
 COpenGLShader::~COpenGLShader()

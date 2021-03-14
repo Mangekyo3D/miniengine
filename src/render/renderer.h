@@ -11,16 +11,6 @@ class CCompositingPipeline;
 class ISwapchain;
 class IGPUBuffer;
 
-// pipelines for scene specific materials
-enum EScenePipeline {
-	eDiffuse = 0,
-	eDiffuseTriangleStrip,
-	eDiffuseTextured,
-    eTerrainPipeline,
-    eBulletPipeline,
-    eMaxScenePipelines
-};
-
 class Renderer
 {
 	public:

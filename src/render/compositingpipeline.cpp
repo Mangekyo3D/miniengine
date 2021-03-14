@@ -144,19 +144,20 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 		params.flags = eDepthCompareGreater | eCullBackFace;
 
 		SVertexBinding instanceBinding(sizeof(MeshInstanceData));
-		instanceBinding.addAttribute(0, eFloat, 4);
-		instanceBinding.addAttribute(4 * sizeof(float), eFloat, 4);
-		instanceBinding.addAttribute(8 * sizeof(float), eFloat, 4);
-		instanceBinding.addAttribute(12 * sizeof(float), eFloat, 4);
+		instanceBinding.addAttribute(0, EVertexFormat::eFloat, 4);
+		instanceBinding.addAttribute(4 * sizeof(float), EVertexFormat::eFloat, 4);
+		instanceBinding.addAttribute(8 * sizeof(float), EVertexFormat::eFloat, 4);
+		instanceBinding.addAttribute(12 * sizeof(float), EVertexFormat::eFloat, 4);
 
 		params.perInstanceBinding = &instanceBinding;
 
 		{
-			params.shaderModule = "generic";
+            params.fragmentShaderModule = "generic";
+            params.vertexShaderModule = "generic";
 
 			SVertexBinding vertBinding(sizeof(VertexFormatVN));
-			vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), eFloat, 3);
-			vertBinding.addAttribute(offsetof(VertexFormatVN, normal), e1010102int, 4);
+			vertBinding.addAttribute(offsetof(VertexFormatVN, vertex), EVertexFormat::eFloat, 3);
+			vertBinding.addAttribute(offsetof(VertexFormatVN, normal), EVertexFormat::e1010102int, 4);
 
 			params.perDrawBinding = &vertBinding;
 			m_pipelines[eDiffuse] = device.createPipeline(params);
@@ -173,13 +174,14 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
 			SSamplerParams sampler;
 			params.addSampler(sampler);
-			params.shaderModule = "genericTextured";
-			params.perDrawSet = &perDrawSet;
+            params.fragmentShaderModule = "genericTextured";
+            params.vertexShaderModule = "genericTextured";
+            params.perDrawSet = &perDrawSet;
 
 			SVertexBinding vertBinding(sizeof(VertexFormatVNT));
-			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), eFloat, 3);
-			vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), e1010102int, 4);
-			vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), eFloat, 2);
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, vertex), EVertexFormat::eFloat, 3);
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, normal), EVertexFormat::e1010102int, 4);
+			vertBinding.addAttribute(offsetof(VertexFormatVNT, texCoord), EVertexFormat::eFloat, 2);
 			params.perDrawBinding = &vertBinding;
 
 			m_pipelines[eDiffuseTextured] = device.createPipeline(params);
@@ -196,11 +198,12 @@ void CSceneRenderPass::setupPipelines(IDevice& device)
 
             SSamplerParams sampler;
             params.addSampler(sampler);
-            params.shaderModule = "genericTextured";
+            params.fragmentShaderModule = "texturedNoNormal";
+            params.vertexShaderModule = "bullet";
             params.perDrawSet = &perDrawSet;
 
             SVertexBinding vertBinding(sizeof(VertexFormatV));
-            vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
+            vertBinding.addAttribute(offsetof(VertexFormatV, vertex), EVertexFormat::eFloat, 3);
             params.perDrawBinding = &vertBinding;
 
             m_pipelines[eBulletPipeline] = device.createPipeline(params);
@@ -230,9 +233,10 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 		params.globalSet = &descriptorSet;
 
 		params.renderpass = m_renderpass.get();
-		params.shaderModule = "toneMapping";
-		SVertexBinding vertBinding(sizeof(VertexFormatV));
-		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), eFloat, 3);
+        params.fragmentShaderModule = "toneMapping";
+        params.vertexShaderModule = "toneMapping";
+        SVertexBinding vertBinding(sizeof(VertexFormatV));
+		vertBinding.addAttribute(offsetof(VertexFormatV, vertex), EVertexFormat::eFloat, 3);
 		params.perDrawBinding = &vertBinding;
 
 		m_data->m_pipeline = device.createPipeline(params);
@@ -242,7 +246,6 @@ void CToneMappingPass::setupPipelines(IDevice& device)
 CCompositingPipeline::CCompositingPipeline(IDevice& device, uint32_t width, uint32_t height)
 	: m_sceneDrawPass(device)
 	, m_toneMappingPass(device)
-	, m_device(&device)
 {
 	resize(device, width, height);
 }
@@ -259,8 +262,8 @@ void CCompositingPipeline::draw(ICommandBuffer& cmd, std::vector <std::unique_pt
 
 void CCompositingPipeline::resize(IDevice& device, uint32_t width, uint32_t height)
 {
-	m_sceneHDRTex = m_device->createTexture(ITexture::eRGB16f, ITexture::EUsage::eSampled | ITexture::EUsage::eAttachement, width, height);
-	m_DepthTex = m_device->createTexture(ITexture::eDepth32f, ITexture::EUsage::eAttachement, width, height);
+	m_sceneHDRTex = device.createTexture(ITexture::eRGB16f, ITexture::EUsage::eSampled | ITexture::EUsage::eAttachement, width, height);
+	m_DepthTex = device.createTexture(ITexture::eDepth32f, ITexture::EUsage::eAttachement, width, height);
 
 	ITexture* sceneTex = m_sceneHDRTex.get();
 	m_sceneDrawPass.setupRenderPass(device, &sceneTex, 1, m_DepthTex.get());

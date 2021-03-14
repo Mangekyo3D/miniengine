@@ -2,21 +2,22 @@
 #include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
+#include <optional>
 
 class CVulkanShaderModule
 {
 public:
-	CVulkanShaderModule(const std::string& filename);
 	~CVulkanShaderModule();
-	void load();
+	CVulkanShaderModule(const CVulkanShaderModule&) = delete;
+	CVulkanShaderModule(CVulkanShaderModule&& anOther) noexcept {
+		m_module = anOther.m_module; anOther.m_module = VK_NULL_HANDLE;
+	}
 
+	static std::optional<CVulkanShaderModule> create(const std::string& path);
 	VkShaderModule getModule() { return m_module; }
 
 private:
-	// this only stores filename inside /shaders directory, not full path
-	std::string      m_filename;
-	VkShaderModule m_module;
+	CVulkanShaderModule(VkShaderModule module);
 
-	// size of binary module in bytes and actual data
-	std::vector<unsigned char> m_data;
+	VkShaderModule m_module;
 };

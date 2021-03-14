@@ -1,6 +1,8 @@
 #include "Win32Window.h"
 #include "../render/iswapchain.h"
 
+#include "XInput.h"
+
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
@@ -135,6 +137,7 @@ Win32Window::CWindowClass::~CWindowClass()
 
 Win32Window::Win32Window()
 {
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 	m_hWnd = CreateWindow(m_wndClass.getName(), "Space Pirates",
 						  WS_POPUP, 0, 0,500, 500, nullptr, nullptr, GetModuleHandle(nullptr), this);
 	ShowWindow(m_hWnd, SW_SHOW);
@@ -143,10 +146,20 @@ Win32Window::Win32Window()
 
 void Win32Window::maximize()
 {
-	// note, fragile on multimonitor
-	int width = GetSystemMetrics(SM_CXMAXIMIZED);
-	int height = GetSystemMetrics(SM_CYMAXIMIZED);
-	::SetWindowPos(m_hWnd, nullptr, 0, 0, width, height, SWP_SHOWWINDOW);
+	ShowWindow(m_hWnd, SW_MAXIMIZE);
+}
+
+void Win32Window::getXBoxControllerInput(XBoxInput& input)
+{
+	XINPUT_STATE state;
+
+	if (XInputGetState(0, &state) != ERROR_SUCCESS)
+		return;
+
+	XINPUT_GAMEPAD& gamepad = state.Gamepad;
+
+	input.leftRightAxis = (float) gamepad.sThumbLX / 32767;
+	input.upDownAxis = (float)gamepad.sThumbLY / 32767;
 }
 
 Win32Window::~Win32Window()
@@ -177,8 +190,4 @@ void Win32Window::handleOSEvents()
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
-}
-
-void Win32Window::getMouseState(int&, int&)
-{
 }
